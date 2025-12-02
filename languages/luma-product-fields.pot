@@ -1,0 +1,893 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Hello Product Fields\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-12-02 15:35+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: \n"
+"Language: \n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Loco-Version: 2.6.6; wp-6.3.1\n"
+"X-Domain: hello-product-fields"
+
+#: includes/Product/FieldRenderer.php:137
+msgid " Unknown field."
+msgstr ""
+
+#: includes/Product/FieldRenderer.php:180
+msgid " Unsupported field type: "
+msgstr ""
+
+#: includes/Registry/FieldTypeRegistry.php:172
+msgid "%"
+msgstr ""
+
+#. %d: number of products updated
+#: includes/Admin/Migration/MigrationPage.php:161
+msgid "%d products updated successfully."
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:230
+msgid "1st"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:231
+msgid "2nd"
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:218
+msgid ""
+"A field or taxonomy with this name already exists. Please choose another "
+"name."
+msgstr ""
+
+#: includes/Registry/FieldTypeRegistry.php:97
+msgid "A simple text input."
+msgstr ""
+
+#: includes/Registry/FieldTypeRegistry.php:112
+msgid ""
+"A single integer value. You can use both , and . as decimal separator in "
+"admin. Presentation is based on your locale setting."
+msgstr ""
+
+#: includes/Registry/FieldTypeRegistry.php:104
+msgid "A single numeric value."
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:148
+msgid ""
+"A tooltip for the shop manager to better understand what to do. Just leave "
+"this field emtpy to omit."
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:143
+msgid ""
+"A tooltip that pops up by the label on the frontend. Just leave this field "
+"empty to omit."
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:83
+msgid "Access denied"
+msgstr ""
+
+#: includes/Admin/FieldOptionsOverview.php:139
+msgid "Actions"
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:115
+#: includes/Admin/FieldOptionsOverview.php:99
+msgid "Add New Field"
+msgstr ""
+
+#: includes/Taxonomy/ProductGroup.php:56
+msgid "Add New Product group"
+msgstr ""
+
+#: includes/Admin/Settings.php:124
+msgid "Add tool to migrate existing metadata to Product Fields."
+msgstr ""
+
+#: includes/Admin/Ajax.php:99
+msgid ""
+"After changing the product group, please save and update the product to load "
+"the correct fields for each variation."
+msgstr ""
+
+#: includes/Admin/Admin.php:126
+msgid "All"
+msgstr ""
+
+#: includes/Taxonomy/ProductGroup.php:174
+msgid "All Product groups"
+msgstr ""
+
+#: includes/Admin/FieldOptionsOverview.php:166
+msgid ""
+"Are you sure you want to delete this field? All data will be deleted, and "
+"there is no going back."
+msgstr ""
+
+#: includes/Admin/Admin.php:81
+msgid ""
+"Are you sure you want to delete this field? Existing data will no longer be "
+"shown to the customers."
+msgstr ""
+
+#: includes/Registry/FieldTypeRegistry.php:141
+msgid "Autocomplete"
+msgstr ""
+
+#: includes/Admin/Admin.php:250
+msgid "Back to Field Overview"
+msgstr ""
+
+#: includes/Taxonomy/ProductGroup.php:59
+msgid "Back to Product groups"
+msgstr ""
+
+#: includes/Frontend/FrontendController.php:294
+msgid "Brand"
+msgstr ""
+
+#: includes/Frontend/FrontendController.php:370
+msgid "Categories"
+msgstr ""
+
+#: includes/Migration/LegacyMetaMigrator.php:406
+msgid "centimeter"
+msgstr ""
+
+#: includes/Migration/LegacyMetaMigrator.php:407
+msgid "centimeters"
+msgstr ""
+
+#: includes/Registry/FieldTypeRegistry.php:134
+msgid "Checkboxes"
+msgstr ""
+
+#: includes/Taxonomy/ProductGroup.php:274
+msgid ""
+"Choose a single Product group to assign to all selected products, or “— "
+"Clear —” to remove it. Leave as “— No change —” to keep current groups."
+msgstr ""
+
+#: includes/Admin/ListView.php:113
+msgid "Choose product group"
+msgstr ""
+
+#: includes/Registry/FieldTypeRegistry.php:165
+#: includes/Migration/LegacyMetaMigrator.php:405
+msgid "cm"
+msgstr ""
+
+#: includes/Admin/FieldOptionsOverview.php:167
+msgid "Delete"
+msgstr ""
+
+#: includes/Admin/Settings.php:115
+msgid "Display categories"
+msgstr ""
+
+#: includes/Admin/Settings.php:99
+msgid "Display Global Unique Identifier"
+msgstr ""
+
+#: includes/Admin/Settings.php:83
+msgid "Display Product Group in Front End"
+msgstr ""
+
+#: includes/Admin/Settings.php:91
+msgid "Display SKU"
+msgstr ""
+
+#: includes/Admin/Settings.php:107
+msgid "Display tags"
+msgstr ""
+
+#: includes/Registry/FieldTypeRegistry.php:128
+msgid "Dropdown from predefined terms."
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:266
+msgid "Dry run (no changes will be saved)"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:330
+msgid "dry-run changes"
+msgstr ""
+
+#: includes/Admin/FieldOptionsOverview.php:159
+msgid "Edit"
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:67 includes/Admin/FieldEditor.php:68
+#: includes/Admin/FieldEditor.php:115
+msgid "Edit Field"
+msgstr ""
+
+#: includes/Taxonomy/ProductGroup.php:54
+msgid "Edit Product group"
+msgstr ""
+
+#: includes/Admin/FieldOptionsOverview.php:103
+msgid "Edit product groups"
+msgstr ""
+
+#: includes/Admin/Settings.php:123
+msgid "Enable migration tool"
+msgstr ""
+
+#: includes/Admin/Settings.php:100
+msgid "Enable to show GTIN/barcode (available from Woo 9.1.) in the front end."
+msgstr ""
+
+#: includes/Admin/Settings.php:116
+msgid "Enable to show the product categories with the fields in the front end."
+msgstr ""
+
+#: includes/Admin/Settings.php:84
+msgid "Enable to show the product group name on product pages."
+msgstr ""
+
+#: includes/Admin/Settings.php:92
+msgid "Enable to show the product SKU with the fields in the front end."
+msgstr ""
+
+#: includes/Admin/Settings.php:108
+msgid "Enable to show the product tags with the fields in the front end."
+msgstr ""
+
+#: includes/Admin/Admin.php:83
+msgid "Enter at least %d characters"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:346
+msgid "Existing"
+msgstr ""
+
+#: includes/Migration/LegacyMetaMigrator.php:214
+msgid "Existing value present"
+msgstr ""
+
+#: includes/Frontend/FieldRenderer.php:104
+msgid "explanation"
+msgstr ""
+
+#: includes/Taxonomy/TermMetaManager.php:211
+msgid "Fav"
+msgstr ""
+
+#: includes/Taxonomy/TermMetaManager.php:237
+msgid "Feature term"
+msgstr ""
+
+#: includes/Taxonomy/TermMetaManager.php:111
+#: includes/Taxonomy/TermMetaManager.php:143
+msgid "Featured"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:188
+#: includes/Admin/Migration/MigrationPage.php:343
+msgid "Field"
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:274
+msgid "Field created successfully."
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:270
+msgid ""
+"Field created successfully. You can now add terms via the Manage Terms "
+"button."
+msgstr ""
+
+#: includes/Admin/FieldOptionsOverview.php:204
+msgid "Field deleted successfully. All associated data has been removed."
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:275
+msgid "Field updated successfully."
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:271
+msgid ""
+"Field updated successfully. Manage Terms is available for editing values."
+msgstr ""
+
+#: includes/Admin/FieldOptionsOverview.php:91
+msgid "Filter"
+msgstr ""
+
+#: includes/Admin/FieldOptionsOverview.php:78
+msgid "Filter product group"
+msgstr ""
+
+#. Description of the plugin
+msgid ""
+"Flexible custom product fields for WooCommerce with sortable, linkable and "
+"developer-extendable field types."
+msgstr ""
+
+#: includes/Admin/Settings.php:75
+msgid "Front End title"
+msgstr ""
+
+#: includes/Admin/FieldOptionsOverview.php:137
+msgid "Frontend"
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:164
+msgid "Frontend Visibility"
+msgstr ""
+
+#: includes/Migration/LegacyMetaMigrator.php:424
+msgid "g"
+msgstr ""
+
+#: includes/Registry/FieldTypeRegistry.php:168
+#: includes/Migration/LegacyMetaMigrator.php:425
+msgid "gram"
+msgstr ""
+
+#: includes/Migration/LegacyMetaMigrator.php:426
+msgid "grams"
+msgstr ""
+
+#: includes/Frontend/FrontendController.php:342
+msgid "GTIN / EAN"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:334
+msgid "handled by external save callback"
+msgstr ""
+
+#: includes/Admin/FieldOptionsOverview.php:157
+msgid "Hidden"
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:165
+msgid "Hide in frontend"
+msgstr ""
+
+#. URI of the plugin
+msgid "https://github.com/luma-retail/product-fields"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://luma-retail.com"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:222
+msgid "Include variations"
+msgstr ""
+
+#: includes/Taxonomy/TermMetaManager.php:496
+msgid "Insufficient permissions."
+msgstr ""
+
+#: includes/Registry/FieldTypeRegistry.php:111
+msgid "Integer"
+msgstr ""
+
+#: includes/Admin/Admin.php:82
+msgid "Just start typing..."
+msgstr ""
+
+#: includes/Registry/FieldTypeRegistry.php:169
+#: includes/Migration/LegacyMetaMigrator.php:430
+msgid "kg"
+msgstr ""
+
+#: includes/Migration/LegacyMetaMigrator.php:431
+msgid "kilogram"
+msgstr ""
+
+#: includes/Migration/LegacyMetaMigrator.php:432
+msgid "kilograms"
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:135
+#: includes/Admin/FieldOptionsOverview.php:133
+msgid "Label"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:232
+msgid "Last"
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:161
+msgid "Leave empty to show across all products"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:189
+msgid "Legacy Meta Key"
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:179
+msgid "Link to products with same value in front end"
+msgstr ""
+
+#. Name of the plugin
+#: includes/Admin/Settings.php:50
+msgid "Luma Product Fields"
+msgstr ""
+
+#: includes/Admin/Settings.php:69
+msgid "Luma Product Fields Settings"
+msgstr ""
+
+#: includes/Migration/LegacyMetaMigrator.php:417
+msgid "m"
+msgstr ""
+
+#: includes/Taxonomy/ProductGroup.php:65
+msgid "Main product groups in the shop"
+msgstr ""
+
+#: includes/Admin/FieldOptionsOverview.php:161
+msgid "Manage Terms"
+msgstr ""
+
+#: includes/Taxonomy/TermMetaManager.php:113
+#: includes/Taxonomy/TermMetaManager.php:145
+msgid "Mark this term as featured."
+msgstr ""
+
+#: includes/Registry/FieldTypeRegistry.php:167
+#: includes/Migration/LegacyMetaMigrator.php:418
+msgid "meter"
+msgstr ""
+
+#: includes/Migration/LegacyMetaMigrator.php:419
+msgid "meters"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:55
+msgid "Migrate Legacy Meta"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:329
+msgid "migrated"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:199
+msgid "Migrated on"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:323
+msgid "Migration Result (dry run)"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:326
+msgid "Migration Summary"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:72
+msgid "Migration tool"
+msgstr ""
+
+#: includes/Migration/LegacyMetaMigrator.php:412
+msgid "millimeter"
+msgstr ""
+
+#: includes/Migration/LegacyMetaMigrator.php:413
+msgid "millimeters"
+msgstr ""
+
+#: includes/Taxonomy/TermMetaManager.php:501
+msgid "Missing term_id."
+msgstr ""
+
+#: includes/Registry/FieldTypeRegistry.php:166
+#: includes/Migration/LegacyMetaMigrator.php:411
+msgid "mm"
+msgstr ""
+
+#: includes/Registry/FieldTypeRegistry.php:135
+msgid "Multiple predefined options."
+msgstr ""
+
+#: includes/Admin/ListViewTable.php:252
+msgid "Name"
+msgstr ""
+
+#: includes/Taxonomy/ProductGroup.php:57
+msgid "New Product group Name"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:347
+msgid "New value"
+msgstr ""
+
+#: includes/Admin/FieldOptionsOverview.php:158
+msgid "No"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:409
+msgid "No changes were detected in this dry run."
+msgstr ""
+
+#: includes/Product/FieldRenderer.php:99
+msgid "No fields defined yet for this product group"
+msgstr ""
+
+#: includes/Admin/Admin.php:127
+msgid "No group"
+msgstr ""
+
+#: includes/Product/FieldRenderer.php:65
+msgid "No group set"
+msgstr ""
+
+#: includes/Admin/FieldOptionsOverview.php:87
+msgid "No groups"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:209
+msgctxt "no meta key selected"
+msgid "--"
+msgstr ""
+
+#: includes/Taxonomy/ProductGroup.php:58
+msgid "No Product groups Found"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:165
+msgid "No products were updated."
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:153
+msgid "None"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:203
+msgid "Not migrated"
+msgstr ""
+
+#: includes/Registry/FieldTypeRegistry.php:103
+msgid "Number"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:190
+msgid "Options"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:345
+msgid "Original"
+msgstr ""
+
+#: includes/Frontend/FrontendController.php:315
+msgid "Package size"
+msgstr ""
+
+#: includes/Frontend/FrontendController.php:303
+msgid "Package weight"
+msgstr ""
+
+#: includes/Registry/FieldTypeRegistry.php:170
+#: includes/Migration/LegacyMetaMigrator.php:436
+msgid "pcs"
+msgstr ""
+
+#: includes/Migration/LegacyMetaMigrator.php:448
+msgid "percent"
+msgstr ""
+
+#: includes/Migration/LegacyMetaMigrator.php:449
+msgid "percents"
+msgstr ""
+
+#: includes/Migration/LegacyMetaMigrator.php:437
+msgid "pieces"
+msgstr ""
+
+#: includes/Admin/ListView.php:119
+msgid "Please select a product group."
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:342
+msgid "Product"
+msgstr ""
+
+#: includes/Admin/FieldOptionsOverview.php:72
+msgid "Product Field Manager"
+msgstr ""
+
+#: includes/Product/FieldRenderer.php:44
+msgid "Product Fields"
+msgstr ""
+
+#: includes/Admin/FieldOptionsOverview.php:53
+#: includes/Admin/FieldOptionsOverview.php:54
+msgid "Product fields"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:177
+msgid "Product Fields Meta Migration"
+msgstr ""
+
+#: includes/Admin/ListView.php:61
+msgid "Product fields overview"
+msgstr ""
+
+#: includes/Taxonomy/ProductGroup.php:254
+#: includes/Taxonomy/ProductGroup.php:392
+#: includes/Frontend/FrontendController.php:384
+#: includes/Product/FieldRenderer.php:64
+msgid "Product group"
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:159
+#: includes/Admin/FieldOptionsOverview.php:136
+msgid "Product Groups"
+msgstr ""
+
+#: includes/Taxonomy/ProductGroup.php:53
+msgid "Product groups"
+msgstr ""
+
+#: includes/Migration/LegacyMetaMigrator.php:450
+msgid "prosent"
+msgstr ""
+
+#: includes/Migration/LegacyMetaMigrator.php:451
+msgid "prosenter"
+msgstr ""
+
+#: includes/Registry/FieldTypeRegistry.php:119
+msgid "Range (Min–Max)"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:348
+msgid "Reason / Details"
+msgstr ""
+
+#: includes/Admin/Ajax.php:98
+msgid "Reminder:"
+msgstr ""
+
+#: includes/Taxonomy/TermMetaManager.php:122
+#: includes/Taxonomy/TermMetaManager.php:158
+msgid "Remove"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:269
+msgid "Run Migration"
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:184
+msgid "Save Field"
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:171
+msgid "Schema Property"
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:174
+msgid ""
+"Schema Property controls how the value is included in your product’s "
+"structured data (schema.org). Adding a valid schema property (e.g. weight, "
+"brand, material) helps Google and other search engines better understand "
+"your product, which may improve how it appears in search results."
+msgstr ""
+
+#: includes/Admin/Admin.php:84
+msgid "Searching…"
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:175
+msgid "See list of available schema.org properties for products"
+msgstr ""
+
+#: includes/Product/VariationFieldRenderer.php:206
+msgid "Select"
+msgstr ""
+
+#: includes/Taxonomy/TermMetaManager.php:124
+#: includes/Taxonomy/TermMetaManager.php:160
+msgid "Select a thumbnail image for this term."
+msgstr ""
+
+#: includes/Taxonomy/ProductGroup.php:257
+msgid "Set to"
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:178
+msgid "Show Taxonomy Links"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:416
+msgid "Showing only the first 500 rows."
+msgstr ""
+
+#: includes/Registry/FieldTypeRegistry.php:127
+msgid "Single select"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:263
+msgid "Skip if field already has a value"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:331
+msgid "skipped (existing value)"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:332
+msgid "skipped (no valid data)"
+msgstr ""
+
+#: includes/Frontend/FrontendController.php:327
+msgid "SKU"
+msgstr ""
+
+#: includes/Admin/FieldOptionsOverview.php:134
+msgid "Slug"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:191
+#: includes/Admin/Migration/MigrationPage.php:344
+msgid "Status"
+msgstr ""
+
+#: includes/Migration/LegacyMetaMigrator.php:438
+msgid "stk"
+msgstr ""
+
+#: includes/Registry/FieldTypeRegistry.php:142
+msgid "Suggest existing terms, allow new."
+msgstr ""
+
+#: includes/Frontend/FrontendController.php:359
+msgid "Tags"
+msgstr ""
+
+#: includes/Taxonomy/ProductGroup.php:52
+msgctxt "taxonomy general name"
+msgid "Product group"
+msgstr ""
+
+#: includes/Taxonomy/ProductGroup.php:51
+msgctxt "taxonomy general name"
+msgid "Product groups"
+msgstr ""
+
+#. Author of the plugin
+msgid "Terje Johansen"
+msgstr ""
+
+#: includes/Taxonomy/TermMetaManager.php:117
+#: includes/Taxonomy/TermMetaManager.php:150
+msgid "Term thumbnail"
+msgstr ""
+
+#: includes/Registry/FieldTypeRegistry.php:96
+msgid "Text field"
+msgstr ""
+
+#: includes/Frontend/FrontendController.php:319
+msgid "The size of the product including packaging."
+msgstr ""
+
+#: includes/Frontend/FrontendController.php:307
+msgid "The weight of the product including packaging."
+msgstr ""
+
+#: includes/Admin/Settings.php:70
+msgid ""
+"These are the system settings for Luma Product Fields. To add or remove "
+"fields, go to Products → Product Fields"
+msgstr ""
+
+#: includes/Taxonomy/TermMetaManager.php:212
+msgid "Thumb"
+msgstr ""
+
+#: includes/Admin/Settings.php:76
+msgid "Title on the product fields tab."
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:146
+msgid "Tooltip (for admin)"
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:140
+msgid "Tooltip (front end)"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:239
+msgid "Try to match unit"
+msgstr ""
+
+#: includes/Registry/FieldTypeRegistry.php:120
+msgid "Two numeric inputs, e.g. 3.5 – 6."
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:122
+#: includes/Admin/FieldOptionsOverview.php:135
+msgid "Type"
+msgstr ""
+
+#: includes/Taxonomy/TermMetaManager.php:237
+msgid "Unfeature term"
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:151
+msgid "Unit"
+msgstr ""
+
+#: includes/Product/VariationFieldRenderer.php:76
+msgid "Unsupported variation field type."
+msgstr ""
+
+#: includes/Taxonomy/ProductGroup.php:55
+msgid "Update Product group"
+msgstr ""
+
+#: includes/Taxonomy/TermMetaManager.php:121
+#: includes/Taxonomy/TermMetaManager.php:157
+msgid "Upload / Choose image"
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:167
+msgid "Use in variations"
+msgstr ""
+
+#: includes/Product/FieldRenderer.php:331
+#: includes/Product/FieldRenderer.php:336
+msgid "Value not set"
+msgstr ""
+
+#: includes/Admin/FieldOptionsOverview.php:138
+msgid "Variation"
+msgstr ""
+
+#: includes/Admin/FieldOptionsOverview.php:157
+msgid "Visible"
+msgstr ""
+
+#: includes/Admin/Admin.php:80
+msgid ""
+"WARNING! When you change the slug, existing data from this field will no "
+"longer be shown. Are you really sure you want to do this?"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:228
+msgid "Which number?"
+msgstr ""
+
+#: includes/Migration/LegacyMetaMigrator.php:442
+msgid "year"
+msgstr ""
+
+#: includes/Registry/FieldTypeRegistry.php:171
+msgid "Years"
+msgstr ""
+
+#: includes/Migration/LegacyMetaMigrator.php:443
+msgid "years"
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:168
+#: includes/Admin/FieldOptionsOverview.php:158
+msgid "Yes"
+msgstr ""
+
+#: includes/Taxonomy/ProductGroup.php:261
+#: includes/Taxonomy/ProductGroup.php:396
+msgid "— Clear —"
+msgstr ""
+
+#: includes/Taxonomy/ProductGroup.php:260
+msgid "— No change —"
+msgstr ""
+
+#: includes/Taxonomy/ProductGroup.php:395
+msgid "— Select —"
+msgstr ""

@@ -1,0 +1,435 @@
+
+.lpf-filters,
+.lpf-actions {
+    margin: 1em 0;
+}
+
+.lpf-field-editor textarea {
+    width:25em;
+}
+
+.lpf-field-editor fieldset {
+    padding:1em;
+    width:fit-content;
+    background-color:#fff;
+    border-radius: 4px;
+    border: 1px solid #8c8f94;
+}
+
+tr.hidden {
+    display: none;
+}
+
+
+
+.lpf-field-editor  .field-types {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.lpf-field-editor .field-types select#lpf_fields_type_selector {
+    min-width: 220px;
+}
+
+.lpf-field-editor .lpf-types-desc {
+    margin: 0;
+    padding: 0.75rem 1rem;
+    list-style: none;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    background: #f6f7f7;
+    font-size:.9em;
+}
+
+.lpf-field-editor .lpf-types-desc li + li {
+    margin-top: 0.35rem;
+}
+
+.lpf-field-editor .lpf-types-desc li.is-active {
+    border-left: 3px solid #2271b1;
+    padding-left: 0.5rem;
+    background: #808080;
+    color:#fff;
+    padding-top:.2em;
+    padding-bottom:.2em;
+}
+
+@media (max-width: 768px) {
+    .lpf-field-editor .field-types {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .lpf-field-editor .lpf-types-desc {
+        max-width: none;
+    }
+}
+
+
+.woocommerce_options_panel select#lpf-product-group-select {
+    font-size:1.4em;
+    font-weight:bold;
+}
+
+.woocommerce_variable_attributes  .form-row.lpf-fieldtype-number input,
+.woocommerce_variable_attributes  .form-row.lpf-fieldtype-integer input,
+.woocommerce_variable_attributes  .form-row.lpf-fieldtype-minmax input,
+p.form-field.lpf-fieldtype-number input,
+p.form-field.lpf-fieldtype-integer input,
+p.form-field.lpf-fieldtype-minmax input {
+    width:12ch;
+    text-align:right;
+    float:none;
+}
+
+#lpf-fields span.label,
+.woocommerce_variable_attributes span.label,
+.woocommerce_variable_attributes .form-row.lpf-fieldtype-number label,
+.woocommerce_variable_attributes .form-row.lpf-fieldtype-integer label,
+.woocommerce_variable_attributes .form-row.lpf-fieldtype-minmax label {
+    margin-right:.5em;
+}
+
+.lpf-variation-fields .form-row .woocommerce-help-tip {
+    float:none;
+}
+
+.lpf-field-editor-field {
+    max-width:900px;
+    margin-top:1em;
+    padding:.5em;
+    background-color:#f6f6f6;
+    border:.5px solid #808080;
+    vertical-align:middle;
+}
+
+.lpf-field-slug-indicator {
+    color:#808080;
+    vertical-align:middle;
+}
+
+.lpf-field-editor-field .dashicons {
+    vertical-align:middle;
+    color:#808080;
+}
+
+input.lpf-field-slug {
+    display:none;
+}
+
+.lpf-field-editor-field label {
+    padding-left:.5em;
+}
+
+.lpf-field-editor-field  .lpf-field-var-label {
+    padding-left:2em;
+}
+
+.lpf-field-save,
+.lpf-field-del {
+    float:right;
+}
+
+.lpf-field-del {
+    margin-left:2em;
+    background-color:red;
+    color:#fff;
+}
+
+.lpf-field-del.active {
+    background-color:#dec5c5;
+}
+
+.lpf-field-save.active {
+    background-color:green;
+    color:#fff;
+    border-color:#fff;
+    font-weight:bold;
+}
+
+.lpf-field-editor-field.changed {
+    background-color:#fff;
+    border-color:green;
+    border-width:2px;
+}
+
+#lpf-fields-overview td {
+    border-right: 1px dotted #cbcbcb;
+}
+
+
+
+#lpf-fields-overview td {
+    position:relative;
+    padding: 0;
+}
+
+#lpf-fields-overview td .lpf-editable {
+    box-sizing:border-box;
+    display: flex;
+    align-items: center; /* vertical centering */
+    height: 100%;
+    width: 100%;
+    padding: .5em;
+    cursor:pointer;
+    min-height:1.5em;
+}
+
+
+.lpf-editable .lpf-unit {
+    margin-left: 0.25em; /* add visual space */
+}
+
+#lpf-fields-overview .variation-child-row .column-name {
+    padding-left:4em;
+}
+
+.lpf-is-numeric {
+    text-align:right;
+     justify-content: flex-end;
+    font-variant-numeric: tabular-nums;
+}
+
+input[inputmode=numeric],
+input[inputmode=decimal] {
+    text-align:right;
+    font-variant-numeric: tabular-nums;    
+    width:8ch;
+}
+
+.lpf-toggle-variations {
+	background: none;
+    color:#808080;
+	border: none;
+	font-size: 12px;
+	line-height: 1;
+	cursor: pointer;
+	vertical-align: middle;
+    padding-inline:0;
+    padding:0;
+}
+
+.lpf-list-paging {
+    margin-top:1.5em;
+    margin-bottom:1em;    
+}
+
+#lpf-fields-overview .widefat td {
+    padding-top:0;
+    padding-bottom:0;
+}
+
+#lpf-overview table.wp-list-table .column-name {
+    width:22% !important;
+    min-width:22%;
+}
+
+
+.widefat td.column-name,
+#lpf-overview .widefat td.column-sku {
+    padding: .5em 1em;        
+}
+
+.wp-list-table tbody tr:hover td.name.column-name {
+    background: #f0f7ff;   /* subtle highlight */
+    transition: background 120ms linear;
+}
+
+.wp-list-table tbody tr:hover {
+    outline: 1px solid #c8e1ff;
+}
+
+.lpf-row-editing {
+    background-color: #fef9e7 !important;
+}
+
+.lpf-floating-editor {
+    min-width:200px;
+    max-height:70vh;
+    overflow-y: auto;
+    width: max-content;
+    max-width:90vw;
+}
+
+
+.woocommerce-help-tip-ui {
+	background: #333;
+    opacity:.9;
+	color: #fff;
+	border: none;
+	border-radius: 3px;
+	padding: 4px 8px;
+	font-size: .8em;
+	z-index: 99999;
+}
+
+
+
+#lpf-editor-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;          
+    z-index: 100;    
+    background: transparent;
+}
+
+
+
+.lpf-floating-editor .lpf-fieldtype-multiple label,
+.lpf-floating-editor .lpf-fieldtype-minmax label {
+    display:block;
+}
+
+.lpf-floating-editor .lpf-fieldtype-text label,
+.lpf-floating-editor .lpf-fieldtype-number label,
+.lpf-floating-editor .lpf-fieldtype-integer label {
+    padding-right:.4em;
+}
+
+.lpf-floating-editor .lpf-fieldtype-minmax span.label {
+    text-align:right;
+    padding-right:.4em;
+}
+
+.lpf-floating-editor .lpf-minmax-wrapper {
+    
+    display:grid;
+    grid-template-columns: auto auto;
+}
+
+
+
+.lpf-floating-editor .form-field.lpf-fieldtype-text {
+    width:300px;
+}
+
+.lpf-floating-editor .form-field input[type=text] {
+    max-width: calc(100% - 8ch);    
+}
+
+.lpf-edit-controls .lpf-edit-save,
+.lpf-edit-controls .lpf-edit-cancel {
+	background: #f7f7f7;
+	border: 1px solid #ccc;
+	color: #555;
+	font-size: 14px;
+	padding: 4px 10px;
+	cursor: pointer;
+	border-radius: 3px;
+	line-height: 1.4;
+	transition: all 0.2s ease;
+    margin-right:.5em;
+}
+
+.lpf-edit-controls .lpf-edit-save {
+    color: #46b450;
+    font-weight:bold;
+}
+
+.lpf-edit-controls .lpf-edit-cancel {
+    color: #d63638;
+}
+
+
+.lpf-edit-controls .lpf-edit-save:hover {
+	background: #46b450;
+	border-color: #46b450;
+	color: #fff;
+}
+
+.lpf-edit-controls .lpf-edit-cancel:hover {
+	background: #d63638;
+	border-color: #d63638;
+	color: #fff;
+}
+
+.lpf-edit-controls .lpf-edit-save:active {
+    border-width:0;
+}
+
+.lpf-edit-controls .lpf-edit-save:disabled {
+	color: #e6e6e6;
+    background: #f7f7f7 !important;
+    border-color:#ccc !important;
+    cursor: not-allowed;
+}
+
+
+/* Initial glow */
+.lpf-save-glow {
+    background-color: #c6f6c6 !important;
+    transition: background-color 2s ease;
+}
+
+/* Reset to transparent or your table bg */
+.lpf-save-glow-reset {
+    background-color: transparent !important;
+}
+
+
+.lpf-floating-editor .form-field input.lpf-material-percent {
+    width:6ch;
+    margin-left:.4em;
+}
+
+textarea.scale-with-content {
+    field-sizing: content;
+}
+
+
+textarea#lpf_svg_code {
+    min-height:200px;
+}
+
+
+
+
+
+/*
+ * Migration 
+ */
+ 
+ 
+ 
+ .lpf-migration-options > label {
+     display:block;
+     margin-top:6px;
+ }
+ 
+ .lpf-migration-counters {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    padding: 12px 16px;
+    margin: 20px 0 10px 0;
+    border-radius: 4px;
+}
+
+
+.lpf-summary-table .lpf-status-migrated       { background:#e6f7e6; }
+.lpf-summary-table .lpf-status-dry-run        { background:#e8f3ff; }
+.lpf-summary-table .lpf-status-skipped-exists { background:#fff4e5; }
+.lpf-summary-table .lpf-status-skipped        { background:#f6f6f6; }
+.lpf-summary-table .lpf-status-external       { background:#f5e8ff; }
+
+.lpf-counters-list {
+    margin-left: 1.5em;
+}
+
+.lpf-count {
+    display:inline-block;
+    min-width:28px;
+    padding:2px 6px;
+    text-align:center;
+    border-radius:3px;
+    color:#fff;
+    margin-right:4px;
+    font-weight:bold;
+}
+
+.lpf-count-green  { background:#46b450; }
+.lpf-count-blue   { background:#0073aa; }
+.lpf-count-orange { background:#ff9900; }
+.lpf-count-gray   { background:#777; }
+.lpf-count-purple { background:#9b59b6; }
