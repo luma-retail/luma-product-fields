@@ -1,4 +1,10 @@
 
+.lpf-admin-panel .button .dashicons {
+    margin-right: 4px;
+    vertical-align: text-bottom;
+}
+
+
 .lpf-filters,
 .lpf-actions {
     margin: 1em 0;
@@ -43,6 +49,11 @@ tr.hidden {
     font-size:.9em;
 }
 
+.lpf-field-editor .lpf-types-desc li {
+    cursor: pointer;    
+}
+    
+    
 .lpf-field-editor .lpf-types-desc li + li {
     margin-top: 0.35rem;
 }

@@ -623,10 +623,12 @@ jQuery(function($) {
 
 });
 
-// Field editor field type highlight
+// Field editor field type click / highlight
 jQuery(function($) {
+    var $select = $('#lpf_fields_type_selector');
+    var $items  = $('.lpf-types-desc li');
+
     function highlightType(typeSlug) {
-        var $items = $('.lpf-types-desc li');
         $items.removeClass('is-active');
 
         if (!typeSlug) {
@@ -639,13 +641,24 @@ jQuery(function($) {
         }
     }
 
-    var $select = $('#lpf_fields_type_selector');
-
     // Initial highlight on load
     highlightType($select.val());
 
-    // Update highlight on change
+    // When the select changes (user or code), update highlight
     $select.on('change', function() {
         highlightType($(this).val());
+    });
+
+    // When a description row is clicked, update the select
+    $items.on('click', function(e) {
+        e.preventDefault();
+
+        var typeSlug = $(this).data('type');
+        if (!typeSlug) {
+            return;
+        }
+
+        // Update select and trigger change so highlight stays in sync
+        $select.val(typeSlug).trigger('change');
     });
 });

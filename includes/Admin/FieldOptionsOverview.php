@@ -96,7 +96,7 @@ class FieldOptionsOverview
             
             <div class="lpf-actions">
                 <a href="<?php echo admin_url('admin.php?page=lpf-new-field'); ?>" class="button button-primary button-large" style="margin-left: 1em;">
-                    <?php _e('Add New Field', 'luma-product-fields'); ?>
+                    <span class="dashicons dashicons-plus-alt"></span><?php _e('Add New Field', 'luma-product-fields'); ?>
                 </a>
                 
                 <a href="<?php echo admin_url('edit-tags.php?taxonomy=lpf_product_group'); ?>" class="button button-large" style="margin-left: 1em;">

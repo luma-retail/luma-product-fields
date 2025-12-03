@@ -106,7 +106,7 @@ class FieldEditor
         
         $types_desc = '<ul class="lpf-types-desc">';
         foreach ( $types as $slug => $type ) {
-            $types_desc .= '<li id="lpf-type-' . esc_attr( $slug ) . '"><strong>' . esc_html( $type['label'] ) . ':</strong> ' . esc_html( $type['description'] ) . '</li>';
+            $types_desc .= '<li id="lpf-type-' . esc_attr( $slug ) . '" data-type="' .  esc_attr( $slug ) . '"><strong>' . esc_html( $type['label'] ) . ':</strong> ' . esc_html( $type['description'] ) . '</li>';
         }
         $types_desc .= '</ul>';
                 

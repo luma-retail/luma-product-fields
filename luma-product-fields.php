@@ -3,7 +3,7 @@
  * Plugin Name:           Luma Product Fields
  * Plugin URI:            https://github.com/luma-retail/product-fields
  * Description:           Flexible custom product fields for WooCommerce with sortable, linkable and developer-extendable field types.
- * Version:               0.1.0
+ * Version:               0.2.0
  * Author:                Terje Johansen
  * Author URI:            https://luma-retail.com
  * Text Domain:           luma-product-fields

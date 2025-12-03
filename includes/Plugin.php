@@ -22,6 +22,7 @@ use Luma\ProductFields\Admin\Settings;
 use Luma\ProductFields\Admin\Migration\MigrationPage;
 use Luma\ProductFields\Registry\FieldTypeRegistry;            
 use Luma\ProductFields\Admin\NotificationManager;
+use Luma\ProductFields\Admin\Onboarding;
             
 defined('ABSPATH') || exit;
 
@@ -105,6 +106,7 @@ class Plugin {
             new TaxonomyManagerInlineEdit();
             new Settings();
             NotificationManager::init();
+            Onboarding::init();
         }
 
         // Frontend-specific components (includes AJAX context)
