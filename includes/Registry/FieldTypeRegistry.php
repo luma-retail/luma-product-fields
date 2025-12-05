@@ -17,12 +17,12 @@ defined('ABSPATH') || exit;
 *
  * Hooks:
  *
- * @hook Luma\ProductFields\field_registry
+ * @hook luma_product_fields_field_registry
  *       Filters the field registry array before it is used.
  *       @param array $field_types Array of registered field type definitions.
  *       @return array
  *
- * @hook Luma\ProductFields\AllowedUnits
+ * @hook luma_product_fields_allowed_units
  *       Filters the array of allowed units for numeric fields.
  *       @param array $units Array of allowed unit keys.
  *       @return array
@@ -53,7 +53,7 @@ class FieldTypeRegistry
      * - `render_frontend_cb` (callable, optional): Callback to render the field on the frontend.
      * - `save_cb` (callable, optional): Callback to handle saving the field value.
      *
-     * @hook Luma\ProductFields\field_types
+     * @hook luma_product_fields_field_types
      * Allows external plugins to register custom field types.
      *
      * @return array<string, array{
@@ -72,13 +72,13 @@ class FieldTypeRegistry
         $core_types = self::get_core_field_types();
         
         /**
-         * @hook Luma\ProductFields\field_registry
+         * @hook luma_product_fields_field_types
          * Filters the field registry array.
          *
          * @param array $fields Registered fields.
          *
          */         
-        $all_types = apply_filters( 'Luma\ProductFields\field_types', $core_types );
+        $all_types = apply_filters( 'luma_product_fields_field_types', $core_types );
         return $all_types;
     }
 
@@ -152,23 +152,20 @@ class FieldTypeRegistry
     /**
      *  Get available units for numeric fields.
      *
-     *
-     * @hook Luma\ProductFields\AllowedUnits
-     * Filters the array of allowed units.
-     *     
      * @return array
-     *
      */
     public static function get_units(): array
     {
         $units = [
             'cm'        => __('cm', 'luma-product-fields'),
             'mm'        => __('mm', 'luma-product-fields'),
-            'm'         => __('meter', 'luma-product-fields'),
+            'm'         => __('meters', 'luma-product-fields'),
             'g'         => __('gram', 'luma-product-fields'),
             'kg'        => __('kg', 'luma-product-fields'),
+            '"'         => __('inches', 'luma-product-fields'),
+            'ft.'       => __('feet', 'luma-product-fields'),
             'pcs'       => __('pcs', 'luma-product-fields'),
-            'years'     => __('Years', 'luma-product-fields'),
+            'years'     => __('years', 'luma-product-fields'),
             '%'         => __('%', 'luma-product-fields'),        
         ];
 
@@ -178,19 +175,16 @@ class FieldTypeRegistry
         if ( $currency_code ) {
             $units[ strtolower( $currency_code ) ] = esc_html( $currency_symbol );                            
         }
-
-
-
         
         /**
-         * @hook Luma\ProductFields\AllowedUnits
+         * @hook luma_product_fields_allowed_units
          * Filters the array of allowed units.
          *
          * @param array $units Array of allowed unit keys.
          *
          * @since 1.0.0
          */
-        return apply_filters('Luma\ProductFields\AllowedUnits', $units);
+        return apply_filters( 'luma_product_fields_allowed_units', $units);
     }
 
 

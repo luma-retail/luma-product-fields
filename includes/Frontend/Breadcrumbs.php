@@ -20,28 +20,28 @@ defined('ABSPATH') || exit;
  * - Only runs for taxonomies derived from TaxonomyManager::get_all() where is_taxonomy is truthy.
  * - Does nothing for unrelated taxonomies (e.g., product_cat).
  *
- * @hook Luma\ProductFields\TaxonomyIndex\add_breadcrumb
+ * @hook luma_product_fields_taxonomy_index_add_breadcrumb
  *       Filter to disable the breadcrumb enhancement entirely.
  *       Return `false` to leave WooCommerce breadcrumbs untouched.
  *       @param bool $enabled Default true.
  *
- * @hook Luma\ProductFields\TaxonomyIndex\enabled_taxonomies
+ * @hook luma_product_fields_taxonomy_index_enabled_taxonomies
  *       Filter the list of taxonomy slugs that should receive breadcrumb tweaks.
  *       Useful if you need to add or remove taxonomies from the managed list.
  *       @param string[] $enabled Array of taxonomy slugs.
  *
- * @hook Luma\ProductFields\TaxonomyIndex\is_linkable_taxonomy
+ * @hook luma_product_fields_taxonomy_index_is_linkable_taxonomy
  *       Filter whether a given taxonomy should get a linkable index crumb.
  *       @param bool   $is_linkable Default true.
  *       @param string $taxonomy    Current taxonomy slug.
  *
- * @hook Luma\ProductFields\TaxonomyIndex\breadcrumb_label
+ * @hook luma_product_fields_taxonomy_index_breadcrumb_label
  *       Filter the label text used for the taxonomy index crumb.
  *       @param string               $label    Default is singular label, then plural, then ucfirst(slug).
  *       @param string               $taxonomy Current taxonomy slug.
  *       @param array{plural:string, singular:string} $labels Plural and singular labels from get_taxonomy().
  *
- * @hook Luma\ProductFields\TaxonomyIndex\breadcrumb_url
+ * @hook luma_product_fields_taxonomy_index_breadcrumb_url
  *       Filter the URL used for the taxonomy index crumb.
  *       @param string $url      Default index URL built from taxonomy rewrite slug.
  *       @param string $taxonomy Current taxonomy slug.
@@ -69,7 +69,7 @@ class Breadcrumbs
      */
     public function filter_breadcrumbs(array $crumbs, $breadcrumb): array
     {
-        if (false === \apply_filters('Luma\ProductFields\TaxonomyIndex\add_breadcrumb', true)) {
+        if (false === \apply_filters( 'luma_product_fields_taxonomy_index_add_breadcrumb', true)) {
             return $crumbs;
         }
 
@@ -127,7 +127,7 @@ class Breadcrumbs
          *
          * @param array<int,string> $enabled
          */
-        $enabled = (array) \apply_filters('Luma\ProductFields\TaxonomyIndex\enabled_taxonomies', $enabled);
+        $enabled = (array) \apply_filters( 'luma_product_fields_taxonomy_index_enabled_taxonomies', $enabled);
 
         return \in_array($taxonomy, \array_map('strval', $enabled), true);
     }
@@ -151,7 +151,7 @@ class Breadcrumbs
          * @param bool   $is_linkable
          * @param string $taxonomy
          */
-        return (bool) \apply_filters('Luma\ProductFields\TaxonomyIndex\is_linkable_taxonomy', true, $taxonomy);
+        return (bool) \apply_filters( 'luma_product_fields_taxonomy_index_is_linkable_taxonomy', true, $taxonomy);
     }
 
 
@@ -175,7 +175,7 @@ class Breadcrumbs
 
         // Preferred display label in breadcrumb (defaults to singular, then plural, then ucfirst slug).
         $display_label = (string) \apply_filters(
-            'Luma\ProductFields\TaxonomyIndex\breadcrumb_label',
+            'luma_product_fields_taxonomy_index_breadcrumb_label',
             $labels['singular'] ?: ($labels['plural'] ?: \ucfirst($taxonomy)),
             $taxonomy,
             $labels
@@ -257,7 +257,7 @@ class Breadcrumbs
          * @param string $url
          * @param string $taxonomy
          */
-        return (string) \apply_filters('Luma\ProductFields\TaxonomyIndex\breadcrumb_url', $url, $taxonomy);
+        return (string) \apply_filters( 'luma_product_fields_taxonomy_index_breadcrumb_url', $url, $taxonomy);
     }
 
 

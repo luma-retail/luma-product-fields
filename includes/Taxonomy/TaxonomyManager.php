@@ -19,7 +19,7 @@ use WP_Taxonomy;
 *  Registers dynamic field taxonomies for field types that are taxonomies.
 *
 *
-* @hook Luma\ProductFields\taxonomy_registered
+* @hook luma_product_fields_taxonomy_registered
 *      Fires after custom taxonomy is registered.
 *      For 3r parties to customize taxonomies.
 *      @param string $slug name of Taxonomy
@@ -162,7 +162,7 @@ class TaxonomyManager {
              *
              * @since 3.1.0
              */
-            do_action( 'Luma\ProductFields\taxonomy_registered', $field['slug'], $args );            
+            do_action( 'luma_product_fields_taxonomy_registered', $field['slug'], $args );            
         }
     }
         

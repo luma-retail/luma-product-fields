@@ -5,9 +5,7 @@
  * Handles plugin activation and deactivation logic, including taxonomy initialization.
  *
  * @package Luma\ProductFields
- * @since   1.0.0
  */
-
 namespace Luma\ProductFields;
 
 defined( 'ABSPATH' ) || exit;
@@ -43,7 +41,6 @@ class Activation {
      */
     public static function deactivate() : void {
         flush_rewrite_rules( false );
-        error_log( 'Deactivating Luma Product Fields' );
     }
 
 }

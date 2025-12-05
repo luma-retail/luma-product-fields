@@ -167,8 +167,9 @@ class ProductGroup {
         if ( 'product' !== $typenow ) {
             return;
         }
+        
+        $selected = isset( $_GET[ $this->tax ] ) ? sanitize_text_field( wp_unslash( $_GET[ $this->tax ] ) ) : '';  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
-        $selected = isset( $_GET[ $this->tax ] ) ? sanitize_text_field( wp_unslash( $_GET[ $this->tax ] ) ) : '';
 
         wp_dropdown_categories( [
             'show_option_all' => esc_html__( 'All Product groups', 'luma-product-fields' ),
@@ -199,11 +200,11 @@ class ProductGroup {
             return;
         }
 
-        if ( empty( $_GET[ $this->tax ] ) || '0' === $_GET[ $this->tax ] ) {
+        if ( empty( $_GET[ $this->tax ] ) || '0' === $_GET[ $this->tax ] ) {  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             return;
         }
 
-        $value = sanitize_text_field( wp_unslash( $_GET[ $this->tax ] ) );
+        $value = sanitize_text_field( wp_unslash( $_GET[ $this->tax ] ) );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
         if ( is_numeric( $value ) ) {
             $query->set( 'tax_query', [
@@ -298,10 +299,10 @@ class ProductGroup {
         if ( ! $this->verify_bulk_edit_request() ) {
             return;
         }
-        $raw = isset( $_REQUEST['lpf_pg_single'] ) ? wp_unslash( $_REQUEST['lpf_pg_single'] ) : '';
+        $raw = isset( $_REQUEST['lpf_pg_single'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['lpf_pg_single'] ) ) : '';  // phpcs:ignore WordPress.Security.NonceVerification.Recommended   
 
         if ( '' === $raw ) {
-            return; // — No change —
+            return; 
         }
 
         $product_id = $product->get_id();
@@ -332,38 +333,47 @@ class ProductGroup {
 
 
     /**
-     * Verifies bulk edit request. Accepts common WooCommerce and WP bulk-edit nonces,
-     * and falls back to a capability check if none are present (to be resilient across versions).
+     * Verify that a bulk edit request is legitimate.
+     *
+     * Accepts common WooCommerce and core bulk-edit nonces.
      *
      * @return bool
      */
     protected function verify_bulk_edit_request(): bool {
-        // WooCommerce bulk edit (most common in recent versions)
-        if ( ! empty( $_REQUEST['_woocommerce_bulk_edit_nonce'] )
-            && wp_verify_nonce( wp_unslash( $_REQUEST['_woocommerce_bulk_edit_nonce'] ), 'woocommerce_bulk_edit' ) ) {
-            return current_user_can( 'edit_products' );
+        if ( ! is_admin() || ! current_user_can( 'edit_products' ) ) {
+            return false;
         }
 
-        // Alternate WooCommerce/inline flows sometimes use "security" key
-        if ( ! empty( $_REQUEST['security'] )
-            && wp_verify_nonce( wp_unslash( $_REQUEST['security'] ), 'woocommerce_bulk_edit' ) ) {
-            return current_user_can( 'edit_products' );
+        // WooCommerce bulk edit nonce.
+        if (
+            isset( $_REQUEST['_woocommerce_bulk_edit_nonce'] )
+            // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            && wp_verify_nonce( wp_unslash( $_REQUEST['_woocommerce_bulk_edit_nonce'] ), 'woocommerce_bulk_edit' )
+        ) {
+            return true;
         }
 
-        // Core WP bulk list-table nonce
-        if ( ! empty( $_REQUEST['_wpnonce'] )
-            && wp_verify_nonce( wp_unslash( $_REQUEST['_wpnonce'] ), 'bulk-posts' ) ) {
-            return current_user_can( 'edit_products' );
+        // Alt Woo flow sometimes uses "security".
+        if (
+            isset( $_REQUEST['security'] )
+            // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            && wp_verify_nonce( wp_unslash( $_REQUEST['security'] ), 'woocommerce_bulk_edit' )
+        ) {
+            return true;
         }
 
-        // As a safe fallback, require capability in admin.
-        if ( is_admin() && current_user_can( 'edit_products' ) ) {
+        // Core WP list-table bulk edit nonce.
+        if (
+            isset( $_REQUEST['_wpnonce'] )
+            // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            && wp_verify_nonce( wp_unslash( $_REQUEST['_wpnonce'] ), 'bulk-posts' )
+        ) {
             return true;
         }
 
         return false;
     }
-    
+
     
      /**
      * Renders a single-select field for Product group in Quick Edit.
@@ -432,7 +442,7 @@ class ProductGroup {
             return;
         }
 
-        $raw = isset( $_REQUEST['lpf_pg_quick_single'] ) ? wp_unslash( $_REQUEST['lpf_pg_quick_single'] ) : '';
+        $raw = isset( $_REQUEST['lpf_pg_quick_single'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['lpf_pg_quick_single'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         if ( '' === $raw ) {
             return;
         }
@@ -478,7 +488,6 @@ class ProductGroup {
             return;
         }
 
-        $colSel = esc_js( 'td.column-taxonomy-' . $this->tax ); // e.g. td.column-taxonomy-lpf_product_group
         ?>
         <script>
         (function($){
@@ -507,7 +516,7 @@ class ProductGroup {
                         return;
                     }
 
-                    var label = $.trim( $row.find('<?php echo $colSel; ?>').text() );
+                    var label = $.trim( $row.find('<?php echo esc_js( 'td.column-taxonomy-' . $this->tax ); ?>').text() );
                     log('[HPF PG] label:', label);
 
                     $select.val('');

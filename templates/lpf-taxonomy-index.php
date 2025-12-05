@@ -17,8 +17,7 @@ $taxonomy = (string) get_query_var('lpf_tax');
 
 echo '<main class="lpf-tax-index">';
 
-$renderer = new TaxonomyIndexRenderer();
-$renderer->render( $taxonomy );
+( new TaxonomyIndexRenderer() )->render( $taxonomy );
 
 echo '</main>';
 

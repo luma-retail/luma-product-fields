@@ -108,7 +108,7 @@ class FieldRenderer
 
         // If schema property is set and unit is provided (e.g., weight, dimensions)
         if ($schema_prop && !empty($unit)) {
-            $clean_value = esc_attr(trim(strip_tags($value)));
+            $clean_value = esc_attr( trim( wp_strip_all_tags($value) ) );
             $schema_meta = "
             <meta itemprop='{$schema_prop}' content='{$clean_value}'>
             <meta itemprop='{$schema_prop}UnitText' content='" . esc_attr(trim($unit)) . "'>";

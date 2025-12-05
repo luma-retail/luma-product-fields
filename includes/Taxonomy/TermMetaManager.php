@@ -172,8 +172,18 @@ class TermMetaManager {
      * @return void
      */
     public static function save_term_meta_on_create( int $term_id ): void {
-        self::persist_featured( $term_id, $_POST );
-        self::persist_thumbnail( $term_id, $_POST );
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $featured_raw = isset( $_POST[ self::META_FEATURED ] ) ? wp_unslash( $_POST[ self::META_FEATURED ] ) : '';
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $thumb_raw    = isset( $_POST[ self::META_THUMBNAIL ] ) ? wp_unslash( $_POST[ self::META_THUMBNAIL ] ) : '';
+
+        $source = [
+            self::META_FEATURED  => sanitize_text_field( $featured_raw ),
+            self::META_THUMBNAIL => absint( $thumb_raw ),
+        ];
+
+        self::persist_featured( $term_id, $source );
+        self::persist_thumbnail( $term_id, $source );
     }
 
 
@@ -185,10 +195,19 @@ class TermMetaManager {
      * @return void
      */
     public static function save_term_meta_on_edit( int $term_id ): void {
-        self::persist_featured( $term_id, $_POST );
-        self::persist_thumbnail( $term_id, $_POST );
-    }
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $featured_raw = isset( $_POST[ self::META_FEATURED ] ) ? wp_unslash( $_POST[ self::META_FEATURED ] ) : '';
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $thumb_raw    = isset( $_POST[ self::META_THUMBNAIL ] ) ? wp_unslash( $_POST[ self::META_THUMBNAIL ] ) : '';
 
+        $source = [
+            self::META_FEATURED  => sanitize_text_field( $featured_raw ),
+            self::META_THUMBNAIL => absint( $thumb_raw ),
+        ];
+
+        self::persist_featured( $term_id, $source );
+        self::persist_thumbnail( $term_id, $source );
+    }
 
 
     /**
@@ -202,14 +221,15 @@ class TermMetaManager {
         $injected = [];
 
         foreach ( $columns as $key => $label ) {
-            // Keep checkbox first.
-            if ( 'cb' === $key ) { $injected[ $key ] = $label; continue; }
+            if ( 'cb' === $key ) {
+                $injected[ $key ] = $label;
+                continue;
+            }
 
-            // After 'name', inject our columns.
             if ( 'name' === $key ) {
-                $injected[ $key ]       = $label;
-                $injected['featured']   = __( 'Fav', 'luma-product-fields' );
-                $injected['thumbnail']  = __( 'Thumb', 'luma-product-fields' );
+                $injected[ $key ]      = $label;
+                $injected['featured']  = __( 'Fav', 'luma-product-fields' );
+                $injected['thumbnail'] = __( 'Thumb', 'luma-product-fields' );
                 continue;
             }
 
@@ -269,18 +289,18 @@ class TermMetaManager {
             wp_enqueue_media();
         }
 
-        // Register a tiny script with proper deps and print code inline *after* it's enqueued.
         $handle = 'lpf-term-meta';
         wp_register_script(
             $handle,
-            false, 
+            false,
             [ 'jquery', 'media-editor' ],
             '1.0',
             true
         );
         wp_enqueue_script( $handle );
 
-        $js = <<<'JS'
+        ob_start();
+        ?>
         jQuery(function($){
             function bindControl($wrap){
                 var frame;
@@ -292,7 +312,10 @@ class TermMetaManager {
                 $btnUpload.on('click', function(e){
                     e.preventDefault();
 
-                    if (frame) { frame.open(); return; }
+                    if (frame) {
+                        frame.open();
+                        return;
+                    }
 
                     frame = wp.media({
                         title: 'Choose image',
@@ -304,7 +327,9 @@ class TermMetaManager {
                         var selection  = frame.state().get('selection');
                         var model      = selection.first ? selection.first() : null;
                         var attachment = model && model.toJSON ? model.toJSON() : null;
-                        if (!attachment) { return; }
+                        if (!attachment) {
+                            return;
+                        }
 
                         var thumbUrl = '';
                         if (attachment.sizes && attachment.sizes.thumbnail && attachment.sizes.thumbnail.url) {
@@ -315,7 +340,11 @@ class TermMetaManager {
 
                         $input.val(attachment.id);
                         if (thumbUrl) {
-                            $preview.html('<img src="' + thumbUrl.replace(/"/g, '&quot;') + '" style="max-width:150px;height:auto;border-radius:4px;" />');
+                            $preview.html(
+                                '<img src="' +
+                                thumbUrl.replace(/"/g, '&quot;') +
+                                '" style="max-width:150px;height:auto;border-radius:4px;" />'
+                            );
                         } else {
                             $preview.empty();
                         }
@@ -337,21 +366,21 @@ class TermMetaManager {
                 bindControl(jQuery(this));
             });
 
-            // Rebinding if "Add new term" form is injected dynamically
             jQuery(document).on('ajaxComplete', function(){
                 jQuery('.lpf-term-thumb-control').each(function(){
                     var $wrap = jQuery(this);
-                    if (!$wrap.data('fkBound')) {
+                    if ( ! $wrap.data('fkBound') ) {
                         bindControl($wrap);
                         $wrap.data('fkBound', true);
                     }
                 });
             });
         });
-        JS;
+        <?php
+        $js = ob_get_clean();
+
         wp_add_inline_script( $handle, $js, 'after' );
     }
-
 
 
     /**
@@ -454,7 +483,7 @@ class TermMetaManager {
         $q = new \WP_Term_Query( wp_parse_args( $args, [
             'taxonomy'   => $taxonomy,
             'hide_empty' => false,
-            'meta_query' => [
+            'meta_query' => [  // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
                 [
                     'key'     => self::META_FEATURED,
                     'value'   => 'yes',
@@ -493,12 +522,20 @@ class TermMetaManager {
      */
     public static function toggle_featured_term(): void {
         if ( ! current_user_can( 'manage_woocommerce' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Insufficient permissions.', 'luma-product-fields' ) ], 403 );
+            wp_send_json_error(
+                [ 'message' => __( 'Insufficient permissions.', 'luma-product-fields' ) ],
+                403
+            );
         }
-        
+
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing
         $term_id = isset( $_POST['term_id'] ) ? absint( $_POST['term_id'] ) : 0;
+
         if ( ! $term_id ) {
-            wp_send_json_error( [ 'message' => __( 'Missing term_id.', 'luma-product-fields' ) ], 400 );
+            wp_send_json_error(
+                [ 'message' => __( 'Missing term_id.', 'luma-product-fields' ) ],
+                400
+            );
         }
 
         $current = get_term_meta( $term_id, self::META_FEATURED, true ) === 'yes';
@@ -506,10 +543,12 @@ class TermMetaManager {
 
         update_term_meta( $term_id, self::META_FEATURED, $next );
 
-        wp_send_json_success( [
-            'term_id'  => $term_id,
-            'featured' => $next,
-        ] );
+        wp_send_json_success(
+            [
+                'term_id'  => $term_id,
+                'featured' => $next,
+            ]
+        );
     }
 
 
@@ -526,16 +565,14 @@ class TermMetaManager {
             return;
         }
 
-        // Let Woo handle product categories (it uses 'thumbnail_id' meta there).
         if ( 'product_cat' === $term->taxonomy ) {
             return;
         }
 
         $thumb_id = (int) get_term_meta( $term->term_id, self::META_THUMBNAIL, true );
         if ( ! $thumb_id ) {
-            // Optionally mirror Woo: show placeholder if available.
             if ( function_exists( 'wc_placeholder_img' ) ) {
-                echo wc_placeholder_img( 'woocommerce_thumbnail' );
+                echo wp_kses_post( wc_placeholder_img( 'woocommerce_thumbnail' ) );
             }
             return;
         }

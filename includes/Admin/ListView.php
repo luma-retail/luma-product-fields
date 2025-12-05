@@ -88,9 +88,8 @@ class ListView {
      */
     public function render_list_page() {
         
-        $this->selected_group = isset($_GET['lpf-product-group'])
-            ? sanitize_text_field($_GET['lpf-product-group'])
-            : null;
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $this->selected_group = isset( $_GET['lpf-product-group']) ? sanitize_text_field( wp_unslash( $_GET['lpf-product-group'] ) ) : null;
 
         echo '<div id="lpf-fields-overview" class="wrap">';
         echo '<h1>' . esc_html($this->page_title) . '</h1>';
@@ -98,16 +97,15 @@ class ListView {
         echo '<form method="get">';
         echo '<input type="hidden" name="post_type" value="product" />';
         echo '<input type="hidden" name="page" value="luma-product-fields-list" />';
-
-        echo (new Admin)->get_product_group_select(
-            'lpf-product-group',
-            $this->selected_group,
-            null, 
-            [
-                'include_all'     => false,
-                'include_general' => true,
-            ]
+        
+        $args = array(
+            'include_all'     => false,
+            'include_general' => true,
         );
+        // get_product_group_select() returns full HTML (select + options).
+        // All dynamic pieces must be escaped inside that method.
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        echo (new Admin)->get_product_group_select( 'lpf-product-group', $this->selected_group, null, $args );
 
         echo '<input type="submit" class="button" value="' .
             esc_attr__('Choose product group', 'luma-product-fields') .
@@ -116,7 +114,7 @@ class ListView {
         echo '</form>';
 
         if ($this->selected_group === null || $this->selected_group === '') {
-            echo '<p>' . __( 'Please select a product group.', 'luma-product-fields' ) . '</p>';
+            echo '<p>' . esc_html__( 'Please select a product group.', 'luma-product-fields' ) . '</p>';
             echo '</div>';
             return;
         }

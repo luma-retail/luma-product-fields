@@ -27,7 +27,7 @@ defined('ABSPATH') || exit;
  *       Implement direct SQL queries with chunked iteration to improve
  *       performance on large catalogs.
  *
- * @hook Luma\ProductFields\unit_aliases
+ * @hook luma_product_fields_unit_aliases
  *      Filters the default unit alias map.
  *      @param array<string, string[]> $aliases Default unit aliases.
  *
@@ -115,17 +115,20 @@ public function run(array $mapping, bool $dry_run = true): array
 
         global $wpdb;
 
-        $sql = $wpdb->prepare(
-            "SELECT post_id 
-             FROM {$wpdb->postmeta} pm 
-             INNER JOIN {$wpdb->posts} p ON pm.post_id = p.ID
-             WHERE pm.meta_key = %s
-               AND p.post_type IN ('product', 'product_variation')
-               AND p.post_status IN ('publish', 'private', 'draft')",
-            $old_key
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+        $product_ids = $wpdb->get_col(
+            $wpdb->prepare(
+                "
+                SELECT post_id
+                FROM {$wpdb->postmeta} pm
+                INNER JOIN {$wpdb->posts} p ON pm.post_id = p.ID
+                WHERE pm.meta_key = %s
+                  AND p.post_type IN ('product', 'product_variation')
+                  AND p.post_status IN ('publish', 'private', 'draft')
+                ",
+                $old_key
+            )
         );
-
-        $product_ids = $wpdb->get_col( $sql );
 
         $chunks = array_chunk( $product_ids, 300 );
 
@@ -147,7 +150,7 @@ public function run(array $mapping, bool $dry_run = true): array
                         'field'      => $field,
                         'value'      => $old_value,
                         'dry_run'    => $dry_run,
-                        'meta_key'   => $old_key,
+                        'meta_key'   => $old_key, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key	
                     ]);
 
                     if (is_array($result)) {
@@ -391,7 +394,7 @@ public function run(array $mapping, bool $dry_run = true): array
      * - Localized strings (translated via __())
      *
      *
-     * @hook Luma\ProductFields\unit_aliases
+     * @hook luma_product_fields_unit_aliases
      *      Filters the default unit alias map.
      *      @param array<string, string[]> $aliases Default unit aliases.
      *
@@ -454,14 +457,14 @@ public function run(array $mapping, bool $dry_run = true): array
 
     
         /**
-         * @hook Luma\ProductFields\unit_aliases
+         * @hook luma_product_fields_unit_aliases
          * Filters the default unit alias map.
          *
          * @param array<string, string[]> $aliases Default unit aliases.
          *
          * @since 1.0.0
          */
-        return apply_filters('Luma\ProductFields\unit_aliases', $aliases);
+        return apply_filters( 'luma_product_fields_unit_aliases', $aliases);
     }
 
 

@@ -33,13 +33,13 @@ class TaxonomyIndexRenderer
         if ( ! taxonomy_exists( $taxonomy ) || ! is_taxonomy_viewable( $taxonomy ) ) {
             status_header( 404 );
             echo '<div class="lpf-tax-index lpf-tax-index--invalid">';
-            esc_html_e( 'Not found.', 'lpf-fields' );
+            esc_html_e( 'Not found.', 'luma-product-fields' );
             echo '</div>';
             return;
         }
 
         $paged    = max( 1, (int) get_query_var( 'paged', 1 ) );
-        $per_page = (int) apply_filters( 'Luma/ProductFields/taxonomy_index/terms_per_page', $this->per_page_default, $taxonomy );
+        $per_page = (int) apply_filters( 'luma_product_fields_taxonomy_index_terms_per_page', $this->per_page_default, $taxonomy );
 
         echo '<div class="lpf-tax-index lpf-tax-index--' . esc_attr( $taxonomy ) . '">';
 
@@ -98,9 +98,9 @@ class TaxonomyIndexRenderer
      * @return array<int> IDs of featured terms (for excluding from "other" list)
      */
     protected function render_featured_terms( string $taxonomy ): array {
-        $args = apply_filters( 'Luma/ProductFields/taxonomy_index/featured_query_args', [
+        $args = apply_filters( 'luma_product_fields_taxonomy_index_featured_query_args', [
             'taxonomy'   => $taxonomy,
-            'hide_empty' => apply_filters( 'Luma/ProductFields/taxonomy_index/featured_hide_empty', true, $taxonomy ),
+            'hide_empty' => apply_filters( 'luma_product_fields_taxonomy_index_featured_hide_empty', true, $taxonomy ),
             'orderby'    => 'name',
             'order'      => 'ASC',
         ], $taxonomy );
@@ -111,11 +111,11 @@ class TaxonomyIndexRenderer
             return [];
         }
 
-        $columns = (int) apply_filters( 'Luma/ProductFields/taxonomy_index/featured_columns', $this->featured_columns_default, $taxonomy );
+        $columns = (int) apply_filters( 'luma_product_fields_taxonomy_index_featured_columns', $this->featured_columns_default, $taxonomy );
         $columns = max( 1, min( 6, $columns ) );
 
         echo '<section class="lpf-tax-index__featured">';
-        echo '<h2 class="screen-reader-text">' . esc_html__( 'Featured', 'lpf-fields' ) . '</h2>';
+        echo '<h2 class="screen-reader-text">' . esc_html__( 'Featured', 'luma-product-fields' ) . '</h2>';
         echo '<ul class="products product-categories columns-' . esc_attr( (string) $columns ) . '">';
 
         foreach ( $featured as $term ) {
@@ -146,10 +146,10 @@ class TaxonomyIndexRenderer
      * Excludes any IDs returned by render_featured_terms().
      *
      * Filters:
-     * - Luma/ProductFields/taxonomy_index/hide_empty
-     * - Luma/ProductFields/taxonomy_index/orderby
-     * - Luma/ProductFields/taxonomy_index/order
-     * - Luma/ProductFields/taxonomy_index/other_terms_query_args
+     * - luma_product_fields_taxonomy_index_hide_empty
+     * - luma_product_fields_taxonomy_index_orderby
+     * - luma_product_fields_taxonomy_index_order
+     * - luma_product_fields_taxonomy_index_other_terms_query_args
      *
      * @param string   $taxonomy
      * @param int[]    $exclude_term_ids
@@ -173,21 +173,19 @@ class TaxonomyIndexRenderer
 
         $query_args = [
             'taxonomy'     => $taxonomy,
-            'hide_empty'   => apply_filters( 'Luma/ProductFields/taxonomy_index/hide_empty', true, $taxonomy ),
-            'orderby'      => apply_filters( 'Luma/ProductFields/taxonomy_index/orderby', 'name', $taxonomy ),
-            'order'        => apply_filters( 'Luma/ProductFields/taxonomy_index/order', 'ASC', $taxonomy ),
+            'hide_empty'   => apply_filters( 'luma_product_fields_taxonomy_index_hide_empty', true, $taxonomy ),
+            'orderby'      => apply_filters( 'luma_product_fields_taxonomy_index_orderby', 'name', $taxonomy ),
+            'order'        => apply_filters( 'luma_product_fields_taxonomy_index_order', 'ASC', $taxonomy ),
             'number'       => $per_page,
             'offset'       => ( $paged - 1 ) * $per_page,
-            'count_total'  => true, // ensure found_terms is populated
-            'meta_query'   => $meta_query,
-            'exclude'      => $exclude_term_ids,
+            'count_total'  => true, 
+            'meta_query'   => $meta_query, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+            'exclude'      => $exclude_term_ids, // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude
         ];
-
-        /**
-         * Allow full control over the "other terms" query args.
-         */
+        
+        //Allow full control over the "other terms" query args.
         $query_args = apply_filters(
-            'Luma/ProductFields/taxonomy_index/other_terms_query_args',
+            'luma_product_fields_taxonomy_index_other_terms_query_args',
             $query_args,
             $taxonomy,
             $paged,
@@ -215,12 +213,12 @@ class TaxonomyIndexRenderer
         echo '<section class="lpf-tax-index__others">';
 
         if ( empty( $terms ) ) {
-            echo '<p class="lpf-tax-index__empty">' . esc_html__( 'No items to display.', 'lpf-fields' ) . '</p>';
+            echo '<p class="lpf-tax-index__empty">' . esc_html__( 'No items to display.', 'luma-product-fields' ) . '</p>';
             echo '</section>';
             return;
         }
 
-        echo '<h2 class="screen-reader-text">' . esc_html__( 'All terms', 'lpf-fields' ) . '</h2>';
+        echo '<h2 class="screen-reader-text">' . esc_html__( 'All terms', 'luma-product-fields' ) . '</h2>';
         echo '<ul class="lpf-tax-index__list">';
 
         foreach ( $terms as $term ) {
@@ -259,7 +257,9 @@ class TaxonomyIndexRenderer
         ] );
 
         if ( $links ) {
-            echo '<nav class="lpf-tax-index__pagination" aria-label="' . esc_attr__( 'Pagination', 'lpf-fields' ) . '">' . $links . '</nav>';
+            echo '<nav class="lpf-tax-index__pagination" aria-label="' . esc_attr__( 'Pagination', 'luma-product-fields' ) . '">';
+            echo wp_kses_post( $links );
+            echo '</nav>';
         }
     }
 }

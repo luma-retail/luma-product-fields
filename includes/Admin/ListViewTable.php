@@ -20,7 +20,7 @@ if ( ! class_exists( 'WP_List_Table' ) ) {
  *
  * Showing an overview of fields per product group utilizing WP_List_Table.
  *
- * @hook Luma\ProductFields\listview_column
+ * @hook luma_product_fields_listview_column
  *      Filters columns in the table to add fields from outside the plugin ecosystem
  *
  */ 
@@ -56,6 +56,16 @@ class ListViewTable extends WP_List_Table {
         ]);
         $this->product_group_slug = $product_group_slug;
         $this->_column_headers = [ $this->get_columns(), [], $this->get_sortable_columns() ];
+        
+        // Sorting: read from $_GET, sanitize and whitelist.
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- using GET only to control sort order, no data mutation.
+        $orderby_raw = isset( $_GET['orderby'] ) ? wp_unslash( $_GET['orderby'] ) : '';  // phpcs:ignore
+        $order_raw   = isset( $_GET['order'] ) ? wp_unslash( $_GET['order'] ) : 'asc';  // phpcs:ignore
+        $this->orderby = sanitize_key( $orderby_raw );
+
+        $order = strtolower( sanitize_text_field( $order_raw ) ); 
+        $this->order = in_array( $order, [ 'asc', 'desc' ], true ) ? $order : 'asc';
+        
     }
     
 
@@ -67,9 +77,6 @@ class ListViewTable extends WP_List_Table {
     public function prepare_items() {
         $per_page = 30;
         $paged    = $this->get_pagenum();
-        $this->orderby = $_GET['orderby'] ?? '';
-        $this->order   = $_GET['order'] ?? 'asc';
-
         $args = [
             'status'     => 'publish',
             'limit'      => -1,
@@ -80,6 +87,7 @@ class ListViewTable extends WP_List_Table {
 
         if ($this->product_group_slug === 'general') {
             // Products with NO product group
+            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
             $args['tax_query'] = [
                 [
                     'taxonomy' => 'lpf_product_group',
@@ -88,6 +96,7 @@ class ListViewTable extends WP_List_Table {
             ];
         } else {
             // Products assigned to this group
+            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
             $args['tax_query'] = [
                 [
                     'taxonomy' => 'lpf_product_group',
@@ -175,7 +184,7 @@ public function column_default( $item, $column_name ) {
 
     // 🔹 External override for non-HPF fields
     $override = apply_filters(
-        'Luma\ProductFields\listview_column_value',
+        'luma_product_fields_listview_column_value',
         null,          
         $column_name,
         $item
@@ -238,7 +247,7 @@ public function column_default( $item, $column_name ) {
     
 
     protected function is_html(string $string): bool {
-        return $string !== strip_tags($string);
+        return $string !== wp_strip_all_tags($string);
     }
 
 
@@ -255,7 +264,7 @@ public function column_default( $item, $column_name ) {
         foreach ( Helpers::get_fields_for_group( $this->product_group_slug ) as $field ) {
             $columns[ $field['slug'] ] = $field['label'];
         }
-        $columns = apply_filters( 'Luma\ProductFields\listview_columns', $columns );
+        $columns = apply_filters( 'luma_product_fields_listview_columns', $columns );
         return $columns;
     }
 
@@ -305,14 +314,22 @@ public function column_default( $item, $column_name ) {
             ?>
             <tr class="variation-child-row variation-child-of-<?php echo esc_attr( $product_id ); ?>">
                 <td class="column-name">
-                    <?php echo $variation->get_name(); ?>
+                    <?php echo esc_html( $variation->get_name() ); ?>
                 </td>
                 <?php 
                 foreach ( $fields as $field ) :
                     $is_numeric = FieldTypeRegistry::field_type_is_numeric( $field['type'] );
                     ?>
-                    <td class="column-<?php echo $field['slug']; ?><?php echo $is_numeric ? ' lpf-is-numeric' : ''; ?>">                    
-                        <?php echo $field['variation'] ? ListViewTable::render_field_cell( $variation_id, $field ) : ' -- '; ?>                        
+                    <td class="column-<?php echo esc_attr( $field['slug'] ); ?><?php echo $is_numeric ? ' lpf-is-numeric' : ''; ?>">
+                        <?php
+                        if ( ! empty( $field['variation'] ) ) {
+                            // render_field_cell() returns full HTML; it must handle its own escaping internally.
+                            // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                            echo ListViewTable::render_field_cell( $variation_id, $field );
+                        } else {
+                            echo esc_html( ' -- ' );
+                        }
+                        ?>
                     </td>
                 <?php endforeach; ?>
             </tr>

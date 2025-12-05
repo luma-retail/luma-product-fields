@@ -20,11 +20,15 @@ class MigrationAjax {
             wp_send_json_error([ 'error' => 'Access denied' ]);
         }
 
-        $meta_key = sanitize_text_field( $_POST['meta_key'] ?? '' );
-        $limit    = max( 1, min( (int)($_POST['limit'] ?? 10), 50 ) );
+        $meta_key = isset( $_POST['meta_key'] )
+            ? sanitize_text_field( wp_unslash( $_POST['meta_key'] ) )
+            : '';
+        $limit_raw = isset( $_POST['limit'] ) ? intval( wp_unslash( $_POST['limit'] ) ) : 10;
+        $limit     = max( 1, min( $limit_raw, 50 ) );
 
         global $wpdb;
 
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
         $values = $wpdb->get_col(
             $wpdb->prepare(
                 "
@@ -39,9 +43,9 @@ class MigrationAjax {
                 $limit
             )
         ) ?? [];
-
+        
         wp_send_json_success([
-            'meta_key' => $meta_key,
+            'meta_key' => $meta_key,  // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
             'values'   => array_values( $values )
         ]);
     }

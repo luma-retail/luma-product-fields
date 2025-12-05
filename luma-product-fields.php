@@ -3,7 +3,7 @@
  * Plugin Name:           Luma Product Fields
  * Plugin URI:            https://github.com/luma-retail/product-fields
  * Description:           Flexible custom product fields for WooCommerce with sortable, linkable and developer-extendable field types.
- * Version:               0.2.0
+ * Version:               0.2.1
  * Author:                Terje Johansen
  * Author URI:            https://luma-retail.com
  * Text Domain:           luma-product-fields
@@ -19,32 +19,10 @@ namespace Luma\ProductFields;
 defined( 'ABSPATH' ) || exit;
 
 
-/**
- * Load plugin textdomain for translations.
- *
- * @return void
- */
-function luma_product_fields_init() {
-    load_plugin_textdomain(
-        'luma-product-fields',
-        false,
-        dirname( plugin_basename( __FILE__ ) ) . '/languages'
-    );
-}
-add_action( 'init', __NAMESPACE__ . '\luma_product_fields_init' );
-
-
-$plugin_data = get_file_data(
-    __FILE__,
-    array(
-        'Version' => 'Version',
-    )
-);
-
 
 define( 'LUMA_PRODUCT_FIELDS_PLUGIN_DIR_PATH', plugin_dir_path( __FILE__ ) );
 define( 'LUMA_PRODUCT_FIELDS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-define( 'LUMA_PRODUCT_FIELDS_PLUGIN_VER', $plugin_data['Version'] );
+define( 'LUMA_PRODUCT_FIELDS_PLUGIN_VER', get_file_data( __FILE__, [ 'Version' => 'Version' ] ) );
 
 
 /**

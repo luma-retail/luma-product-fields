@@ -80,6 +80,7 @@ class Admin {
             'slug_warning' => __('WARNING! When you change the slug, existing data from this field will no longer be shown. Are you really sure you want to do this?', 'luma-product-fields'),
             'delete_warning' => __('Are you sure you want to delete this field? Existing data will no longer be shown to the customers.', 'luma-product-fields'),
             'autocomplete_placeholder' => __('Just start typing...', 'luma-product-fields'),
+            /* translators: %d: minimum number of characters the user must type before search starts. */
             'autocomplete_min_chars'   => __( 'Enter at least %d characters', 'luma-product-fields' ),
             'autocomplete_searching'   => __( 'Searching…', 'luma-product-fields' ),
             'spinner' => '<div style="text-align:center;padding:3em;"><img src="/wp-admin/images/spinner-2x.gif" /></div>',
@@ -247,6 +248,7 @@ class Admin {
      * @return void
      */
     public static function show_back_button() {
-        echo '<p><a href="' . esc_url(admin_url('edit.php?post_type=product&page=lpf-fields')) . '" class="button-secondary">&larr; ' . __('Back to Field Overview', 'luma-product-fields') . '</a></p>';
+        echo '<p><a href="' . esc_url( admin_url( 'edit.php?post_type=product&page=lpf-fields' ) ) . '" class="button-secondary">&larr; ' . esc_html__( 'Back to Field Overview', 'luma-product-fields' ) . '</a></p>';
     }
+
 }

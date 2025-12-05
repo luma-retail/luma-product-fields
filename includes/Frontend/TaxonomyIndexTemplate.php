@@ -181,7 +181,7 @@ class TaxonomyIndexTemplate
          * @param string $template_name Default: 'lpf-taxonomy-index.php'
          */
         return (string) apply_filters(
-            'Luma/ProductFields/taxonomy_index/template_name',
+            'luma_product_fields_taxonomy_index_template_name',
             $this->default_template_name
         );
     }

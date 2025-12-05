@@ -73,7 +73,7 @@ class NotificationManager
         $notice = wp_parse_args( $notice, $defaults );
 
         $notice = apply_filters(
-            'Luma\ProductFields\notification',
+            'luma_product_fields_notification',
             $notice
         );
 
@@ -170,7 +170,7 @@ class NotificationManager
                 $classes .= ' is-dismissible';
             }
 
-            echo '<div class="' . $classes . '"><p>' .
+            echo '<div class="' . esc_attr( $classes ) . '"><p>' .
                  wp_kses_post($notice['message']) .
                  '</p></div>';
         }

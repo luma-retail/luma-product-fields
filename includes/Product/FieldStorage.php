@@ -15,7 +15,7 @@ use Luma\ProductFields\Utils\CacheInvalidator;
 /**
  * Handles saving and validation of individual product fields.
  *
- * @hook Luma\ProductFields\save_field
+ * @hook luma_product_fields_save_field
  *       Filter fired only when a field slug is not defined in the registry.
  *       Allows external code to save custom fields (e.g. EAN, cost price).
  *
@@ -64,7 +64,7 @@ class FieldStorage {
 		$field = Helpers::get_field_definition_by_slug( $field_slug );
 		if ( ! $field ) {
 			return apply_filters(
-				'Luma\ProductFields\save_field',
+				'luma_product_fields_save_field',
 				false,           
 				$product_id,
 				$field_slug,
@@ -287,8 +287,8 @@ class FieldStorage {
 		if ( method_exists( self::class, $method ) ) {
 			self::$method( $field['slug'], $post_id, $value, $field );
 		} else {
-			// Optional: add logging here
-			trigger_error( "Unknown FieldStorage method: $method", E_USER_WARNING );
+            // PHP warning for developers, not HTML output. 
+    		trigger_error( "Unknown FieldStorage method: $method", E_USER_WARNING );  // phpcs:ignore
 		}
 	}
 	
@@ -301,9 +301,6 @@ class FieldStorage {
 	 * @return bool Always true for idempotent clear operations.
 	 */
 	public static function delete_field( string $field_slug, int $post_id ): bool {
-		
-		error_log( __CLASS__ . '::' . __FUNCTION__ . "( {$field_slug} , {$post_id} )" );
-		
 		self::save_field( $post_id, $field_slug, '' );
 		return true;
 	}

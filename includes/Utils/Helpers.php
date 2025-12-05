@@ -22,7 +22,14 @@ use Luma\ProductFields\Product\FieldStorage;
  *
  * Contains utility functions and helpers for retrieving product group slugs and meta values.
  *
- * @hook Luma\ProductFields\formatted_field_value
+ * @hook luma_product_fields_get_all_fields
+ *      Filter the list of field definitions after merging and group filtering.
+ *      Use this to modify or reorder fields (e.g. per-group ordering).
+ *      @param array<int,array<string,mixed>> $fields Field definitions.
+ *      @param string|null $group  Product group slug, or null for all fields
+ *        
+ *
+ * @hook luma_product_fields_formatted_field_value
  *      Filters the final formatted value returned for a field.
  *      @param string $formatted_value The final display value.
  *      @param mixed $value The input value
@@ -30,7 +37,7 @@ use Luma\ProductFields\Product\FieldStorage;
  *      @param int    $post_id         Product ID.
  *      @param bool   $links   Whether to render links for taxonomy terms.
  *
- * @hook Luma\ProductFields\external_field_value
+ * @hook luma_product_fields_external_field_value
  *      Allow external plugins to return values for fields that are not
  *      registered in the Luma Product Fields registry.
  *      @param mixed  $value     Default null.
@@ -150,12 +157,8 @@ class Helpers {
     }
 
 
-
-    
     /**
-     * Get all fields (meta + taxonomy), optionally filtered by product group,
-     * and ordered according to saved per-group order.
-     *
+     * Get all fields (meta + taxonomy), optionally filtered by product group.
      *
      * @param string|null $group Product group slug, or null for all fields.
      *                           Use "general" for products without a group.
@@ -163,21 +166,15 @@ class Helpers {
      */
     public static function get_all_fields( $group = null ): array
     {
-        // Always fetch all field definitions.
         $fields = array_merge(
             MetaManager::get_all( null ),
             TaxonomyManager::get_all( null )
         );
-        
-        /*
-         * FILTERING LOGIC
-         */
-        if ( $group !== null ) {
 
-             $fields = array_filter(
+        if ( null !== $group ) {
+            $fields = array_filter(
                 $fields,
                 static function ( array $field ) use ( $group ): bool {
-
                     $groups = $field['groups'] ?? [];
 
                     if ( ! is_array( $groups ) ) {
@@ -186,7 +183,7 @@ class Helpers {
 
                     $is_global = empty( $groups );
 
-                    if ( $group === 'general' ) {
+                    if ( 'general' === $group ) {
                         return $is_global;
                     }
 
@@ -201,29 +198,19 @@ class Helpers {
 
         $fields = array_values( $fields );
 
-        $order_key = 'hp_fields_order_' . ( $group ?: 'all' );
-        $saved_order = get_option( $order_key, [] );
-
-        if ( ! empty( $saved_order ) ) {
-            usort(
-                $fields,
-                static function ( array $a, array $b ) use ( $saved_order ): int {
-                    $pos_a = array_search( $a['slug'], $saved_order, true );
-                    $pos_b = array_search( $b['slug'], $saved_order, true );
-
-                    $pos_a = ( $pos_a === false ) ? PHP_INT_MAX : $pos_a;
-                    $pos_b = ( $pos_b === false ) ? PHP_INT_MAX : $pos_b;
-
-                    return $pos_a <=> $pos_b;
-                }
-            );
-        }
+        /**
+         * Filter the list of field definitions after merging and group filtering.
+         *
+         * Use this to modify or reorder fields (e.g. per-group ordering).
+         *
+         * @param array<int,array<string,mixed>> $fields Field definitions.
+         * @param string|null                    $group  Product group slug, or null for all fields.
+         */
+        $fields = apply_filters( 'luma_product_fields_get_all_fields', $fields, $group );
 
         return $fields;
     }
 
-
-    
 
     /**
      * Retrieve the value of a custom field for a specific product.
@@ -241,7 +228,7 @@ class Helpers {
              * Allow external plugins to return values for fields that are not
              * registered in the Luma Product Fields registry.
              *
-             * @hook Luma\ProductFields\external_field_value
+             * @hook luma_product_fields_external_field_value
              *
              * @param mixed  $value     Default null.
              * @param int    $post_id   Product ID.
@@ -250,7 +237,7 @@ class Helpers {
              * @return mixed|null Custom field value or null if not handled.
              */
             $external_value = apply_filters(
-                'Luma\ProductFields\external_field_value',
+                'luma_product_fields_external_field_value',
                 null,
                 $post_id,
                 $slug
@@ -312,9 +299,9 @@ class Helpers {
              * Allow external data providers to inject values for unknown fields
              * (e.g., EAN, SKU, cost, stock, etc.)
              *
-             * @hook Luma\ProductFields\formatted_field_value
+             * @hook luma_product_fields_formatted_field_value
              */
-            return apply_filters( 'Luma\ProductFields\formatted_field_value', '', null, [ 'slug' => $field ], $post_id, $links );
+            return apply_filters( 'luma_product_fields_formatted_field_value', '', null, [ 'slug' => $field ], $post_id, $links );
         }
 
         $type = $field['type'] ?? 'text';
@@ -362,7 +349,7 @@ class Helpers {
         }
 
         /**
-         * @hook Luma\ProductFields\formatted_field_value
+         * @hook luma_product_fields_formatted_field_value
          * Allows developers to filter the final formatted display value for a field.
          *
          * @param string $formatted_value The final display value.
@@ -371,7 +358,7 @@ class Helpers {
          * @param int    $post_id         Product ID.
          * @param bool   $links   Whether to render links for taxonomy terms.
          */
-        return apply_filters( 'Luma\ProductFields\formatted_field_value', $formatted_value, $value, $field, $post_id, $links );
+        return apply_filters( 'luma_product_fields_formatted_field_value', $formatted_value, $value, $field, $post_id, $links );
     }
 
 
@@ -526,77 +513,6 @@ class Helpers {
         $registered_units = FieldTypeRegistry::get_units();
         $unit_label = $registered_units[ $unit ] ?? $unit;                
         return ' <span class="lpf-unit">' . esc_html( $unit_label ) . '</span>';
-    }
-    
-    
-    
-    
-
-    /**
-     * Resolve a field's merged registry: field definition + type config + conveniences.
-     *
-     * Returns a normalized array with enough info for rendering, saving, and validation:
-     * - field        : array  The raw field definition (label, slug, type, etc.)
-     * - type         : array  The raw type config from FieldTypeRegistry::get()
-     * - storage      : string One of 'meta' | 'taxonomy' | 'custom' (default: 'meta')
-     * - datatype     : string One of 'string' | 'integer' | 'float' | 'decimal' | 'bool' | 'array' (default: 'string')
-     * - supports     : array  Capability flags, including 'unit', 'link', 'variations', 'multiple'
-     * - meta_key     : string Resolved meta key for meta-backed fields (default: 'lpf_{slug}')
-     * - taxonomy     : ?string Taxonomy name if taxonomy-backed (from field or type)
-     * - term_value   : string 'slug' | 'id' for taxonomy terms (default: 'slug')
-     * - save_cb      : ?callable Field- or type-level save callback, if provided
-     * - render_cbs   : array  Known render callbacks if exposed by the type (optional, for convenience)
-     *
-     * @param string $field_slug Field definition slug.
-     * @return array|\WP_Error
-     *
-     * @since 3.x
-     */
-    public static function get_field_registry( string $field_slug ) {
-        $field = self::get_field_definition_by_slug( $field_slug );
-        if ( ! $field ) {
-            return new \WP_Error( 'lpf_unknown_field', 'Unknown field.' );
-        }
-
-        $type_slug = (string) ( $field['type'] ?? '' );
-        $type_cfg  = FieldTypeRegistry::get( $type_slug ) ?: [];
-
-        $storage    = $type_cfg['storage']  ?? 'meta';
-        $datatype   = $type_cfg['datatype'] ?? 'string';
-
-        $supports = [
-            'unit'       => FieldTypeRegistry::supports( $type_slug, 'unit' ),
-            'link'       => FieldTypeRegistry::supports( $type_slug, 'link' ),
-            'variations' => FieldTypeRegistry::supports( $type_slug, 'variations' ),
-            // From your registry flag:
-            'multiple'   => (bool) ( $type_cfg['supports_multiple_values'] ?? false ),
-        ];
-
-        $taxonomy   = $field['taxonomy'] ?? ( $type_cfg['taxonomy'] ?? null );
-        $term_value = $type_cfg['term_value'] ?? 'slug'; // 'slug' | 'id'
-        $meta_key   = isset( $field['meta_key'] ) && $field['meta_key'] !== ''
-            ? (string) $field['meta_key']
-            : FieldStorage::META_PREFIX . sanitize_key( (string) $field['slug'] );
-
-        $save_cb = $field['save_cb'] ?? ( $type_cfg['save_cb'] ?? null );
-
-        $render_cbs = [
-            'product_form' => $type_cfg['render_product_form_cb'] ?? null,
-            'admin_form'   => $type_cfg['render_admin_form_cb']   ?? null,
-        ];
-
-        return [
-            'field'      => $field,
-            'type'       => $type_cfg,
-            'storage'    => $storage,
-            'datatype'   => $datatype,
-            'supports'   => $supports,
-            'meta_key'   => $meta_key,
-            'taxonomy'   => $taxonomy,
-            'term_value' => $term_value,
-            'save_cb'    => $save_cb,
-            'render_cbs' => $render_cbs,
-        ];
     }
     
     

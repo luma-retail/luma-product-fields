@@ -51,6 +51,7 @@ class CacheInvalidator {
 	public static function invalidate_all_meta_caches() : void {
 		global $wpdb;
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		$transients = $wpdb->get_col(
 			"SELECT option_name FROM $wpdb->options WHERE option_name LIKE '_transient_lpf_meta_fields_%'"
 		);

@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Settings class.
  *
-  * @hook Luma\ProductFields\settings_array
+  * @hook luma_product_fields_settings_array
  *      Filters the array of settings 
  *      @see woocommerce settings API
  *      @param array $settings 
@@ -76,7 +76,7 @@ class Settings {
 				'desc'     => __( 'Title on the product fields tab.', 'luma-product-fields' ),
 				'id'       => self::PREFIX . 'front_end_title',
 				'type'     => 'text',
-				'default'  => __('Additional information', 'woocommerce'),
+				'default'  => __('Additional information', 'luma-product-fields'),
 				'desc_tip' => true,
 			],	
 			[
@@ -141,6 +141,6 @@ class Settings {
 		 *
 		 * @param array $settings Settings array.
 		 */
-		return apply_filters( 'Luma\ProductFields\settings_array', $settings );
+		return apply_filters( 'luma_product_fields_settings_array', $settings );
 	}
 }
