@@ -52,7 +52,6 @@
     word-break: break-word;
     overflow-wrap: anywhere;
     z-index: 9999;
-
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.25s ease;
@@ -78,12 +77,6 @@
     pointer-events: auto;
 }
 
-
-/* Field name on tax archive */
-.lpf-field-label {
-    font-weight:200;
-}
-
 .lpf-material-percent {
     font-size:80%;
 }
@@ -103,13 +96,10 @@
   margin: 0;
 }
 
-.lpf-tax-index__badge {
-    font-weight:normal;
-    font-size:80%;
-}
 
-ul.lpf-tax-index__featured-list li {
-    list-style-type:none;
+/* Field name on tax archive */
+.lpf-field-label {
+    font-weight:200;
 }
 
 

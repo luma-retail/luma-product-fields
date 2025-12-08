@@ -79,9 +79,7 @@ class FrontendController {
 
     public function enqueue_script(): void {
 
-        if ( ! ( is_singular('product')
-                || $this->is_on_plugin_taxonomy_archive()
-                || $this->is_virtual_tax_index() ) ) {
+        if ( ! ( is_singular('product') || $this->is_on_plugin_taxonomy_archive() ) ) {
             return;
         }
 
@@ -178,26 +176,6 @@ class FrontendController {
         // is_tax( array $taxonomies ) returns true if current archive matches any of them.
         return is_tax( $tax_slugs );
     }
-
-
-
-    /**
-     * Determine if current request is our virtual taxonomy index
-     * (created by the router via lpf_tax_index + lpf_tax query vars).
-     *
-     * @return bool
-     */
-    protected function is_virtual_tax_index(): bool
-    {
-        $slug = (string) get_query_var( 'lpf_tax' );
-        if ( ! get_query_var( 'lpf_tax_index' ) || empty( $slug ) ) {
-            return false;
-        }
-
-        // Be strict: only treat as index if it's a real, viewable taxonomy.
-        return taxonomy_exists( $slug ) && is_taxonomy_viewable( $slug );
-    }
-    
     
     
     /**

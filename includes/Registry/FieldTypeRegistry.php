@@ -17,7 +17,7 @@ defined('ABSPATH') || exit;
 *
  * Hooks:
  *
- * @hook luma_product_fields_field_registry
+ * @hook luma_product_fields_field_types
  *       Filters the field registry array before it is used.
  *       @param array $field_types Array of registered field type definitions.
  *       @return array
