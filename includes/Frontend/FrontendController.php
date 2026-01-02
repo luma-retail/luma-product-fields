@@ -50,8 +50,8 @@ class FrontendController {
         add_filter( 'woocommerce_product_additional_information_heading', [ $this, 'filter_additional_info_heading' ] );
         add_action('plugins_loaded', [$this, 'remove_product_data']);
         add_action('wp_enqueue_scripts', [$this, 'enqueue_script']);
-        add_action('wp_ajax_nopriv_get_variation_fields_html', [$this, 'ajax_get_variation_fields_html']);
-        add_action('wp_ajax_get_variation_fields_html', [$this, 'ajax_get_variation_fields_html']);
+        add_action('wp_ajax_nopriv_lpf_get_variation_fields_html', [$this, 'ajax_lpf_get_variation_fields_html']);
+        add_action('wp_ajax_lpf_get_variation_fields_html', [$this, 'ajax_lpf_get_variation_fields_html']);
         add_filter( 'woocommerce_page_title', [ $this, 'filter_archive_title' ] );
     }
 
@@ -391,7 +391,7 @@ class FrontendController {
      *
      * @return void
      */
-    public function ajax_get_variation_fields_html(): void {
+    public function ajax_lpf_get_variation_fields_html(): void {
         check_ajax_referer('luma_product_fields_variation_nonce', 'nonce');
 
         $variation_id = absint($_POST['variation_id'] ?? 0);

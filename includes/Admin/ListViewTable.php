@@ -335,7 +335,8 @@ public function column_default( $item, $column_name ) {
             </tr>
             <?php
         }
-        return ob_get_clean();
+        $html = ob_get_clean();
+        return $html
     }
         
 

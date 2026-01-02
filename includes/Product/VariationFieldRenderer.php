@@ -121,7 +121,8 @@ class VariationFieldRenderer {
             <?php echo $unit ? ' ' . esc_html( $unit ) : ''; ?>
         </p>
         <?php
-        return ob_get_clean();
+        $html = ob_get_clean();
+        return $html
     }
 
 
@@ -158,7 +159,8 @@ class VariationFieldRenderer {
             <?php echo $unit ? ' ' . esc_html( $unit ) : ''; ?>
         </p>
         <?php
-        return ob_get_clean();
+        $html = ob_get_clean();
+        return $html
     }
 
 
@@ -195,7 +197,8 @@ class VariationFieldRenderer {
             <?php echo $unit ? ' ' . esc_html( $unit ) : ''; ?>
         </p>
         <?php
-        return ob_get_clean();
+        $html = ob_get_clean();
+        return $html
     }
 
 
@@ -246,7 +249,8 @@ class VariationFieldRenderer {
             </span>
         </p>
         <?php
-        return ob_get_clean();
+        $html = ob_get_clean();
+        return $html
     }
 
 
@@ -290,7 +294,8 @@ class VariationFieldRenderer {
                 'description'   => $desc,
             ]
         );
-        return ob_get_clean();
+        $html = ob_get_clean();
+        return $html
     }
 
 

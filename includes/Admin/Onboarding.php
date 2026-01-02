@@ -41,13 +41,14 @@ class Onboarding {
             return;
         }
 
-        if (
-            isset( $_GET['lpf_dismiss_welcome'], $_GET['_wpnonce'] )
-            && '1' === $_GET['lpf_dismiss_welcome']
-            && wp_verify_nonce( sanitize_key( $_GET['_wpnonce'] ), 'lpf_dismiss_welcome' )
+    if (
+        isset( $_GET['lpf_dismiss_welcome'], $_GET['_wpnonce'] )
+        && '1' === $_GET['lpf_dismiss_welcome']
+        && wp_verify_nonce(
+            sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ),
+            'lpf_dismiss_welcome'
         ) {
             // Single small scalar option, autoloaded, and cleaned up on uninstall.
-            // This is cheaper than doing a non-autoloaded option with an extra query on each admin request.
             if ( false === get_option( static::OPTION_WELCOME_DISMISSED, false ) ) {
                 add_option( static::OPTION_WELCOME_DISMISSED, 'yes' );
             } else {

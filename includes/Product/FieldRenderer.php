@@ -225,8 +225,8 @@ class FieldRenderer {
             echo wp_kses_post( $unit_html );
         }
         echo '</p>';
-
-        return ob_get_clean();
+        $html = ob_get_clean();
+        return $html
     }
     
 
@@ -261,7 +261,8 @@ class FieldRenderer {
             <?php echo $unit_html ? wp_kses_post( $unit_html ) : ''; ?>
         </p>
         <?php
-        return ob_get_clean();
+        $html = ob_get_clean();
+        return $html
     }
 
 
@@ -296,7 +297,8 @@ class FieldRenderer {
             <?php echo $unit_html ? wp_kses_post( $unit_html ) : ''; ?>
         </p>
         <?php
-        return ob_get_clean();
+        $html = ob_get_clean();
+        return $html
     }
 
 
@@ -344,7 +346,8 @@ class FieldRenderer {
             </span>
         </p>
         <?php
-        return ob_get_clean();
+        $html = ob_get_clean();
+        return $html
     }
     
 
@@ -512,7 +515,7 @@ class FieldRenderer {
 
         if (
             ! isset( $_POST['lpf_product_fields_nonce'] )
-            || ! wp_verify_nonce( wp_unslash( $_POST['lpf_product_fields_nonce'] ), 'lpf_save_product_fields' )  // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            || ! wp_verify_nonce( sanitize_text_field( (wp_unslash( $_POST['lpf_product_fields_nonce'] ) ) ), 'lpf_save_product_fields' )  // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
         ) {
             return;
         }

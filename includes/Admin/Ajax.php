@@ -269,8 +269,8 @@ class Ajax {
         echo '<button class="lpf-edit-save" aria-label="Save">&#10003;</button>';
         echo '</div>';
         echo '</form></div>';
-
-        wp_send_json_success( [ 'html' => ob_get_clean() ] );
+        $html = ob_get_clean();
+        wp_send_json_success( [ 'html' => $html ] );
     }
 
 

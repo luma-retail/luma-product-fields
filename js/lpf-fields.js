@@ -12,7 +12,7 @@ jQuery(document).ready(function ($) {
         console.log( luma_product_fields_data );
 
         const data = {
-                action: "get_variation_fields_html",
+                action: "lpf_get_variation_fields_html",
                 variation_id: variationId,
                 nonce: luma_product_fields_data.nonce
         };
@@ -22,7 +22,7 @@ jQuery(document).ready(function ($) {
             type: "POST",
             dataType: "json",
             data: {
-                action: "get_variation_fields_html",
+                action: "lpf_get_variation_fields_html",
                 variation_id: variationId,
                 nonce: luma_product_fields_data.nonce
             },

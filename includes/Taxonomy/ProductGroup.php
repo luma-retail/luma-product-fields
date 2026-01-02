@@ -333,9 +333,8 @@ class ProductGroup {
 
 
     /**
-     * Verify that a bulk edit request is legitimate.
-     *
-     * Accepts common WooCommerce and core bulk-edit nonces.
+     * Verify this request is a valid bulk-edit request 
+     * (WooCommerce or core list-table).
      *
      * @return bool
      */
@@ -344,35 +343,40 @@ class ProductGroup {
             return false;
         }
 
+
         // WooCommerce bulk edit nonce.
-        if (
-            isset( $_REQUEST['_woocommerce_bulk_edit_nonce'] )
-            // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            && wp_verify_nonce( wp_unslash( $_REQUEST['_woocommerce_bulk_edit_nonce'] ), 'woocommerce_bulk_edit' )
-        ) {
+        $wc_nonce = isset( $_REQUEST['_woocommerce_bulk_edit_nonce'] )
+            ? sanitize_text_field( wp_unslash( $_REQUEST['_woocommerce_bulk_edit_nonce'] ) )
+            : '';
+
+        if ( '' !== $wc_nonce && wp_verify_nonce( $wc_nonce, 'woocommerce_bulk_edit' ) ) {
             return true;
         }
+
 
         // Alt Woo flow sometimes uses "security".
-        if (
-            isset( $_REQUEST['security'] )
-            // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            && wp_verify_nonce( wp_unslash( $_REQUEST['security'] ), 'woocommerce_bulk_edit' )
-        ) {
+        $security_nonce = isset( $_REQUEST['security'] )
+            ? sanitize_text_field( wp_unslash( $_REQUEST['security'] ) )
+            : '';
+
+        if ( '' !== $security_nonce && wp_verify_nonce( $security_nonce, 'woocommerce_bulk_edit' ) ) {
             return true;
         }
 
+
         // Core WP list-table bulk edit nonce.
-        if (
-            isset( $_REQUEST['_wpnonce'] )
-            // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            && wp_verify_nonce( wp_unslash( $_REQUEST['_wpnonce'] ), 'bulk-posts' )
-        ) {
+        $wp_nonce = isset( $_REQUEST['_wpnonce'] )
+            ? sanitize_text_field( wp_unslash( $_REQUEST['_wpnonce'] ) )
+            : '';
+
+        if ( '' !== $wp_nonce && wp_verify_nonce( $wp_nonce, 'bulk-posts' ) ) {
             return true;
         }
 
         return false;
     }
+
+
 
     
      /**
