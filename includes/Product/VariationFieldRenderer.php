@@ -122,7 +122,7 @@ class VariationFieldRenderer {
         </p>
         <?php
         $html = ob_get_clean();
-        return $html
+        return $html;
     }
 
 
@@ -160,7 +160,7 @@ class VariationFieldRenderer {
         </p>
         <?php
         $html = ob_get_clean();
-        return $html
+        return $html;
     }
 
 
@@ -198,7 +198,7 @@ class VariationFieldRenderer {
         </p>
         <?php
         $html = ob_get_clean();
-        return $html
+        return $html;
     }
 
 
@@ -250,7 +250,7 @@ class VariationFieldRenderer {
         </p>
         <?php
         $html = ob_get_clean();
-        return $html
+        return $html;
     }
 
 
@@ -295,7 +295,7 @@ class VariationFieldRenderer {
             ]
         );
         $html = ob_get_clean();
-        return $html
+        return $html;
     }
 
 

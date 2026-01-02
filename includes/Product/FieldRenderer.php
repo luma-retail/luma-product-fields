@@ -226,7 +226,7 @@ class FieldRenderer {
         }
         echo '</p>';
         $html = ob_get_clean();
-        return $html
+        return $html;
     }
     
 
@@ -262,7 +262,7 @@ class FieldRenderer {
         </p>
         <?php
         $html = ob_get_clean();
-        return $html
+        return $html;
     }
 
 
@@ -298,7 +298,7 @@ class FieldRenderer {
         </p>
         <?php
         $html = ob_get_clean();
-        return $html
+        return $html;
     }
 
 
@@ -347,7 +347,7 @@ class FieldRenderer {
         </p>
         <?php
         $html = ob_get_clean();
-        return $html
+        return $html;
     }
     
 

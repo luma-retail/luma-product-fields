@@ -1,6 +1,8 @@
 <?php
 namespace Luma\ProductFields\Admin\Migration;
 
+defined( 'ABSPATH' ) || exit;
+
 class MigrationAjax {
 
     /**

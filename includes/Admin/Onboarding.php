@@ -41,21 +41,32 @@ class Onboarding {
             return;
         }
 
-    if (
-        isset( $_GET['lpf_dismiss_welcome'], $_GET['_wpnonce'] )
-        && '1' === $_GET['lpf_dismiss_welcome']
-        && wp_verify_nonce(
-            sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ),
-            'lpf_dismiss_welcome'
-        ) {
-            // Single small scalar option, autoloaded, and cleaned up on uninstall.
-            if ( false === get_option( static::OPTION_WELCOME_DISMISSED, false ) ) {
-                add_option( static::OPTION_WELCOME_DISMISSED, 'yes' );
-            } else {
-                update_option( static::OPTION_WELCOME_DISMISSED, 'yes' );
-            }
+
+        $dismiss = isset( $_GET['lpf_dismiss_welcome'] )
+            ? sanitize_text_field( wp_unslash( $_GET['lpf_dismiss_welcome'] ) )
+            : '';
+
+        $nonce = isset( $_GET['_wpnonce'] )
+            ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) )
+            : '';
+
+        if ( '1' !== $dismiss ) {
+            return;
         }
+
+        if ( '' === $nonce || ! wp_verify_nonce( $nonce, 'lpf_dismiss_welcome' ) ) {
+            return;
+        }
+
+        // Single small scalar option, autoloaded, and cleaned up on uninstall.
+        if ( false === get_option( static::OPTION_WELCOME_DISMISSED, false ) ) {
+            add_option( static::OPTION_WELCOME_DISMISSED, 'yes' );
+            return;
+        }
+
+        update_option( static::OPTION_WELCOME_DISMISSED, 'yes' );
     }
+
     
     
     /**
