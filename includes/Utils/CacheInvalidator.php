@@ -26,7 +26,7 @@ class CacheInvalidator {
 	 * @param int $product_id WooCommerce product or variation ID.
 	 */
 	public static function invalidate_product_meta_cache( int $product_id ) : void {
-		delete_transient( 'lpf_meta_fields_' . $product_id );
+		delete_transient( 'luma_product_fields_meta_fields_' . $product_id );
 	}
 
 	

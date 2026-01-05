@@ -55,21 +55,29 @@ class FieldEditor
 
 
     /**
-
-     * Registers the hidden submenu page for editing fields
+     * Registers the hidden submenu page for editing fields.
+     *
+     * This page is intended to be reached via a direct link from the overview page,
+     * not via the admin menu UI.
      *
      * @return void
      */
-    public function register_editor_page(): void
-    {
+    public function register_editor_page(): void {
+
+        $parent_slug = 'edit.php?post_type=product';
+        $menu_slug   = LUMA_PRODUCT_FIELDS_PREFIX . '-new-field';
+
         add_submenu_page(
-            null,
-            __('Edit Field', 'luma-product-fields'),
-            __('Edit Field', 'luma-product-fields'),
+            $parent_slug,
+            __( 'Edit Field', 'luma-product-fields' ),
+            __( 'Edit Field', 'luma-product-fields' ),
             'manage_woocommerce',
-            'lpf-new-field',
-            [$this, 'render_editor']
+            $menu_slug,
+            [ $this, 'render_editor' ]
         );
+
+        // Hide it from the submenu UI while keeping the page accessible via direct URL.
+        remove_submenu_page( $parent_slug, $menu_slug );
     }
 
 
@@ -108,10 +116,10 @@ class FieldEditor
         $links_row_class      = 'field-show-tax-links-row' . ( $supports_links ? '' : ' hidden' );
         $variations_row_class = 'field-variations-row' . ( $supports_variation ? '' : ' hidden' );
 
-        $types_desc = '<ul class="lpf-types-desc">';
+        $types_desc = '<ul class="luma-product-fields-types-desc">';
         foreach ( $types as $type_slug => $type ) {
             $types_desc .= sprintf(
-                '<li id="lpf-type-%1$s" data-type="%1$s"><strong>%2$s:</strong> %3$s</li>',
+                '<li id="luma-product-fields-type-%1$s" data-type="%1$s"><strong>%2$s:</strong> %3$s</li>',
                 esc_attr( $type_slug ),
                 esc_html( $type['label'] ),
                 esc_html( $type['description'] )
@@ -129,15 +137,15 @@ class FieldEditor
         );
         echo '</h1>';
 
-        echo '<form method="post" class="lpf-field-editor">';
-        wp_nonce_field( 'lpf_fieldssave_field_editor' );
+        echo '<form method="post" class="luma-product-fields-field-editor">';
+        wp_nonce_field( 'luma_product_fields_fieldssave_field_editor' );
 
         echo '<table class="form-table">';
 
         // Type.
         echo '<tr><th><label>' . esc_html__( 'Type', 'luma-product-fields' ) . '</label></th>';
         echo '<td><div class="field-types">';
-        echo '<select name="lpf_fields[type]" id="lpf_fields_type_selector">';
+        echo '<select name="luma_product_fields_fields[type]" id="luma_product_fields_fields_type_selector">';
         foreach ( $types as $type_slug => $info ) {
             echo '<option value="' . esc_attr( $type_slug ) . '"' . selected( $field['type'] ?? '', $type_slug, false ) . '>' . esc_html( $info['label'] ) . '</option>';
         }
@@ -148,7 +156,7 @@ class FieldEditor
 
         // Label.
         echo '<tr><th><label>' . esc_html__( 'Label', 'luma-product-fields' ) . '</label></th>';
-        echo '<td><input name="lpf_fields[label]" type="text" value="' . esc_attr( $field['label'] ?? '' ) . '" class="regular-text" /></td></tr>';
+        echo '<td><input name="luma_product_fields_fields[label]" type="text" value="' . esc_attr( $field['label'] ?? '' ) . '" class="regular-text" /></td></tr>';
 
         do_action( 'luma_product_fields_field_editor_after_label', $field );
 
@@ -158,7 +166,7 @@ class FieldEditor
         // wp_editor handles its own escaping / kses.
         wp_editor(
             $field['frontend_desc'],
-            'lpf_fields_frontend_desc',
+            'luma_product_fields_fields_frontend_desc',
             [
                 'textarea_rows' => 5,
                 'media_buttons' => false,
@@ -169,7 +177,7 @@ class FieldEditor
 
         // Tooltip (admin).
         echo '<tr><th><label>' . esc_html__( 'Tooltip (for admin)', 'luma-product-fields' ) . '</label></th>';
-        echo '<td><textarea name="lpf_fields[description]" rows="3" class="large-text">';
+        echo '<td><textarea name="luma_product_fields_fields[description]" rows="3" class="large-text">';
         echo esc_textarea( stripslashes( $field['description'] ?? '' ) );
         echo '</textarea>';
         echo '<p>' . esc_html__( 'A tooltip for the shop manager to better understand what to do. Just leave this field empty to omit.', 'luma-product-fields' ) . '</p>';
@@ -177,7 +185,7 @@ class FieldEditor
 
         // Unit.
         echo '<tr class="' . esc_attr( $unit_row_class ) . '"><th><label>' . esc_html__( 'Unit', 'luma-product-fields' ) . '</label></th>';
-        echo '<td><select name="lpf_fields[unit]">';
+        echo '<td><select name="luma_product_fields_fields[unit]">';
         echo '<option value="">' . esc_html__( 'None', 'luma-product-fields' ) . '</option>';
 
         foreach ( FieldTypeRegistry::get_units() as $value => $label ) {
@@ -191,23 +199,23 @@ class FieldEditor
         // get_product_group_checkboxes() returns full HTML (inputs, labels, etc.).
         // All dynamic pieces MUST be escaped inside that method.
         // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-        echo ( new Admin() )->get_product_group_checkboxes( 'lpf_fields[groups]', $field['groups'] ?? [ 'general' ] );
+        echo ( new Admin() )->get_product_group_checkboxes( 'luma_product_fields_fields[groups]', $field['groups'] ?? [ 'general' ] );
         echo '<p>' . esc_html__( 'Leave empty to show across all products', 'luma-product-fields' ) . '</p>';
         echo '</td></tr>';
 
         // Frontend visibility.
         echo '<tr><th><label>' . esc_html__( 'Frontend Visibility', 'luma-product-fields' ) . '</label></th>';
-        echo '<td><label><input type="checkbox" name="lpf_fields[hide_in_frontend]" value="1"' . checked( $field['hide_in_frontend'] ?? false, true, false ) . ' /> ';
+        echo '<td><label><input type="checkbox" name="luma_product_fields_fields[hide_in_frontend]" value="1"' . checked( $field['hide_in_frontend'] ?? false, true, false ) . ' /> ';
         echo esc_html__( 'Hide in frontend', 'luma-product-fields' ) . '</label></td></tr>';
 
         // Variations.
         echo '<tr class="' . esc_attr( $variations_row_class ) . '"><th><label>' . esc_html__( 'Use in variations', 'luma-product-fields' ) . '</label></th>';
-        echo '<td><label><input type="checkbox" name="lpf_fields[variation]" value="1"' . checked( $field['variation'] ?? false, true, false ) . ' /> ';
+        echo '<td><label><input type="checkbox" name="luma_product_fields_fields[variation]" value="1"' . checked( $field['variation'] ?? false, true, false ) . ' /> ';
         echo esc_html__( 'Yes', 'luma-product-fields' ) . '</label></td></tr>';
 
         // Schema property.
         echo '<tr><th><label>' . esc_html__( 'Schema Property', 'luma-product-fields' ) . '</label></th>';
-        echo '<td><input name="lpf_fields[schema_prop]" type="text" value="' . esc_attr( $field['schema_prop'] ?? '' ) . '" class="regular-text" /><br />';
+        echo '<td><input name="luma_product_fields_fields[schema_prop]" type="text" value="' . esc_attr( $field['schema_prop'] ?? '' ) . '" class="regular-text" /><br />';
         echo esc_html__(
             'Schema Property controls how the value is included in your product’s structured data (schema.org). Adding a valid schema property (e.g. weight, brand, material) helps Google and other search engines better understand your product, which may improve how it appears in search results.',
             'luma-product-fields'
@@ -218,7 +226,7 @@ class FieldEditor
 
         // Taxonomy links.
         echo '<tr class="' . esc_attr( $links_row_class ) . '"><th><label>' . esc_html__( 'Show Taxonomy Links', 'luma-product-fields' ) . '</label></th>';
-        echo '<td><label><input type="checkbox" name="lpf_fields[show_links]" value="1"' . checked( $field['show_links'] ?? false, true, false ) . ' /> ';
+        echo '<td><label><input type="checkbox" name="luma_product_fields_fields[show_links]" value="1"' . checked( $field['show_links'] ?? false, true, false ) . ' /> ';
         echo esc_html__( 'Link to products with same value in front end', 'luma-product-fields' ) . '</label></td></tr>';
 
         do_action( 'luma_product_fields_field_editor_form_bottom', $field );
@@ -248,14 +256,14 @@ class FieldEditor
             return;
         }
 
-        if ( ! isset( $_POST['lpf_fields'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        if ( ! isset( $_POST['luma_product_fields_fields'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             return;
         }
-        check_admin_referer( 'lpf_fieldssave_field_editor' );
+        check_admin_referer( 'luma_product_fields_fieldssave_field_editor' );
 
         // Safely pull and normalize the lpf_fields array.
         // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-        $field_input_raw = wp_unslash( $_POST['lpf_fields'] );
+        $field_input_raw = wp_unslash( $_POST['luma_product_fields_fields'] );
         $field_input     = is_array( $field_input_raw ) ? $field_input_raw : [];
 
         $original_slug = isset( $_GET['edit'] )
@@ -300,8 +308,8 @@ class FieldEditor
         }
 
         // Frontend desc comes from wp_editor; guard and unslash before kses.
-        $frontend_desc_raw = isset( $_POST['lpf_fields_frontend_desc'] )
-            ? wp_unslash( $_POST['lpf_fields_frontend_desc'] ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $frontend_desc_raw = isset( $_POST['luma_product_fields_fields_frontend_desc'] )
+            ? wp_unslash( $_POST['luma_product_fields_fields_frontend_desc'] ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             : '';
 
         $data = [

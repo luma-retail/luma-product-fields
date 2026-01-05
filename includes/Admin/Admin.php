@@ -59,7 +59,7 @@ class Admin {
 
         wp_enqueue_script('select2');
         wp_enqueue_style('select2');  
-        wp_enqueue_script('luma-product-fields-admin-js', LUMA_PRODUCT_FIELDS_PLUGIN_URL . 'js/ajax-admin.js', [ 'wc-admin-meta-boxes', 'jquery-ui-tooltip'  ], LUMA_PRODUCT_FIELDS_PLUGIN_VER, true);
+        wp_enqueue_script('luma-product-fields-admin-js', LUMA_PRODUCT_FIELDS_PLUGIN_URL . 'js/admin/ajax-admin.js', [ 'wc-admin-meta-boxes', 'jquery-ui-tooltip'  ], LUMA_PRODUCT_FIELDS_PLUGIN_VER, true);
         wp_enqueue_style('luma-product-fields-admin-style', LUMA_PRODUCT_FIELDS_PLUGIN_URL . 'css/admin-style.css', [], LUMA_PRODUCT_FIELDS_PLUGIN_VER);
         wp_localize_script('luma-product-fields-admin-js', 'luma_product_fields_admin_ajaxdata', $this->get_ajax_data());
     }
@@ -129,7 +129,7 @@ class Admin {
         ]);
 
         $terms = get_terms([
-            'taxonomy'   => 'lpf_product_group',
+            'taxonomy'   => 'luma_product_fields_product_group',
             'hide_empty' => false,
         ]);
 
@@ -200,7 +200,7 @@ class Admin {
      */
     public function get_product_group_checkboxes(string $name, array $selected = []): string {
         $groups = get_terms([
-            'taxonomy'   => 'lpf_product_group',
+            'taxonomy'   => 'luma_product_fields_product_group',
             'hide_empty' => false,
         ]);
 
@@ -235,7 +235,7 @@ class Admin {
 
         if ($screen && $screen->taxonomy) {
             $custom_taxonomies = array_column(\Luma\ProductFields\Taxonomy\TaxonomyManager::get_all(), 'slug');
-            if ( in_array($screen->taxonomy, $custom_taxonomies, true) || $screen->taxonomy === 'lpf_product_group' ) {
+            if ( in_array($screen->taxonomy, $custom_taxonomies, true) || $screen->taxonomy === 'luma_product_fields_product_group' ) {
                 self::show_back_button();
             }
         }

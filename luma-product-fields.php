@@ -23,7 +23,8 @@ defined( 'ABSPATH' ) || exit;
 define( 'LUMA_PRODUCT_FIELDS_PLUGIN_DIR_PATH', plugin_dir_path( __FILE__ ) );
 define( 'LUMA_PRODUCT_FIELDS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'LUMA_PRODUCT_FIELDS_PLUGIN_VER', get_file_data( __FILE__, [ 'Version' => 'Version' ] ) );
-
+define( 'LUMA_PRODUCT_FIELDS_PREFIX', 'luma_product_fields' );
+define( 'LUMA_PRODUCT_FIELDS_NONCE_ACTION', 'luma_product_fields_action' );
 
 /**
  * PSR-4 compatible autoloader for plugin classes under the Luma\ProductFields\ namespace.

@@ -53,7 +53,7 @@ class Ajax {
         check_ajax_referer( 'luma_product_fields_admin_nonce', 'nonce' );
 
         // phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified above.
-        $action_raw = isset( $_POST['lpf_action'] ) ? wp_unslash( $_POST['lpf_action'] ) : '';   // phpcs:ignore 
+        $action_raw = isset( $_POST['luma_product_fields_action'] ) ? wp_unslash( $_POST['luma_product_fields_action'] ) : '';   // phpcs:ignore 
         $action     = sanitize_text_field( $action_raw );
 
         if ( method_exists( $this, $action ) ) {
@@ -254,7 +254,7 @@ class Ajax {
         $renderer = new FieldRenderer();
 
         ob_start();
-        echo '<div class="lpf-floating-editor-inner" style="position:relative;top:0;left:0;">';
+        echo '<div class="luma-product-fields-floating-editor-inner" style="position:relative;top:0;left:0;">';
         echo '<form>';
         echo '<h4>';
         echo esc_html( $product_name );
@@ -264,9 +264,9 @@ class Ajax {
         // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         echo $renderer->render_form_field( $field_slug, $product_id );
 
-        echo '<div class="lpf-edit-controls">';
-        echo '<button class="lpf-edit-cancel" aria-label="Cancel">&#10005;</button>';
-        echo '<button class="lpf-edit-save" aria-label="Save">&#10003;</button>';
+        echo '<div class="luma-product-fields-edit-controls">';
+        echo '<button class="luma-product-fields-edit-cancel" aria-label="Cancel">&#10005;</button>';
+        echo '<button class="luma-product-fields-edit-save" aria-label="Save">&#10003;</button>';
         echo '</div>';
         echo '</form></div>';
         $html = ob_get_clean();

@@ -26,7 +26,7 @@ use WP_Taxonomy;
 class TaxonomyManager
 {
 
-    protected const OPTION_KEY = 'lpf_dynamic_taxonomies';
+    protected const OPTION_KEY = 'luma_product_fields_dynamic_taxonomies';
 
     /** @var string[] Slugs for dynamic taxonomies that are public (links enabled). */
     protected array $linkable_taxonomy_slugs = [];
@@ -387,7 +387,7 @@ class TaxonomyManager
     /**
      * Normalize a taxonomy slug:
      * - sanitize
-     * - avoid reserved slugs by prefixing with "lpf-"
+     * - avoid reserved slugs by prefixing with "luma-product-fields-"
      * - ensure uniqueness across dynamic taxonomies (option only)
      *
      * This does not check global registered taxonomies; that is handled
@@ -402,7 +402,7 @@ class TaxonomyManager
         $existing_slugs = array_column(self::get_all(), 'slug');
 
         if (in_array($slug, self::get_reserved_slugs(), true)) {
-            $slug = 'lpf-' . $slug;
+            $slug = 'luma-product-fields-' . $slug;
         }
 
         $base   = $slug;

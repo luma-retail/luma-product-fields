@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class Onboarding {
 
-    public const OPTION_WELCOME_DISMISSED = 'lpf_onboarding_welcome_dismissed';
+    public const OPTION_WELCOME_DISMISSED = 'luma_product_fields_onboarding_welcome_dismissed';
 
 
     /**
@@ -42,8 +42,8 @@ class Onboarding {
         }
 
 
-        $dismiss = isset( $_GET['lpf_dismiss_welcome'] )
-            ? sanitize_text_field( wp_unslash( $_GET['lpf_dismiss_welcome'] ) )
+        $dismiss = isset( $_GET['luma_product_fields_dismiss_welcome'] )
+            ? sanitize_text_field( wp_unslash( $_GET['luma_product_fields_dismiss_welcome'] ) )
             : '';
 
         $nonce = isset( $_GET['_wpnonce'] )
@@ -54,7 +54,7 @@ class Onboarding {
             return;
         }
 
-        if ( '' === $nonce || ! wp_verify_nonce( $nonce, 'lpf_dismiss_welcome' ) ) {
+        if ( '' === $nonce || ! wp_verify_nonce( $nonce, 'luma_product_fields_dismiss_welcome' ) ) {
             return;
         }
 
@@ -100,8 +100,8 @@ class Onboarding {
         }
 
         $dismiss_url = wp_nonce_url(
-            add_query_arg( 'lpf_dismiss_welcome', '1' ),
-            'lpf_dismiss_welcome'
+            add_query_arg( 'luma_product_fields_dismiss_welcome', '1' ),
+            'luma_product_fields_dismiss_welcome'
         );
 
         $fields_url = admin_url( 'edit.php?post_type=product&page=lpf-fields' );

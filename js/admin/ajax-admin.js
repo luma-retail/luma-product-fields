@@ -83,7 +83,7 @@ function focusFirstEditorField($root){
     if(!$target.length) return;
 
     // Special handling for Select2
-    if ($target.is('select') && $target.hasClass('lpf-autocomplete-select')) {
+    if ($target.is('select') && $target.hasClass('luma-product-fields-autocomplete-select')) {
         // Ensure Select2 is mounted, then open
         // Slight delay to allow Select2 to fully initialize in this DOM
         setTimeout(function(){
@@ -295,8 +295,8 @@ jQuery(function($) {
             currentEditor.remove();
             $('#lpf-editor-overlay').hide();
             currentEditor = null;
-            $('.lpf-editable').removeClass('lpf-editing');
-            $('.lpf-editable').closest('tr').removeClass('lpf-row-editing');
+            $('.lpf-editable').removeClass('luma-product-fields-editing');
+            $('.lpf-editable').closest('tr').removeClass('luma-product-fields-row-editing');
         }
     }
 
@@ -306,7 +306,7 @@ jQuery(function($) {
         const fieldSlug = $cell.data('field-slug');
 
         // Avoid opening multiple editors
-        if ($cell.hasClass('lpf-editing')) {
+        if ($cell.hasClass('luma-product-fields-editing')) {
             return;
         }
 
@@ -318,7 +318,7 @@ jQuery(function($) {
                 closeEditor();
             });
     
-        $cell.closest('tr').addClass('lpf-row-editing');
+        $cell.closest('tr').addClass('luma-product-fields-row-editing');
 
         $.post(luma_product_fields_admin_ajaxdata.ajaxurl, {
             action: luma_product_fields_admin_ajaxdata.action,
@@ -329,7 +329,7 @@ jQuery(function($) {
         }, function (response) {
             if (response.success) {
                 // Create and append editor
-                const $editor = $('<div class="lpf-floating-editor">').html(response.data.html);
+                const $editor = $('<div class="luma-product-fields-floating-editor">').html(response.data.html);
                 $('#wpbody-content').append($editor);
 
                 // Make sure it measures correctly before positioning
@@ -395,7 +395,7 @@ jQuery(function($) {
 
                 bindReposition();
 
-                $cell.addClass('lpf-editing');
+                $cell.addClass('luma-product-fields-editing');
                 currentEditor = $editor;
 
                 // Reinit select2 if needed
@@ -409,12 +409,12 @@ jQuery(function($) {
                     unbindReposition();
                     $editor.remove();
                     currentEditor = null;
-                    $('.lpf-editable').removeClass('lpf-editing');
-                    $('.lpf-editable').closest('tr').removeClass('lpf-row-editing');
+                    $('.lpf-editable').removeClass('luma-product-fields-editing');
+                    $('.lpf-editable').closest('tr').removeClass('luma-product-fields-row-editing');
                 }
 
 
-                $cell.addClass('lpf-editing');
+                $cell.addClass('luma-product-fields-editing');
                 currentEditor = $editor;
             
                 // Reinit select2 if needed and set focus to current field
@@ -466,12 +466,12 @@ jQuery(function($) {
 
                     $.post(luma_product_fields_admin_ajaxdata.ajaxurl, postData, function (res) {
                         if (res.success) {
-                            $cell.html(res.data.html).removeClass('lpf-editing');
-                            $('.lpf-editable').closest('tr').removeClass('lpf-row-editing');
+                            $cell.html(res.data.html).removeClass('luma-product-fields-editing');
+                            $('.lpf-editable').closest('tr').removeClass('luma-product-fields-row-editing');
                             closeEditor();
-                            $cell.removeClass('lpf-save-glow lpf-save-glow-reset').addClass('lpf-save-glow');
-                            setTimeout(() => $cell.addClass('lpf-save-glow-reset'), 1000);
-                            setTimeout(() => $cell.removeClass('lpf-save-glow lpf-save-glow-reset'), 3000);
+                            $cell.removeClass('luma-product-fields-save-glow lpf-save-glow-reset').addClass('luma-product-fields-save-glow');
+                            setTimeout(() => $cell.addClass('luma-product-fields-save-glow-reset'), 1000);
+                            setTimeout(() => $cell.removeClass('luma-product-fields-save-glow lpf-save-glow-reset'), 3000);
                         } else {
                             alert(res.data || 'Failed to save.');
                             $btn.prop('disabled', false);
@@ -485,8 +485,8 @@ jQuery(function($) {
                     e.stopPropagation();
                     const $btn = $(this);
                     $btn.prop('disabled', true)
-                    $('.lpf-editable').closest('tr').removeClass('lpf-row-editing');
-                    $cell.removeClass('lpf-editing');
+                    $('.lpf-editable').closest('tr').removeClass('luma-product-fields-row-editing');
+                    $cell.removeClass('luma-product-fields-editing');
                     closeEditor();
                 });
 
@@ -507,8 +507,8 @@ jQuery(function($) {
             $target.closest('.select2-selection__choice__remove').length > 0;
 
         if (!isInsideEditor) {
-            $('.lpf-editable').closest('tr').removeClass('lpf-row-editing');
-            $('.lpf-editable').removeClass('lpf-editing');
+            $('.lpf-editable').closest('tr').removeClass('luma-product-fields-row-editing');
+            $('.lpf-editable').removeClass('luma-product-fields-editing');
             closeEditor();
         }
     });
@@ -596,7 +596,7 @@ jQuery(function($) {
                 html += '</ul>';
             }
 
-            var $modal = $('<div class="lpf-meta-preview-modal"></div>').html(html)
+            var $modal = $('<div class="luma-product-fields-meta-preview-modal"></div>').html(html)
                 .css({
                     background: '#fff',
                     border: '1px solid #ccc',

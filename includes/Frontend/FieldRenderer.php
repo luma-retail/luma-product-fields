@@ -135,15 +135,15 @@ class FieldRenderer
         if (!empty($field['frontend_desc'])) {
             $desc = wp_kses_post($field['frontend_desc']);
             $tooltip = "
-            <span class='lpf-tooltip' tabindex='0'>
-                <span class='lpf-tooltip-trigger' role='button' aria-describedby='tip-{$slug}' aria-label='{$aria_label}'>?</span>
-                <span class='lpf-tooltip-txt' id='tip-{$slug}' role='tooltip'>{$desc}</span>
+            <span class='luma-product-fields-tooltip' tabindex='0'>
+                <span class='luma-product-fields-tooltip-trigger' role='button' aria-describedby='tip-{$slug}' aria-label='{$aria_label}'>?</span>
+                <span class='luma-product-fields-tooltip-txt' id='tip-{$slug}' role='tooltip'>{$desc}</span>
             </span>";
         }
 
-        return "<dl class='lpf-product-meta' data-slug='{$slug}'>
-            <dt class='lpf-label'>{$label}{$tooltip}:</dt>
-            <dd class='lpf-val'>{$display_value} {$unit_html} {$schema_meta}</dd>
+        return "<dl class='luma-product-fields-product-meta' data-slug='{$slug}'>
+            <dt class='luma-product-fields-label'>{$label}{$tooltip}:</dt>
+            <dd class='luma-product-fields-val'>{$display_value} {$unit_html} {$schema_meta}</dd>
         </dl>";
     }
 

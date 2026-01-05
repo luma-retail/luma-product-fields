@@ -217,7 +217,7 @@ class My_Color_Badge_Field {
         }
 
         printf(
-            '<span class="lpf-color-badge" style="background:%s;"></span>',
+            '<span class="luma-product-fields-color-badge" style="background:%s;"></span>',
             esc_attr( (string) $value )
         );
     }

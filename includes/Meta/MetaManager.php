@@ -18,7 +18,7 @@ use Luma\ProductFields\Product\FieldStorage;
 */
 class MetaManager {
 
-    const OPTION_KEY = 'lpf_meta_fields';
+    const OPTION_KEY = 'luma_product_fields_meta_fields';
 
     /**
      * Get all meta-based fields

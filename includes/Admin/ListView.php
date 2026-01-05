@@ -89,9 +89,9 @@ class ListView {
     public function render_list_page() {
         
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-        $this->selected_group = isset( $_GET['lpf-product-group']) ? sanitize_text_field( wp_unslash( $_GET['lpf-product-group'] ) ) : null;
+        $this->selected_group = isset( $_GET['luma-product-fields-product-group']) ? sanitize_text_field( wp_unslash( $_GET['luma-product-fields-product-group'] ) ) : null;
 
-        echo '<div id="lpf-fields-overview" class="wrap">';
+        echo '<div id="luma-product-fields-fields-overview" class="wrap">';
         echo '<h1>' . esc_html($this->page_title) . '</h1>';
 
         echo '<form method="get">';
@@ -105,7 +105,7 @@ class ListView {
         // get_product_group_select() returns full HTML (select + options).
         // All dynamic pieces must be escaped inside that method.
         // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-        echo (new Admin)->get_product_group_select( 'lpf-product-group', $this->selected_group, null, $args );
+        echo (new Admin)->get_product_group_select( 'luma-product-fields-product-group', $this->selected_group, null, $args );
 
         echo '<input type="submit" class="button" value="' .
             esc_attr__('Choose product group', 'luma-product-fields') .
@@ -123,7 +123,7 @@ class ListView {
             $table = new ListViewTable('general');
             $table->prepare_items();
             $table->display();
-            echo '<div id="lpf-editor-overlay"></div>';
+            echo '<div id="luma-product-fields-editor-overlay"></div>';
             echo '</div>';
             return;
         }
@@ -131,7 +131,7 @@ class ListView {
         $table = new ListViewTable($this->selected_group);
         $table->prepare_items();
         $table->display();
-        echo '<div id="lpf-editor-overlay"></div>';
+        echo '<div id="luma-product-fields-editor-overlay"></div>';
         echo '</div>';
     }
 

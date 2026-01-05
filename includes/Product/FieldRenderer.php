@@ -36,9 +36,9 @@ class FieldRenderer {
      * @return array Modified tabs.
      */
     public function add_product_data_tab( array $tabs ): array {
-        $tabs['lpf-product-data'] = [
+        $tabs['luma-product-fields-product-data'] = [
             'label'    => __( 'Product Fields', 'luma-product-fields' ),
-            'target'   => 'lpf_product_data',
+            'target'   => 'luma_product_fields_product_data',
             'priority' => 80,
         ];
 
@@ -66,20 +66,20 @@ class FieldRenderer {
         // (get_product_group_select(), render_form_fields()) are escaped internally.
         // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
         ?>
-        <div id="lpf_product_data" class="panel woocommerce_options_panel">
-            <?php wp_nonce_field( 'lpf_save_product_fields', 'lpf_product_fields_nonce' ); ?>
+        <div id="luma_product_fields_product_data" class="panel woocommerce_options_panel">
+            <?php wp_nonce_field( 'luma_product_fields_save_product_fields', 'luma_product_fields_product_fields_nonce' ); ?>
             <div class="toolbar toolbar-top options-group">
                 <p class="form-field">
                     <label><?php esc_html_e( 'Product group', 'luma-product-fields' ); ?></label>
                     <?php
                     echo ( new Admin() )->get_product_group_select(
-                        'lpf-product-group-select',
+                        'luma-product-fields-product-group-select',
                         $group_slug,
                         $no_group_label
                     );
                     ?>
                 </p>
-                <div id="lpf-product-group-fields">
+                <div id="luma-product-fields-product-group-fields">
                     <?php
                     echo $this->render_form_fields(
                         $group_slug,
@@ -220,7 +220,7 @@ class FieldRenderer {
             echo wp_kses_post( $tip_html );
         }
         echo '</label>';
-        echo "<input type='text' name='lpf-" . esc_attr( $field['slug'] ) . "' value='" . esc_attr( $value ) . "' />";
+        echo "<input type='text' name='luma-product-fields-" . esc_attr( $field['slug'] ) . "' value='" . esc_attr( $value ) . "' />";
         if ( $unit_html ) {
             echo wp_kses_post( $unit_html );
         }
@@ -253,7 +253,7 @@ class FieldRenderer {
             </label>
             <input
                 type="text"
-                name="lpf-<?php echo esc_attr( $field['slug'] ); ?>"
+                name="luma-product-fields-<?php echo esc_attr( $field['slug'] ); ?>"
                 value="<?php echo esc_attr( $value ); ?>"
                 inputmode="decimal"
                 pattern="[0-9]+([.,][0-9]+)?"
@@ -289,7 +289,7 @@ class FieldRenderer {
             </label>
             <input
                 type="text"
-                name="lpf-<?php echo esc_attr( $field['slug'] ); ?>"
+                name="luma-product-fields-<?php echo esc_attr( $field['slug'] ); ?>"
                 value="<?php echo esc_attr( $value ); ?>"
                 inputmode="numeric"
                 pattern="\d+"
@@ -325,11 +325,11 @@ class FieldRenderer {
                 <?php echo esc_html( $field['label'] ?? '' ); ?>
                 <?php echo $tip_html ? wp_kses_post( $tip_html ) : ''; ?>
             </label>
-            <span class="lpf-minmax-wrapper">
+            <span class="luma-product-fields-minmax-wrapper">
                 <span class="label">Min:</span>
                 <input
                     type="text"
-                    name="lpf-<?php echo esc_attr( $field['slug'] ); ?>[min]"
+                    name="luma-product-fields-<?php echo esc_attr( $field['slug'] ); ?>[min]"
                     value="<?php echo esc_attr( $min ); ?>"
                     inputmode="decimal"
                     pattern="[0-9]+([.,][0-9]+)?"
@@ -337,7 +337,7 @@ class FieldRenderer {
                 <span style="margin-left:.5em;" class="label">Max:</span>
                 <input
                     type="text"
-                    name="lpf-<?php echo esc_attr( $field['slug'] ); ?>[max]"
+                    name="luma-product-fields-<?php echo esc_attr( $field['slug'] ); ?>[max]"
                     value="<?php echo esc_attr( $max ); ?>"
                     inputmode="decimal"
                     pattern="[0-9]+([.,][0-9]+)?"
@@ -405,7 +405,7 @@ class FieldRenderer {
         }
 
         return sprintf(
-            "<p class='form-field lpf-fieldtype-single'><label>%s%s</label><select name='lpf-%s'>%s</select></p>",
+            "<p class='form-field lpf-fieldtype-single'><label>%s%s</label><select name='luma-product-fields-%s'>%s</select></p>",
             esc_html( $field['label'] ?? '' ),
             $tip_html ? wp_kses_post( $tip_html ) : '',
             esc_attr( $field['slug'] ),
@@ -440,7 +440,7 @@ class FieldRenderer {
         $options = array_map(
             static function ( $term ) use ( $values ) {
                 return sprintf(
-                    "<span class='label'><input type='checkbox' name='lpf-%s[]' value='%s'%s /> %s</span><br>",
+                    "<span class='label'><input type='checkbox' name='luma-product-fields-%s[]' value='%s'%s /> %s</span><br>",
                     esc_attr( $term->taxonomy ),
                     esc_attr( $term->slug ),
                     in_array( $term->slug, $values, true ) ? ' checked' : '',
@@ -493,7 +493,7 @@ class FieldRenderer {
         return sprintf(
             '<p class="form-field lpf-fieldtype-%1$s">
                 <label>%2$s %3$s</label>
-                <select name="lpf-%4$s[]" multiple="multiple" class="lpf-autocomplete-select" data-taxonomy="%5$s" style="width: 100%%;">%6$s</select>
+                <select name="luma-product-fields-%4$s[]" multiple="multiple" class="luma-product-fields-autocomplete-select" data-taxonomy="%5$s" style="width: 100%%;">%6$s</select>
             </p>',
             esc_attr( $field['type'] ),
             esc_html( $field['label'] ?? '' ),
@@ -514,8 +514,8 @@ class FieldRenderer {
     public function save_the_fields( int $post_id ): void {
 
         if (
-            ! isset( $_POST['lpf_product_fields_nonce'] )
-            || ! wp_verify_nonce( sanitize_text_field( (wp_unslash( $_POST['lpf_product_fields_nonce'] ) ) ), 'lpf_save_product_fields' )  // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            ! isset( $_POST['luma_product_fields_product_fields_nonce'] )
+            || ! wp_verify_nonce( sanitize_text_field( (wp_unslash( $_POST['luma_product_fields_product_fields_nonce'] ) ) ), 'luma_product_fields_save_product_fields' )  // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
         ) {
             return;
         }
@@ -528,19 +528,19 @@ class FieldRenderer {
             return;
         }
 
-        $group_slug = isset( $_POST['lpf-product-group-select'] )
-            ? sanitize_text_field( wp_unslash( $_POST['lpf-product-group-select'] ) )
+        $group_slug = isset( $_POST['luma-product-fields-product-group-select'] )
+            ? sanitize_text_field( wp_unslash( $_POST['luma-product-fields-product-group-select'] ) )
             : '';
 
         $group_term = $group_slug
-            ? get_term_by( 'slug', $group_slug, 'lpf_product_group' )
+            ? get_term_by( 'slug', $group_slug, 'luma_product_fields_product_group' )
             : null;
 
         if ( $group_term && ! is_wp_error( $group_term ) ) {
-            wp_set_post_terms( $post_id, [ (int) $group_term->term_id ], 'lpf_product_group' );
+            wp_set_post_terms( $post_id, [ (int) $group_term->term_id ], 'luma_product_fields_product_group' );
             $effective_group = $group_term->slug;
         } else {
-            wp_set_post_terms( $post_id, [], 'lpf_product_group' );
+            wp_set_post_terms( $post_id, [], 'luma_product_fields_product_group' );
             $effective_group = 'general';
         }
 
@@ -548,7 +548,7 @@ class FieldRenderer {
 
         foreach ( $fields as $field ) {
             $slug = $field['slug'];
-            $key  = 'lpf-' . $slug;
+            $key  = 'luma-product-fields-' . $slug;
 
             if ( isset( $_POST[ $key ] ) ) {
                 $raw_value = wp_unslash( $_POST[ $key ] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized

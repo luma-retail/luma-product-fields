@@ -195,7 +195,7 @@ class FrontendController {
      */
     public function display_product_meta( $product ) : void {
         $product_id    = $product->get_id();
-         echo '<div id="lpf-product-meta-list">';
+         echo '<div id="luma-product-fields-product-meta-list">';
                  
         /**
          * Hook: luma_product_fields_product_meta_start
@@ -205,7 +205,7 @@ class FrontendController {
         do_action( 'luma_product_fields_product_meta_start', $product );
             
         
-        $transient_key = 'lpf_meta_fields_' . $product_id;
+        $transient_key = 'luma_product_fields_meta_fields_' . $product_id;
         $output        = get_transient( $transient_key );
                 
         if ( false === $output ) {
@@ -422,7 +422,7 @@ class FrontendController {
                 $field = \Luma\ProductFields\Utils\Helpers::get_field_definition_by_slug( $taxonomy );
 
                 if ( ! empty( $field['label'] ) ) {
-                    return sprintf( '<span class="lpf-field-label">%s:</span> %s', $field['label'], $term->name );
+                    return sprintf( '<span class="luma-product-fields-field-label">%s:</span> %s', $field['label'], $term->name );
                 }
             }
         }

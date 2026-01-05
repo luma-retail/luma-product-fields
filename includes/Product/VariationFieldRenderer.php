@@ -41,7 +41,7 @@ class VariationFieldRenderer {
         // This method is a template renderer for the variation admin UI.
         // It delegates escaping to internal renderers (render_field_by_type and helpers).
         // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
-        echo '<fieldset class="lpf-variation-fields">';
+        echo '<fieldset class="luma-product-fields-variation-fields">';
 
         foreach ( Helpers::get_fields_for_group( $group_slug ) as $field ) {
             if ( empty( $field['variation'] ) ) {
@@ -228,7 +228,7 @@ class VariationFieldRenderer {
                 <?php echo esc_html( $label ); ?>
                 <?php echo $tip_html ? wp_kses_post( $tip_html ) : ''; ?>
             </label>
-            <span class="lpf-minmax-wrapper">
+            <span class="luma-product-fields-minmax-wrapper">
                 <span class="label"><?php esc_html_e( 'Min:', 'luma-product-fields' ); ?></span>
                 <input
                     type="text"

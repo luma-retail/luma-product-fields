@@ -28,7 +28,7 @@ class MigrationPage {
     /**
      * Option key for migration log.
      */
-    public const OPTION_MIGRATION_LOG = 'lpf_meta_migration_log';
+    public const OPTION_MIGRATION_LOG = 'luma_product_fields_meta_migration_log';
 
 
     /**
@@ -94,7 +94,7 @@ class MigrationPage {
             ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) )
             : '';
 
-        if ( 'POST' === $request_method && check_admin_referer( 'lpf_fields_migration' ) ) {
+        if ( 'POST' === $request_method && check_admin_referer( 'luma_product_fields_fields_migration' ) ) {
             $is_dry_run    = isset( $_POST['dry_run'] );
             $skip_existing = filter_input( INPUT_POST, 'skip_existing', FILTER_VALIDATE_BOOLEAN ) ?? false;
 
@@ -183,7 +183,7 @@ class MigrationPage {
         }
 
         echo '<form method="post">';
-        wp_nonce_field( 'lpf_fields_migration' );
+        wp_nonce_field( 'luma_product_fields_fields_migration' );
 
         echo '<table class="widefat  striped">';
         echo '<thead><tr>';
@@ -220,7 +220,7 @@ class MigrationPage {
             }
             echo '</select></td>';
 
-            echo '<td class="lpf-migration-options">';
+            echo '<td class="luma-product-fields-migration-options">';
             if ( empty( $field['is_taxonomy'] ) ) {
                 echo '<label>';
                 echo '<input type="checkbox" name="include_variations_' . esc_attr( $slug ) . '" ' .
@@ -334,16 +334,16 @@ class MigrationPage {
 
         echo '<h2>' . esc_html__( 'Migration Result (dry run)', 'luma-product-fields' ) . '</h2>';
 
-        echo '<div class="lpf-migration-counters">';
+        echo '<div class="luma-product-fields-migration-counters">';
         echo '<p><strong>' . esc_html__( 'Migration Summary', 'luma-product-fields' ) . '</strong></p>';
 
-        echo '<ul class="lpf-counters-list">';
-        echo '<li><span class="lpf-count lpf-count-green">' . esc_html( (string) $counts['migrated'] ) . '</span> ' . esc_html__( 'migrated', 'luma-product-fields' ) . '</li>';
-        echo '<li><span class="lpf-count lpf-count-blue">' . esc_html( (string) $counts['dry_run'] ) . '</span> ' . esc_html__( 'dry-run changes', 'luma-product-fields' ) . '</li>';
-        echo '<li><span class="lpf-count lpf-count-orange">' . esc_html( (string) $counts['skipped_existing'] ) . '</span> ' . esc_html__( 'skipped (existing value)', 'luma-product-fields' ) . '</li>';
-        echo '<li><span class="lpf-count lpf-count-gray">' . esc_html( (string) $counts['skipped_invalid'] ) . '</span> ' . esc_html__( 'skipped (no valid data)', 'luma-product-fields' ) . '</li>';
+        echo '<ul class="luma-product-fields-counters-list">';
+        echo '<li><span class="luma-product-fields-count lpf-count-green">' . esc_html( (string) $counts['migrated'] ) . '</span> ' . esc_html__( 'migrated', 'luma-product-fields' ) . '</li>';
+        echo '<li><span class="luma-product-fields-count lpf-count-blue">' . esc_html( (string) $counts['dry_run'] ) . '</span> ' . esc_html__( 'dry-run changes', 'luma-product-fields' ) . '</li>';
+        echo '<li><span class="luma-product-fields-count lpf-count-orange">' . esc_html( (string) $counts['skipped_existing'] ) . '</span> ' . esc_html__( 'skipped (existing value)', 'luma-product-fields' ) . '</li>';
+        echo '<li><span class="luma-product-fields-count lpf-count-gray">' . esc_html( (string) $counts['skipped_invalid'] ) . '</span> ' . esc_html__( 'skipped (no valid data)', 'luma-product-fields' ) . '</li>';
         if ( $counts['external_save'] > 0 ) {
-            echo '<li><span class="lpf-count lpf-count-purple">' . esc_html( (string) $counts['external_save'] ) . '</span> ' . esc_html__( 'handled by external save callback', 'luma-product-fields' ) . '</li>';
+            echo '<li><span class="luma-product-fields-count lpf-count-purple">' . esc_html( (string) $counts['external_save'] ) . '</span> ' . esc_html__( 'handled by external save callback', 'luma-product-fields' ) . '</li>';
         }
         echo '</ul>';
         echo '</div>';
@@ -392,15 +392,15 @@ class MigrationPage {
                 $reason = $result['reason'] ?? '';
 
                 if ( 'migrated' === $status ) {
-                    $cls = 'lpf-status-migrated';
+                    $cls = 'luma-product-fields-status-migrated';
                 } elseif ( 'dry-run' === $status ) {
-                    $cls = 'lpf-status-dry-run';
+                    $cls = 'luma-product-fields-status-dry-run';
                 } elseif ( 'skipped' === $status && 'Existing value present' === $reason ) {
-                    $cls = 'lpf-status-skipped-exists';
+                    $cls = 'luma-product-fields-status-skipped-exists';
                 } elseif ( strpos( $status, 'external save' ) !== false ) {
-                    $cls = 'lpf-status-external';
+                    $cls = 'luma-product-fields-status-external';
                 } else {
-                    $cls = 'lpf-status-skipped';
+                    $cls = 'luma-product-fields-status-skipped';
                 }
 
                 echo '<tr class="' . esc_attr( $cls ) . '">';

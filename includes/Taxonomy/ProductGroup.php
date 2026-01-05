@@ -24,7 +24,7 @@ class ProductGroup {
      *
      * @var string
      */
-    protected $tax = 'lpf_product_group';
+    protected $tax = 'luma_product_fields_product_group';
 
 
     /**
@@ -37,12 +37,12 @@ class ProductGroup {
         add_action( 'woocommerce_product_bulk_edit_save', [ $this, 'handle_bulk_edit_save' ], 10, 1 );
         add_action( 'woocommerce_product_quick_edit_end', [ $this, 'render_quick_edit_field' ] );
         add_action( 'woocommerce_product_quick_edit_save', [ $this, 'handle_quick_edit_save' ], 10, 1 );
-        add_action( 'admin_print_footer_scripts-edit.php', [ $this, 'print_quick_edit_script' ], 99 );
+        add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_quick_edit_assets' ] );
     }
 
 
     /**
-     * Registers the 'lpf_product_group' taxonomy for WooCommerce products (non-hierarchical).
+     * Registers the 'luma_product_fields_product_group' taxonomy for WooCommerce products (non-hierarchical).
      *
      * @return void
      */
@@ -84,7 +84,6 @@ class ProductGroup {
      */
     public function maybe_boot_admin() {
         $screen = get_current_screen();
-        
 
         if ( empty( $screen ) || 'edit-product' !== $screen->id ) {
             return;
@@ -133,14 +132,19 @@ class ProductGroup {
 
         global $wpdb;
 
-        if ( false === strpos( $clauses['join'], ' tr_pg ' ) ) {
-            $clauses['join'] .= $wpdb->prepare(
-                " LEFT JOIN {$wpdb->term_relationships} tr_pg ON ({$wpdb->posts}.ID = tr_pg.object_id)
-                  LEFT JOIN {$wpdb->term_taxonomy}   tt_pg ON (tr_pg.term_taxonomy_id = tt_pg.term_taxonomy_id AND tt_pg.taxonomy = %s)
-                  LEFT JOIN {$wpdb->terms}           t_pg  ON (tt_pg.term_id = t_pg.term_id) ",
-                $this->tax
-            );
-        }
+    $join = isset( $clauses['join'] ) ? (string) $clauses['join'] : '';
+
+    if ( false === strpos( $join, ' tr_pg ' ) ) {
+        $join .= $wpdb->prepare(
+            " LEFT JOIN {$wpdb->term_relationships} tr_pg ON ({$wpdb->posts}.ID = tr_pg.object_id)
+            LEFT JOIN {$wpdb->term_taxonomy}   tt_pg ON (tr_pg.term_taxonomy_id = tt_pg.term_taxonomy_id AND tt_pg.taxonomy = %s)
+            LEFT JOIN {$wpdb->terms}           t_pg  ON (tt_pg.term_id = t_pg.term_id) ",
+            $this->tax
+        );
+    }
+
+    $clauses['join'] = $join;
+
 
         $groupby = trim( (string) $clauses['groupby'] );
         if ( '' === $groupby ) {
@@ -167,9 +171,8 @@ class ProductGroup {
         if ( 'product' !== $typenow ) {
             return;
         }
-        
-        $selected = isset( $_GET[ $this->tax ] ) ? sanitize_text_field( wp_unslash( $_GET[ $this->tax ] ) ) : '';  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
+        $selected = isset( $_GET[ $this->tax ] ) ? sanitize_text_field( wp_unslash( $_GET[ $this->tax ] ) ) : '';  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
         wp_dropdown_categories( [
             'show_option_all' => esc_html__( 'All Product groups', 'luma-product-fields' ),
@@ -224,8 +227,8 @@ class ProductGroup {
             ] );
         }
     }
-    
-        
+
+
     /**
      * Renders a single-select bulk edit field for Product group.
      *
@@ -249,7 +252,8 @@ class ProductGroup {
             'order'      => 'ASC',
         ] );
 
-        $field_name = 'lpf_pg_single';
+        $field_name  = LUMA_PRODUCT_FIELDS_PREFIX . '_pg_single';
+        $field_class = LUMA_PRODUCT_FIELDS_PREFIX . '-pg-single';
         ?>
         <div class="inline-edit-group">
             <h4><?php echo esc_html__( 'Product group', 'luma-product-fields' ); ?></h4>
@@ -257,7 +261,7 @@ class ProductGroup {
             <label class="alignleft">
                 <span class="title"><?php echo esc_html__( 'Set to', 'luma-product-fields' ); ?></span>
                 <span class="input-text-wrap">
-                    <select name="<?php echo esc_attr( $field_name ); ?>" class="lpf-pg-single" style="min-width: 16rem;">
+                    <select name="<?php echo esc_attr( $field_name ); ?>" class="<?php echo esc_attr( $field_class ); ?>" style="min-width: 16rem;">
                         <option value=""><?php echo esc_html__( '— No change —', 'luma-product-fields' ); ?></option>
                         <option value="__clear__"><?php echo esc_html__( '— Clear —', 'luma-product-fields' ); ?></option>
                         <?php if ( ! is_wp_error( $terms ) && $terms ) : ?>
@@ -299,10 +303,13 @@ class ProductGroup {
         if ( ! $this->verify_bulk_edit_request() ) {
             return;
         }
-        $raw = isset( $_REQUEST['lpf_pg_single'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['lpf_pg_single'] ) ) : '';  // phpcs:ignore WordPress.Security.NonceVerification.Recommended   
+
+        $field_key = LUMA_PRODUCT_FIELDS_PREFIX . '_pg_single';
+
+        $raw = isset( $_REQUEST[ $field_key ] ) ? sanitize_text_field( wp_unslash( $_REQUEST[ $field_key ] ) ) : '';  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
         if ( '' === $raw ) {
-            return; 
+            return;
         }
 
         $product_id = $product->get_id();
@@ -327,13 +334,13 @@ class ProductGroup {
         if ( is_wp_error( $exists ) || empty( $exists ) ) {
             return;
         }
+
         wp_set_object_terms( $product_id, [ $term_id ], $this->tax, false );
     }
 
 
-
     /**
-     * Verify this request is a valid bulk-edit request 
+     * Verify this request is a valid bulk-edit request
      * (WooCommerce or core list-table).
      *
      * @return bool
@@ -342,7 +349,6 @@ class ProductGroup {
         if ( ! is_admin() || ! current_user_can( 'edit_products' ) ) {
             return false;
         }
-
 
         // WooCommerce bulk edit nonce.
         $wc_nonce = isset( $_REQUEST['_woocommerce_bulk_edit_nonce'] )
@@ -353,7 +359,6 @@ class ProductGroup {
             return true;
         }
 
-
         // Alt Woo flow sometimes uses "security".
         $security_nonce = isset( $_REQUEST['security'] )
             ? sanitize_text_field( wp_unslash( $_REQUEST['security'] ) )
@@ -362,7 +367,6 @@ class ProductGroup {
         if ( '' !== $security_nonce && wp_verify_nonce( $security_nonce, 'woocommerce_bulk_edit' ) ) {
             return true;
         }
-
 
         // Core WP list-table bulk edit nonce.
         $wp_nonce = isset( $_REQUEST['_wpnonce'] )
@@ -377,9 +381,7 @@ class ProductGroup {
     }
 
 
-
-    
-     /**
+    /**
      * Renders a single-select field for Product group in Quick Edit.
      *
      * Options:
@@ -397,15 +399,17 @@ class ProductGroup {
             'order'      => 'ASC',
         ] );
 
-        // Name unique to Quick Edit (separate from bulk)
-        $field_name = 'lpf_pg_quick_single';
+        $field_name  = LUMA_PRODUCT_FIELDS_PREFIX . '_pg_quick_single';
+        $field_class = LUMA_PRODUCT_FIELDS_PREFIX . '-pg-quick-single';
+        $nonce_name  = LUMA_PRODUCT_FIELDS_PREFIX . '_quick_edit_nonce';
         ?>
         <br/>
+        <?php wp_nonce_field( LUMA_PRODUCT_FIELDS_NONCE_ACTION, $nonce_name ); ?>
         <div class="inline-edit-group">
             <label class="alignleft" style="min-width: 260px;">
                 <span class="title"><?php echo esc_html__( 'Product group', 'luma-product-fields' ); ?></span>
                 <span class="input-text-wrap">
-                    <select name="<?php echo esc_attr( $field_name ); ?>" class="lpf-pg-quick-single" style="min-width:16rem;">
+                    <select name="<?php echo esc_attr( $field_name ); ?>" class="<?php echo esc_attr( $field_class ); ?>" style="min-width:16rem;">
                         <option value=""><?php esc_html_e( '— Select —', 'luma-product-fields' ); ?></option>
                         <option value="__clear__"><?php esc_html_e( '— Clear —', 'luma-product-fields' ); ?></option>
                         <?php if ( ! is_wp_error( $terms ) && $terms ) : ?>
@@ -441,17 +445,30 @@ class ProductGroup {
             return;
         }
 
-        // Reuse permissive verifier (accepts WC/WP nonces; falls back to caps).
-        if ( ! $this->verify_bulk_edit_request() ) {
+        $product_id = (int) $product->get_id();
+        if ( $product_id <= 0 ) {
             return;
         }
 
-        $raw = isset( $_REQUEST['lpf_pg_quick_single'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['lpf_pg_quick_single'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        if ( ! current_user_can( 'edit_post', $product_id ) ) {
+            return;
+        }
+
+        $nonce_key = LUMA_PRODUCT_FIELDS_PREFIX . '_quick_edit_nonce';
+        $nonce     = isset( $_REQUEST[ $nonce_key ] )
+            ? sanitize_text_field( wp_unslash( $_REQUEST[ $nonce_key ] ) )
+            : '';
+
+        if ( '' === $nonce || ! wp_verify_nonce( $nonce, LUMA_PRODUCT_FIELDS_NONCE_ACTION ) ) {
+            return;
+        }
+
+        $field_key = LUMA_PRODUCT_FIELDS_PREFIX . '_pg_quick_single';
+        $raw       = isset( $_REQUEST[ $field_key ] ) ? sanitize_text_field( wp_unslash( $_REQUEST[ $field_key ] ) ) : '';
+
         if ( '' === $raw ) {
             return;
         }
-
-        $product_id = $product->get_id();
 
         if ( '__clear__' === $raw ) {
             wp_set_object_terms( $product_id, [], $this->tax, false );
@@ -478,90 +495,43 @@ class ProductGroup {
     }
 
 
-
     /**
-     * Injects a Quick Edit helper that waits for inlineEditPost to exist,
-     * then preselects the Product group dropdown based on the visible label
-     * in the "taxonomy-{$this->tax}" column. Matching is case/space-insensitive.
+     * Enqueue Quick Edit helper script for the product list screen.
      *
+     * @param string $hook_suffix Current admin page hook.
      * @return void
      */
-    public function print_quick_edit_script() {
+    public function enqueue_quick_edit_assets( string $hook_suffix ): void {
+
+        // Only needed on the product list table (Quick Edit for products).
+        if ( 'edit.php' !== $hook_suffix ) {
+            return;
+        }
+
         $screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
         if ( ! $screen || 'edit-product' !== $screen->id ) {
             return;
         }
 
-        ?>
-        <script>
-        (function($){
-            var DEBUG = false;
-            function log(){ if (DEBUG && window.console && console.log) console.log.apply(console, arguments); }
+        wp_register_script(
+            'luma-product-fields-quickedit',
+            LUMA_PRODUCT_FIELDS_PLUGIN_URL . '/js/admin/quickedit.js',
+            [ 'jquery', 'inline-edit-post' ],
+            LUMA_PRODUCT_FIELDS_PLUGIN_VER,
+            true
+        );
 
-            function attachPatch(){
-                // Already patched?
-                if ( inlineEditPost.edit.__fk_pg_patched ) {
-                    return;
-                }
+        wp_localize_script(
+            'luma-product-fields-quickedit',
+            'lumaProductFieldsQuickEdit',
+            [
+                'columnSelector' => 'td.column-taxonomy-' . $this->tax,
+                'selectSelector' => 'select.' . LUMA_PRODUCT_FIELDS_PREFIX . '-pg-quick-single',
+                'debug'          => defined( 'WP_DEBUG' ) && WP_DEBUG,
+            ]
+        );
 
-                var coreEdit = inlineEditPost.edit;
-
-                inlineEditPost.edit = function(id){
-                    coreEdit.apply(this, arguments);
-
-                    var postId = (typeof id === 'object') ? parseInt(this.getId(id), 10) : parseInt(id, 10);
-                    if (!postId) { log('[HPF PG] no postId'); return; }
-
-                    var $row    = $('#post-' + postId);
-                    var $quick  = $('#edit-' + postId);
-                    var $select = $quick.find('select.lpf-pg-quick-single');
-                    if (!$row.length || !$quick.length || !$select.length) {
-                        log('[HPF PG] missing row/quick/select'); 
-                        return;
-                    }
-
-                    var label = $.trim( $row.find('<?php echo esc_js( 'td.column-taxonomy-' . $this->tax ); ?>').text() );
-                    log('[HPF PG] label:', label);
-
-                    $select.val('');
-                    if (!label) { return; }
-
-                    function norm(s){ return $.trim(String(s)).replace(/\s+/g,' ').toLowerCase(); }
-                    var target = norm(label);
-                    var matched = false;
-
-                    $select.find('option').each(function(){
-                        if (norm($(this).text()) === target) {
-                            $select.val( $(this).val() );
-                            matched = true;
-                            log('[HPF PG] matched option value:', $(this).val());
-                            return false; // break
-                        }
-                    });
-
-                    if (!matched) { log('[HPF PG] no option matched for:', label); }
-                };
-
-                inlineEditPost.edit.__fk_pg_patched = true;
-                log('[HPF PG] Quick Edit patched');
-            }
-
-            // Wait until inlineEditPost is available, then attach once.
-            var tries = 0, maxTries = 200; // ~5s at 25ms
-            var timer = setInterval(function(){
-                if (window.inlineEditPost && inlineEditPost.edit) {
-                    clearInterval(timer);
-                    attachPatch();
-                } else if (++tries >= maxTries) {
-                    clearInterval(timer);
-                    log('[HPF PG] inlineEditPost not found after waiting');
-                }
-            }, 25);
-        })(jQuery);
-        </script>
-        <?php
+        wp_enqueue_script( 'luma-product-fields-quickedit' );
     }
-
-
 
 }

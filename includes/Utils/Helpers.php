@@ -61,7 +61,7 @@ class Helpers {
             $post_id = $product->get_parent_id();
         }
 
-        $terms = get_the_terms($post_id, 'lpf_product_group');
+        $terms = get_the_terms($post_id, 'luma_product_fields_product_group');
         if (empty($terms)) {
             return false;
         }
@@ -114,7 +114,7 @@ class Helpers {
      * @return string|null
      */
     public static function get_product_group_slug_from_term_id($term_id) {
-        $term = get_term_by('term_id', $term_id, 'lpf_product_group');
+        $term = get_term_by('term_id', $term_id, 'luma_product_fields_product_group');
         return $term->slug;
     }
 
@@ -512,7 +512,7 @@ class Helpers {
     public static function get_formatted_unit_html( $unit ) {
         $registered_units = FieldTypeRegistry::get_units();
         $unit_label = $registered_units[ $unit ] ?? $unit;                
-        return ' <span class="lpf-unit">' . esc_html( $unit_label ) . '</span>';
+        return ' <span class="luma-product-fields-unit">' . esc_html( $unit_label ) . '</span>';
     }
     
     

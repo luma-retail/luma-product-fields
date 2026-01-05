@@ -45,7 +45,7 @@ class FieldOptionsOverview {
             __( 'Product fields', 'luma-product-fields' ),
             __( 'Product fields', 'luma-product-fields' ),
             'manage_woocommerce',
-            'lpf-fields',
+            'luma-product-fields-fields',
             [ $this, 'render_panel' ],
             4
         );
@@ -59,13 +59,13 @@ class FieldOptionsOverview {
     public function render_panel(): void {
         $selected_group = isset( $_GET['group'] ) ? sanitize_text_field( wp_unslash( $_GET['group'] ) ) : 'all'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         ?>
-        <div class="lpf-admin-panel">
+        <div class="luma-product-fields-admin-panel">
             <h2><?php esc_html_e( 'Product Field Manager', 'luma-product-fields' ); ?></h2>
             <?php NotificationManager::render( 'field_editor' ); ?>
-            <div class="lpf-filters">
+            <div class="luma-product-fields-filters">
                 <form method="get">
                     <input type="hidden" name="post_type" value="product" />
-                    <input type="hidden" name="page" value="lpf-fields" />
+                    <input type="hidden" name="page" value="luma-product-fields-fields" />
                     <label for="group"><?php esc_html_e( 'Filter product group', 'luma-product-fields' ); ?></label>
                     <?php
                     $args = array(
@@ -84,7 +84,7 @@ class FieldOptionsOverview {
 
             <?php $this->render_table(); ?>
 
-            <div class="lpf-actions">
+            <div class="luma-product-fields-actions">
                 <a href="<?php echo esc_url( admin_url( 'admin.php?page=lpf-new-field' ) ); ?>" class="button button-primary button-large" style="margin-left: 1em;">
                     <span class="dashicons dashicons-plus-alt"></span><?php esc_html_e( 'Add New Field', 'luma-product-fields' ); ?>
                 </a>
@@ -136,7 +136,7 @@ class FieldOptionsOverview {
             $edit_url   = admin_url( 'admin.php?page=lpf-new-field&edit=' . urlencode( $slug ) );
             $delete_url = wp_nonce_url(
                 admin_url( 'admin.php?page=lpf-fields&lpf_delete_field=' . urlencode( $slug ) ),
-                'lpf_delete_field_' . $slug
+                'luma_product_fields_delete_field_' . $slug
             );
 
             $manage_terms_url = $is_taxonomy
@@ -187,9 +187,9 @@ class FieldOptionsOverview {
             return;
         }
 
-        $slug = isset( $_GET['lpf_delete_field'] ) ? sanitize_title( wp_unslash( $_GET['lpf_delete_field'] ) ) : '';
+        $slug = isset( $_GET['luma_product_fields_delete_field'] ) ? sanitize_title( wp_unslash( $_GET['luma_product_fields_delete_field'] ) ) : '';
 
-        if ( ! $slug || ! check_admin_referer( 'lpf_delete_field_' . $slug ) ) {
+        if ( ! $slug || ! check_admin_referer( 'luma_product_fields_delete_field_' . $slug ) ) {
             return;
         }
 
