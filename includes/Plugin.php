@@ -79,7 +79,7 @@ class Plugin {
                 new TaxonomyManagerInlineEdit();
                 new Settings();
                 NotificationManager::init();
-                Onboarding::init();
+                Onboarding::init();                
             }
         });
 

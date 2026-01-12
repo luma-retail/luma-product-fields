@@ -124,7 +124,7 @@ class ListViewTable extends WP_List_Table {
                     continue;
                 }
                 $is_numeric = FieldTypeRegistry::field_type_is_numeric( $field['type'] );                
-                $row[ $field['slug'] ] = [                    
+                $row[ 'lpftbl_' . $field['slug'] ] = [                    
                     'raw'  => Helpers::get_formatted_field_value( $product->get_id(), $field['slug'] , false),
                     'html'  => Helpers::get_formatted_field_value( $product->get_id(), $field['slug'] , false),
                     'field' => $field,
@@ -142,7 +142,7 @@ class ListViewTable extends WP_List_Table {
 
                 $fields = Helpers::get_fields_for_group( $this->product_group_slug );
                 foreach ( $fields as $field ) {
-                    if ( $field['slug'] === $this->orderby ) {
+                    if ( 'lpftbl_' . $field['slug'] === $this->orderby ) {
                         if ( FieldTypeRegistry::field_type_is_numeric( $field['type'] ) ) {
                             $a_val = floatval( $a_val );
                             $b_val = floatval( $b_val );
@@ -178,8 +178,8 @@ public function column_default( $item, $column_name ) {
     if ( isset( $item[ $column_name ]['field'] ) ) {
         $field      = $item[ $column_name ]['field'];
         $product_id = $item['ID'];
-
-        return self::render_field_cell( $product_id, $field );
+        $html = self::render_field_cell( $product_id, $field );
+        return wp_kses( $html, wp_kses_allowed_html( 'luma_product_fields_admin_fields' ) );
     }
 
     // 🔹 External override for non-HPF fields
@@ -262,7 +262,7 @@ public function column_default( $item, $column_name ) {
         ];
 
         foreach ( Helpers::get_fields_for_group( $this->product_group_slug ) as $field ) {
-            $columns[ $field['slug'] ] = $field['label'];
+            $columns[ 'lpftbl_' . $field['slug'] ] = $field['label'];
         }
         $columns = apply_filters( 'luma_product_fields_listview_columns', $columns );
         return $columns;
@@ -279,7 +279,8 @@ public function column_default( $item, $column_name ) {
         ];
 
         foreach ( Helpers::get_fields_for_group( $this->product_group_slug ) as $field ) {
-            $columns[ $field['slug'] ] = [ $field['slug'], false ];
+            $col_key = 'lpftbl_' . $field['slug'];
+            $columns[ $col_key ] = [ $col_key, false ]; 
         }
 
         return $columns;
@@ -320,12 +321,11 @@ public function column_default( $item, $column_name ) {
                 foreach ( $fields as $field ) :
                     $is_numeric = FieldTypeRegistry::field_type_is_numeric( $field['type'] );
                     ?>
-                    <td class="column-<?php echo esc_attr( $field['slug'] ); ?><?php echo $is_numeric ? ' lpf-is-numeric' : ''; ?>">
+                    <td class="column-<?php echo esc_attr( 'lpftbl_' . $field['slug'] ); ?><?php echo $is_numeric ? ' lpf-is-numeric' : ''; ?>">
                         <?php
                         if ( ! empty( $field['variation'] ) ) {
-                            // render_field_cell() returns full HTML; it must handle its own escaping internally.
-                            // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-                            echo ListViewTable::render_field_cell( $variation_id, $field );
+                            $updated_html = ListViewTable::render_field_cell( $variation_id, $field );
+                            echo wp_kses( $updated_html, wp_kses_allowed_html( 'luma_product_fields_admin_fields' ) );
                         } else {
                             echo esc_html( ' -- ' );
                         }
@@ -359,7 +359,7 @@ public function column_default( $item, $column_name ) {
         }
 
         $raw_value  = Helpers::get_field_value( $product_id, $field['slug'] );
-        $html_value = Helpers::get_formatted_field_value( $product_id, $field['slug'], false );
+        $html_value = self::render_field_cell_inner( $product_id, $field );
         
         $is_numeric = FieldTypeRegistry::field_type_is_numeric( $field['type'] ?? 'text' );
         $classes    = [ 'lpf-editable' ];
@@ -384,6 +384,25 @@ public function column_default( $item, $column_name ) {
             esc_attr( $field['slug'] ),
             $html_value
         );
+    }
+
+
+    /**
+     * Render the inner HTML for a field cell
+     *
+     * @param int   $product_id Product ID.
+     * @param array $field      Field definition.
+     * @return string
+     */
+    public static function render_field_cell_inner( int $product_id, array $field ): string {
+
+        $field_definition = FieldTypeRegistry::get( $field['type'] ?? 'text' );
+
+        if ( isset( $field_definition['render_admin_list_cb'] ) && is_callable( $field_definition['render_admin_list_cb'] ) ) {
+            return (string) call_user_func( $field_definition['render_admin_list_cb'], $product_id, $field );
+        }
+
+        return (string) Helpers::get_formatted_field_value( $product_id, $field['slug'], false );
     }
 
 

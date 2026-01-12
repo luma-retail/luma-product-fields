@@ -81,8 +81,6 @@ class Ajax {
             wp_send_json_error( [ 'error' => 'Not allowed.' ], 403 );
         }
 
-        // Unslash once. Keep all superglobal reads inside this dispatcher.
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing
         $payload = wp_unslash( $_POST );
 
         $action_raw = isset( $payload[ self::DISPATCH_KEY ] ) ? (string) $payload[ self::DISPATCH_KEY ] : '';
@@ -381,7 +379,7 @@ class Ajax {
             wp_send_json_error( 'Could not save field value.' );
         }
 
-        $updated_html = ListViewTable::render_field_cell( $product_id, $field );
+        $updated_html = ListViewTable::render_field_cell_inner( $product_id, $field );
         $safe_html = wp_kses( $updated_html, wp_kses_allowed_html( 'luma_product_fields_admin_fields' ) );
 
         wp_send_json_success( [ 'html' => $safe_html ] );

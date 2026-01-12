@@ -13,6 +13,7 @@ use Luma\ProductFields\Admin\Admin;
 use Luma\ProductFields\Registry\FieldTypeRegistry;
 use Luma\ProductFields\Admin\NotificationManager;
 use Luma\ProductFields\Taxonomy\ProductGroup;
+use Luma\ProductFields\Utils\CacheInvalidator;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -139,6 +140,7 @@ class FieldEditor {
                 : __( 'Add New Field', 'luma-product-fields' )
         );
         echo '</h1>';
+        NotificationManager::render( 'field_editor' ); 
 
         echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="luma-product-fields-field-editor">';
         echo '<input type="hidden" name="action" value="luma_product_fields_save_field_editor" />';
@@ -375,6 +377,8 @@ class FieldEditor {
             $this->flag_rewrite_flush();
         }
 
+        CacheInvalidator::invalidate_all_meta_caches();
+
         $action = $original_slug ? 'updated' : 'created';
         if ( $is_tax ) {
             $message = ( 'created' === $action )
@@ -411,7 +415,8 @@ class FieldEditor {
 
         $this->redirect_with_notice(
             $message,
-            'success'
+            'success',
+            admin_url( 'edit.php?post_type=product&page=luma-product-fields' )
         );
     }
 

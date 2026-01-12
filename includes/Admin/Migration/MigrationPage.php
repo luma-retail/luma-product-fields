@@ -178,6 +178,8 @@ class MigrationPage {
 
         echo '<h1>' . esc_html__( 'Product Fields Meta Migration', 'luma-product-fields' ) . '</h1>';
 
+        self::render_migration_intro();
+
         if ( ! empty( $notice ) ) {
             echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $notice ) . '</p></div>';
         }
@@ -288,6 +290,8 @@ class MigrationPage {
         if ( $show_summary_ui && ! empty( $summary ) ) {
             self::render_summary_table( $summary, $fields );
         }
+
+        self::render_migration_notes();
 
         echo '</div>';
     }
@@ -468,4 +472,97 @@ class MigrationPage {
             )
         );
     }
+
+
+    /**
+     * Render the main explanation block for the metadata migration tool.
+     *
+     * @return void
+     */
+    protected static function render_migration_intro(): void {
+
+        echo '<div class="luma-migration-intro">';
+
+
+
+        echo '<p>';
+        echo esc_html__(
+            'This tool migrates existing product meta values into Luma Product Fields. During migration, existing
+             meta values are read and converted to match the structure required by each field type.',
+            'luma-product-fields'
+        );
+        echo '</p>';
+
+        echo '<p>';
+        echo esc_html__(
+            'For example, a value like "15 grams" can be converted into a numeric value of 15 and a unit of grams when migrating into a number field with unit support.',
+            'luma-product-fields'
+        );
+        echo '</p>';
+
+        echo '<p>';
+        echo esc_html__(
+            'By default, the migration runs in dry-run mode. In this mode, no data is written to the database. Disable dry-run only when you are confident in the results.',
+            'luma-product-fields'
+        );
+        echo '</p>';
+
+        echo '</div>';
+    }
+
+
+    /**
+     * Render important notes and warnings for the metadata migration tool.
+     *
+     * This section clarifies limitations, non-destructive behavior,
+     * and the fact that this is a one-time migration, not synchronization.
+     *
+     * Intended to be displayed at the bottom of the migration page.
+     *
+     * @return void
+     */
+    protected static function render_migration_notes(): void {
+
+        echo '<div class="luma-migration-notes">';
+
+        echo '<h3>' . esc_html__( 'Important notes', 'luma-product-fields' ) . '</h3>';
+
+        echo '<ul>';
+
+        echo '<li>';
+        echo esc_html__(
+            'This tool performs a one-time migration only. It does not synchronize data.',
+            'luma-product-fields'
+        );
+        echo '</li>';
+
+        echo '<li>';
+        echo esc_html__(
+            'Original meta values are not deleted or modified. If other plugins or custom continue to write to the 
+             old/existing meta keys, those changes will not be reflected in Luma Product Fields.',
+            'luma-product-fields'
+        );
+        echo '</li>';
+
+        echo '<li>';
+        echo esc_html__(
+            'Conversion is best-effort. Values that do not match the expected format of a field type may be skipped or partially converted.',
+            'luma-product-fields'
+        );
+        echo '</li>';
+
+        echo '<li>';
+        echo esc_html__(
+            'It is recommended to review a subset of products after migration before relying on the migrated field data.',
+            'luma-product-fields'
+        );
+        echo '</li>';
+
+        echo '</ul>';
+
+        echo '</div>';
+    }
+
+
+
 }

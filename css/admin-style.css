@@ -192,6 +192,10 @@ input.lpf-field-slug {
     margin-left: 0.25em; /* add visual space */
 }
 
+#luma-product-fields-fields-overview  .widefat td.column-name {
+    padding:.5em;
+}
+
 #luma-product-fields-fields-overview .variation-child-row .column-name {
     padding-left:4em;
 }

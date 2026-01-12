@@ -32,7 +32,6 @@ class Admin {
     public function initialize_hooks(): void {        
         $field_renderer = new FieldRenderer();
         $variation_field_renderer = new VariationFieldRenderer();
-        MigrationAjax::register();
         add_filter('woocommerce_product_data_tabs', [$field_renderer, 'add_product_data_tab']);
         add_action('woocommerce_product_data_panels', [$field_renderer, 'display_product_data_fields_content']);
         add_action('woocommerce_process_product_meta', [$field_renderer, 'save_the_fields']);        
@@ -250,7 +249,7 @@ class Admin {
      * @return void
      */
     public static function show_back_button() {
-        echo '<p><a href="' . esc_url( admin_url( 'edit.php?post_type=product&page=luma-product-fields' ) ) . '" class="button-secondary">&larr; ' . esc_html__( 'Back to Field Overview', 'luma-product-fields' ) . '</a></p>';
+        echo '<p><a href="' . esc_url( admin_url( 'edit.php?post_type=product&page=luma-product-fields' ) ) . '" class="button-secondary">&larr; ' . esc_html__( 'Back to Field Manager', 'luma-product-fields' ) . '</a></p>';
     }
 
 }

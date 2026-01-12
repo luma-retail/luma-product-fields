@@ -7,6 +7,8 @@
 
 namespace Luma\ProductFields\Admin;
 
+use Luma\ProductFields\Utils\CacheInvalidator;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -37,6 +39,7 @@ class Settings {
 	public function __construct() {
 		add_filter( 'woocommerce_get_sections_products', [ $this, 'add_settings_section' ] );
 		add_filter( 'woocommerce_get_settings_products', [ $this, 'add_settings_fields' ], 10, 2 );
+		add_action( 'woocommerce_update_options_products_luma_product_fields', [ $this, 'handle_save' ] );
 	}
 
 
@@ -143,4 +146,15 @@ class Settings {
 		 */
 		return apply_filters( 'luma_product_fields_settings_array', $settings );
 	}
+
+
+	/**
+	 * Invalidate meta cache after saving options.
+	 *
+	 * @return void
+	 */
+	public function handle_save(): void {
+		CacheInvalidator::invalidate_all_meta_caches();
+	}
+
 }

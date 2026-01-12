@@ -561,68 +561,6 @@ jQuery(document).on('click', 'a.lpf-toggle-featured', function (e) {
 });
 
 
-jQuery(function($) {
-
-    $(document).on('change', 'select[name^="map_"]', function(event) {
-        var metaKey = $(this).val();
-        if (!metaKey) {
-            return;
-        }
-
-        $.post(
-            luma_product_fields_admin_ajaxdata.ajaxurl,
-            {
-                action: luma_product_fields_admin_ajaxdata.action,
-                luma_product_fields_action: 'migration_meta_preview',
-                nonce: luma_product_fields_admin_ajaxdata.nonce,
-                meta_key: metaKey,
-                limit: 10
-            }
-        ).done(function(response) {
-            if (!response || !response.success) {
-                return;
-            }
-
-            var values = response.data.values || [];
-            var html = '<strong>Sample values for:</strong> <code>' + metaKey + '</code><br>';
-
-            if (values.length === 0) {
-                html += '<em>No values found</em>';
-            } else {
-                html += '<ul>';
-                values.forEach(function(v) {
-                    html += '<li>' + $('<div/>').text(v).html() + '</li>';
-                });
-                html += '</ul>';
-            }
-
-            var $modal = $('<div class="luma-product-fields-meta-preview-modal"></div>').html(html)
-                .css({
-                    background: '#fff',
-                    border: '1px solid #ccc',
-                    padding: '12px',
-                    position: 'absolute',
-                    zIndex: 99999,
-                    maxWidth: '360px'
-                });
-
-            $('body').append($modal);
-
-            $modal.css({
-                top: event.pageY + 12 + 'px',
-                left: event.pageX + 'px'
-            });
-
-            setTimeout(function() {
-                $(document).one('click', function() {
-                    $modal.remove();
-                });
-            }, 50);
-        });
-    });
-
-});
-
 // Field editor field type click / highlight
 jQuery(function($) {
     var $select = $('#luma_product_fields_fields_type_selector');
