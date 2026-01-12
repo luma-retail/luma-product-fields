@@ -11,8 +11,10 @@ use Luma\ProductFields\Taxonomy\TaxonomyManager;
 use Luma\ProductFields\Meta\MetaManager;
 use Luma\ProductFields\Admin\Admin;
 use Luma\ProductFields\Registry\FieldTypeRegistry;
+use Luma\ProductFields\Admin\NotificationManager;
+use Luma\ProductFields\Taxonomy\ProductGroup;
 
-defined('ABSPATH') || exit;
+defined( 'ABSPATH' ) || exit;
 
 
  /**
@@ -31,12 +33,12 @@ defined('ABSPATH') || exit;
  *      @param array $field 
  *
  *
- * @hook luma_product_fields_fieldEditor_form_data
+ * @hook luma_product_fields_field_editor_form_data
  *      Filters the data sent to TaxonomyManager or MetaManager for saving.
  *      @param array $data 
  *
  *
- * @hook luma_product_fields_field_eitor_success_message
+ * @hook luma_product_fields_field_editor_success_message
  *      Filters the success message shown after a field is created or updated.
  *      @param string $message  The success message to be displayed.
  *      @param string $action   The action performed: 'created' or 'updated'.
@@ -44,13 +46,12 @@ defined('ABSPATH') || exit;
  *      @param bool   $is_tax   Whether the field is a taxonomy field.
  *      @return string Filtered success message.
  */
-class FieldEditor
-{
+class FieldEditor {
 
     public function __construct()
     {
         add_action('admin_menu', [$this, 'register_editor_page']);
-        add_action('admin_init', [$this, 'maybe_save']);
+        add_action('admin_post_luma_product_fields_save_field_editor', [$this, 'handle_save']);
     }
 
 
@@ -65,7 +66,7 @@ class FieldEditor
     public function register_editor_page(): void {
 
         $parent_slug = 'edit.php?post_type=product';
-        $menu_slug   = LUMA_PRODUCT_FIELDS_PREFIX . '-new-field';
+        $menu_slug   =  'luma-product-fields-edit';
 
         add_submenu_page(
             $parent_slug,
@@ -77,7 +78,7 @@ class FieldEditor
         );
 
         // Hide it from the submenu UI while keeping the page accessible via direct URL.
-        remove_submenu_page( $parent_slug, $menu_slug );
+//        remove_submenu_page( $parent_slug, $menu_slug );
     }
 
 
@@ -88,9 +89,11 @@ class FieldEditor
      */
     public function render_editor(): void
     { 
-        $slug = isset( $_GET['edit'] ) ? sanitize_title( wp_unslash( $_GET['edit'] ) ) : '';  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+        $slug = isset( $_GET['edit'] ) ? sanitize_key( wp_unslash( $_GET['edit'] ) ) : '';   // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
         $field          = MetaManager::get_field( $slug ) ?? TaxonomyManager::get_field( $slug );
+        $field = is_array( $field ) ? $field : [];
         $field_defaults = [
             'type'             => '',
             'label'            => '',
@@ -137,8 +140,12 @@ class FieldEditor
         );
         echo '</h1>';
 
-        echo '<form method="post" class="luma-product-fields-field-editor">';
-        wp_nonce_field( 'luma_product_fields_fieldssave_field_editor' );
+        echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="luma-product-fields-field-editor">';
+        echo '<input type="hidden" name="action" value="luma_product_fields_save_field_editor" />';
+        wp_nonce_field( 'luma_product_fields_save_field_editor', 'luma_product_fields_nonce' );
+        if ( $slug ) {
+            echo '<input type="hidden" name="original_slug" value="' . esc_attr( $slug ) . '" />';
+        }
 
         echo '<table class="form-table">';
 
@@ -163,13 +170,18 @@ class FieldEditor
         // Tooltip (front end).
         echo '<tr><th><label>' . esc_html__( 'Tooltip (front end)', 'luma-product-fields' ) . '</label></th>';
         echo '<td>';
-        // wp_editor handles its own escaping / kses.
+
         wp_editor(
             $field['frontend_desc'],
             'luma_product_fields_fields_frontend_desc',
             [
                 'textarea_rows' => 5,
                 'media_buttons' => false,
+                'tinymce'       => [
+                    'block_formats' => 'Paragraph=p;Heading 3=h3;Heading 4=h4;Heading 5=h5',
+                    'toolbar1'      => 'formatselect,bold,italic,underline,bullist,numlist,alignleft,aligncenter,alignright,alignjustify',
+                    'toolbar2'      => 'forecolor,link,unlink,removeformat,undo,redo',
+                ],
             ]
         );
         echo '<p>' . esc_html__( 'A tooltip that pops up by the label on the frontend. Just leave this field empty to omit.', 'luma-product-fields' ) . '</p>';
@@ -178,7 +190,7 @@ class FieldEditor
         // Tooltip (admin).
         echo '<tr><th><label>' . esc_html__( 'Tooltip (for admin)', 'luma-product-fields' ) . '</label></th>';
         echo '<td><textarea name="luma_product_fields_fields[description]" rows="3" class="large-text">';
-        echo esc_textarea( stripslashes( $field['description'] ?? '' ) );
+        echo esc_textarea( (string) ( $field['description'] ?? '' ) );
         echo '</textarea>';
         echo '<p>' . esc_html__( 'A tooltip for the shop manager to better understand what to do. Just leave this field empty to omit.', 'luma-product-fields' ) . '</p>';
         echo '</td></tr>';
@@ -196,10 +208,8 @@ class FieldEditor
         // Product groups.
         echo '<tr><th><label>' . esc_html__( 'Product Groups', 'luma-product-fields' ) . '</label></th>';
         echo '<td>';
-        // get_product_group_checkboxes() returns full HTML (inputs, labels, etc.).
-        // All dynamic pieces MUST be escaped inside that method.
-        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-        echo ( new Admin() )->get_product_group_checkboxes( 'luma_product_fields_fields[groups]', $field['groups'] ?? [ 'general' ] );
+        $html = ( new Admin() )->get_product_group_checkboxes( 'luma_product_fields_fields[groups]', $field['groups'] ?? [ 'general' ] );
+        echo wp_kses( $html, wp_kses_allowed_html( 'luma_product_fields_admin_fields' ) );
         echo '<p>' . esc_html__( 'Leave empty to show across all products', 'luma-product-fields' ) . '</p>';
         echo '</td></tr>';
 
@@ -220,7 +230,7 @@ class FieldEditor
             'Schema Property controls how the value is included in your product’s structured data (schema.org). Adding a valid schema property (e.g. weight, brand, material) helps Google and other search engines better understand your product, which may improve how it appears in search results.',
             'luma-product-fields'
         );
-        echo ' <a target="_blank" href="https://schema.org/Product">';
+        echo ' <a target="_blank" rel="noopener noreferrer" href="https://schema.org/Product">';
         echo esc_html__( 'See list of available schema.org properties for products', 'luma-product-fields' );
         echo '</a></td></tr>';
 
@@ -245,52 +255,62 @@ class FieldEditor
      *
      * @return void
      */
-         /**
-     * Handles saving the field definition.
-     *
-     * @return void
-     */
-    public function maybe_save(): void
+    public function handle_save(): void
     {
-        if ( 'POST' !== ( $_SERVER['REQUEST_METHOD'] ?? '' ) ) {  // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            return;
+
+        if (! current_user_can( 'manage_woocommerce' ) ) {
+            wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'luma-product-fields' ) );
         }
 
-        if ( ! isset( $_POST['luma_product_fields_fields'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-            return;
-        }
-        check_admin_referer( 'luma_product_fields_fieldssave_field_editor' );
+        check_admin_referer( 'luma_product_fields_save_field_editor', 'luma_product_fields_nonce' );
 
-        // Safely pull and normalize the lpf_fields array.
+
+        if ( empty( $_POST['luma_product_fields_fields'] ) || ! is_array( $_POST['luma_product_fields_fields'] ) ) {
+            $this->redirect_with_notice(
+                __( 'Error in submission.', 'luma-product-fields' ),
+                'error'
+            );
+        }
+
         // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
         $field_input_raw = wp_unslash( $_POST['luma_product_fields_fields'] );
-        $field_input     = is_array( $field_input_raw ) ? $field_input_raw : [];
+        // Raw input is sanitized and validated per-field below.
+        $field_input     = is_array( $field_input_raw ) ? $field_input_raw : [];        
 
-        $original_slug = isset( $_GET['edit'] )
-            ? sanitize_title( wp_unslash( $_GET['edit'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $original_slug = isset( $_POST['original_slug'] )
+            ? sanitize_key( wp_unslash( $_POST['original_slug'] ) )
             : '';
 
         $label  = sanitize_text_field( $field_input['label'] ?? '' );
-        $type   = sanitize_text_field( $field_input['type'] ?? '' );
+
+        if ( '' === $label ) {
+            $this->redirect_with_notice( __( 'Label is required.', 'luma-product-fields' ), 'error' );
+        }
+
+        $type   = sanitize_key( $field_input['type'] ?? '' );
+
+        if ( ! FieldTypeRegistry::get( $type ) ) {
+            $this->redirect_with_notice(
+                __( 'Invalid field type.', 'luma-product-fields' ),
+                'error'
+            );
+        }
+
         $info   = FieldTypeRegistry::get( $type ) ?? [];
         $is_tax = ( $info['storage'] ?? '' ) === 'taxonomy';
 
         $slug = $original_slug ?: sanitize_title( $label );
 
+        if ( '' === $slug ) {
+            $this->redirect_with_notice( __( 'Could not generate a valid slug from the label.', 'luma-product-fields' ), 'error' );
+        }
+
         // Prevent creating new fields with conflicting slugs.
         if ( empty( $original_slug ) && $this->slug_conflicts( $slug ) ) {
-            add_action(
-                'admin_notices',
-                static function () {
-                    echo '<div class="notice notice-error"><p>' .
-                         esc_html__(
-                             'A field or taxonomy with this name already exists. Please choose another name.',
-                             'luma-product-fields'
-                         ) .
-                         '</p></div>';
-                }
+            $this->redirect_with_notice(
+                __( 'A field or taxonomy with this name already exists. Please choose another name.', 'luma-product-fields' ),
+                'error'
             );
-            return;
         }
 
         $before = null;
@@ -298,16 +318,32 @@ class FieldEditor
             $before = TaxonomyManager::get_field( $original_slug );
         }
 
+        $groups = [];
         if ( isset( $field_input['groups'] ) ) {
-            $groups = array_map(
-                'sanitize_title',
+            $submitted = array_map(
+                'sanitize_key',
                 array_filter( (array) $field_input['groups'] )
             );
-        } else {
-            $groups = [];
+
+            if ( ! empty( $submitted ) ) {
+                $allowed = array_keys( ProductGroup::get_product_groups() );
+
+                $groups = array_values(
+                    array_intersect( $submitted, $allowed )
+                );
+            }
         }
 
-        // Frontend desc comes from wp_editor; guard and unslash before kses.
+        $unit = sanitize_key( (string) ( $field_input['unit'] ?? '' ) );
+
+        $allowed_units = array_keys( FieldTypeRegistry::get_units() );
+
+        if ( '' !== $unit && ! in_array( $unit, $allowed_units, true ) ) {
+            $unit = '';
+        }
+
+        $schema_prop = sanitize_key( $field_input['schema_prop'] ?? '' );
+
         $frontend_desc_raw = isset( $_POST['luma_product_fields_fields_frontend_desc'] )
             ? wp_unslash( $_POST['luma_product_fields_fields_frontend_desc'] ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             : '';
@@ -318,8 +354,8 @@ class FieldEditor
             'frontend_desc'    => wp_kses_post( $frontend_desc_raw ),
             'slug'             => $slug,
             'type'             => $type,
-            'unit'             => sanitize_text_field( $field_input['unit'] ?? '' ),
-            'schema_prop'      => sanitize_text_field( $field_input['schema_prop'] ?? '' ),
+            'unit'             => $unit,
+            'schema_prop'      => $schema_prop,
             'groups'           => $groups,
             'hide_in_frontend' => ! empty( $field_input['hide_in_frontend'] ),
             'variation'        => ! empty( $field_input['variation'] ),
@@ -373,16 +409,10 @@ class FieldEditor
             $is_tax
         );
 
-        NotificationManager::add_notice(
-            [
-                'type'    => 'success',
-                'message' => $message,
-                'context' => 'field_editor',
-            ]
+        $this->redirect_with_notice(
+            $message,
+            'success'
         );
-
-        wp_safe_redirect( admin_url( 'edit.php?post_type=product&page=lpf-fields' ) );
-        exit;
     }
 
     
@@ -490,5 +520,43 @@ class FieldEditor
     {
         update_option( 'luma_product_fields_flush_rewrite', 1, true );
     }
+
+
+    /**
+     * Add an admin notice and redirect safely, then exit.
+     *
+     * @param string      $message   Notice message (HTML allowed; escaped on render).
+     * @param string      $type      Notice type: success|error|warning|info.
+     * @param string|null $redirect  Optional redirect URL.
+     *
+     * @return void
+     */
+    protected function redirect_with_notice(
+        string $message,
+        string $type = 'info',
+        ?string $redirect = null
+    ): void {
+
+        NotificationManager::add_notice(
+            [
+                'type'    => $type,
+                'message' => $message,
+                'context' => 'field_editor',
+            ]
+        );
+
+        if ( ! $redirect ) {
+            $redirect = wp_get_referer();
+        }
+
+        if ( ! $redirect ) {
+            $redirect = admin_url( 'edit.php?post_type=product&page=luma-product-fields' );
+        }
+
+        wp_safe_redirect( $redirect );
+        exit;
+    }
+
+
     
 }

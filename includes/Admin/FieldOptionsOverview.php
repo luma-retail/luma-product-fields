@@ -45,7 +45,7 @@ class FieldOptionsOverview {
             __( 'Product fields', 'luma-product-fields' ),
             __( 'Product fields', 'luma-product-fields' ),
             'manage_woocommerce',
-            'luma-product-fields-fields',
+            'luma-product-fields',
             [ $this, 'render_panel' ],
             4
         );
@@ -73,10 +73,9 @@ class FieldOptionsOverview {
                         'include_general' => true,
                         'general_label'   => __( 'No groups', 'luma-product-fields' ),
                     );
-                    // get_product_group_select() returns full HTML (select + options).
-                    // All dynamic pieces must be escaped inside that method.
-                    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-                    echo ( new Admin() )->get_product_group_select( 'group', $selected_group, null, $args );
+
+                    $select_html = ( new Admin() )->get_product_group_select( 'group', $selected_group, null, $args );
+                    echo wp_kses( $select_html, wp_kses_allowed_html( 'luma_product_fields_admin_fields' ) );
                     ?>
                     <input type="submit" value="<?php echo esc_attr__( 'Filter', 'luma-product-fields' ); ?>" />
                 </form>
@@ -84,8 +83,8 @@ class FieldOptionsOverview {
 
             <?php $this->render_table(); ?>
 
-            <div class="luma-product-fields-actions">
-                <a href="<?php echo esc_url( admin_url( 'admin.php?page=lpf-new-field' ) ); ?>" class="button button-primary button-large" style="margin-left: 1em;">
+            <div class="lpf-actions">
+                <a href="<?php echo esc_url( admin_url( 'admin.php?page=luma-product-fields-edit' ) ); ?>" class="button button-primary button-large" style="margin-left: 1em;">
                     <span class="dashicons dashicons-plus-alt"></span><?php esc_html_e( 'Add New Field', 'luma-product-fields' ); ?>
                 </a>
 
@@ -133,9 +132,9 @@ class FieldOptionsOverview {
             $hide_in_frontend = ! empty( $field['hide_in_frontend'] );
             $variation        = ! empty( $field['variation'] );
 
-            $edit_url   = admin_url( 'admin.php?page=lpf-new-field&edit=' . urlencode( $slug ) );
+            $edit_url   = admin_url( 'admin.php?page=luma-product-fields-edit&edit=' . urlencode( $slug ) );
             $delete_url = wp_nonce_url(
-                admin_url( 'admin.php?page=lpf-fields&lpf_delete_field=' . urlencode( $slug ) ),
+                admin_url( 'admin.php?page=luma-product-fields&luma_product_fields_delete_field=' . urlencode( $slug ) ),
                 'luma_product_fields_delete_field_' . $slug
             );
 
@@ -207,7 +206,7 @@ class FieldOptionsOverview {
             ]
         );
 
-        wp_safe_redirect( admin_url( 'admin.php?page=lpf-fields' ) );
+        wp_safe_redirect( admin_url( 'admin.php?page=luma-product-fields' ) );
         exit;
     }
 }

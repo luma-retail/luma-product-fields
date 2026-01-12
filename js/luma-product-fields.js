@@ -1,22 +1,13 @@
 jQuery(document).ready(function ($) {
     $(".single_variation_wrap").on("show_variation", function (event, variation) {
         const variationId = variation.variation_id;
-        const container = $("#lpf-product-meta-list");
+        const container = $("#luma-product-fields-list");
 
         if (!variationId || !luma_product_fields_data || !luma_product_fields_data.ajax_url || !luma_product_fields_data.nonce) {
             console.warn("Missing variation ID or AJAX config.");
             return;
         }
-        
-        
-        console.log( luma_product_fields_data );
-
-        const data = {
-                action: "luma_product_fields_get_variation_fields_html",
-                variation_id: variationId,
-                nonce: luma_product_fields_data.nonce
-        };
-        
+            
         $.ajax({
             url: luma_product_fields_data.ajax_url,
             type: "POST",

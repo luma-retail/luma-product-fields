@@ -61,36 +61,26 @@ class FieldRenderer {
         $product_id      = (int) $post->ID;
         $group_slug      = Helpers::get_product_group_slug( $product_id );
         $no_group_label  = __( 'No group set', 'luma-product-fields' );
-
-        // We output complex admin form HTML here. All dynamic pieces inside helpers/renderers
-        // (get_product_group_select(), render_form_fields()) are escaped internally.
-        // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
+        $form_fields_html = $this->render_form_fields( $group_slug, $product_id );
+        $select_html = ( new Admin() )->get_product_group_select(
+            'luma-product-fields-product-group-select',
+            $group_slug,
+            $no_group_label
+        );
         ?>
         <div id="luma_product_fields_product_data" class="panel woocommerce_options_panel">
             <?php wp_nonce_field( 'luma_product_fields_save_product_fields', 'luma_product_fields_product_fields_nonce' ); ?>
             <div class="toolbar toolbar-top options-group">
                 <p class="form-field">
                     <label><?php esc_html_e( 'Product group', 'luma-product-fields' ); ?></label>
-                    <?php
-                    echo ( new Admin() )->get_product_group_select(
-                        'luma-product-fields-product-group-select',
-                        $group_slug,
-                        $no_group_label
-                    );
-                    ?>
+                    <?php echo wp_kses( $select_html, wp_kses_allowed_html( 'luma_product_fields_admin_fields' ) ); ?>
                 </p>
                 <div id="luma-product-fields-product-group-fields">
-                    <?php
-                    echo $this->render_form_fields(
-                        $group_slug,
-                        $product_id
-                    );
-                    ?>
+                    <?php echo wp_kses( $form_fields_html, wp_kses_allowed_html( 'luma_product_fields_admin_fields' ) ); ?>
                 </div>
             </div>
         </div>
         <?php
-        // phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
     }
 
 
@@ -109,13 +99,15 @@ class FieldRenderer {
 
         if ( ! empty( $fields ) ) {
             foreach ( $fields as $field ) {
-                $output .= $this->render_field_by_type( $field, $post_id );
+                $output .= $this->render_field_by_type( $field, $post_id );            
             }
-        } elseif ( 'general' !== $slug ) {
-            $output .= '<p class="form-field">' .
-                esc_html__( 'No fields defined yet for this product group', 'luma-product-fields' ) .
-            '</p>';
+            return $output;
         }
+
+        $output .= '<p class="form-field"><em>' . 
+            esc_html__( 'No fields defined yet.', 'luma-product-fields' ) . 
+            ' <a href="' . esc_url( admin_url( 'edit.php?post_type=product&page=luma-product-fields' ) ) . '">' . 
+            esc_html__( 'Add fields here', 'luma-product-fields' ) . '</a></em></p>';    
 
         return $output;
     }
@@ -182,20 +174,20 @@ class FieldRenderer {
 
             return method_exists( $this, $method )
                 ? $this->$method( $field, $post_id )
-                : $this->render_text_field( $field, $post_id ); // Fallback for unknown core type.
+                : $this->render_text_field( $field, $post_id );
         }
 
-        $cb = FieldTypeRegistry::get_callback( $type, 'admin_edit_cb' );
+        $cb = FieldTypeRegistry::get_callback( $type, 'render_admin_product_cb' );
 
         if ( is_callable( $cb ) ) {
-            return (string) call_user_func( $cb, $field['slug'], $post_id, $field );
+            return (string) call_user_func( $cb, sanitize_key( $field['slug'] ), $post_id, $field );
         }
 
         $msg = __FUNCTION__ . ' ' . __( 'Unsupported field type: ', 'luma-product-fields' );
 
         return '<p class="form-field"><em>' . esc_html( $msg ) . '</em> ' . esc_html( $type ) . '</p>';
     }
-    
+
 
     /**
      * Render a text field.
@@ -533,14 +525,14 @@ class FieldRenderer {
             : '';
 
         $group_term = $group_slug
-            ? get_term_by( 'slug', $group_slug, 'luma_product_fields_product_group' )
+            ? get_term_by( 'slug', $group_slug, 'lpf_product_group' )
             : null;
 
         if ( $group_term && ! is_wp_error( $group_term ) ) {
-            wp_set_post_terms( $post_id, [ (int) $group_term->term_id ], 'luma_product_fields_product_group' );
+            wp_set_post_terms( $post_id, [ (int) $group_term->term_id ], 'lpf_product_group' );
             $effective_group = $group_term->slug;
         } else {
-            wp_set_post_terms( $post_id, [], 'luma_product_fields_product_group' );
+            wp_set_post_terms( $post_id, [], 'lpf_product_group' );
             $effective_group = 'general';
         }
 

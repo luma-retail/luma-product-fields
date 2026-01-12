@@ -15,10 +15,13 @@ use Luma\ProductFields\Admin\FieldOptionsOverview;
 use Luma\ProductFields\Admin\ListView;
 use Luma\ProductFields\Admin\Ajax;
 use Luma\ProductFields\Admin\Settings;
+use Luma\ProductFields\Admin\Kses;
 use Luma\ProductFields\Admin\Migration\MigrationPage;
 use Luma\ProductFields\Registry\FieldTypeRegistry;
 use Luma\ProductFields\Admin\NotificationManager;
 use Luma\ProductFields\Admin\Onboarding;
+use Luma\ProductFields\Frontend\FrontendController;
+use Luma\ProductFields\Frontend\Kses as FrontendKses;
 
 defined('ABSPATH') || exit;
 
@@ -67,6 +70,7 @@ class Plugin {
         add_action( 'init', function () {
             if ( is_admin() ) {
                 ( new Admin() )->initialize_hooks();
+                ( new Kses() )->register();
                 new FieldEditor();
                 new FieldOptionsOverview();
                 new ListView();
@@ -81,6 +85,7 @@ class Plugin {
 
         if ( ! is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
             ( new Frontend\FrontendController() )->initialize_hooks();
+            ( new FrontendKses() )->register();
         }
     }
 }

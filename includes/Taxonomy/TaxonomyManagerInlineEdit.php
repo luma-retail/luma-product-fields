@@ -44,7 +44,7 @@ class TaxonomyManagerInlineEdit {
      * Returns (and memoizes) the map of taxonomies to hide in Quick/Bulk Edit.
      *
      * Uses TaxonomyManager::get_all() (list of arrays with at least 'slug' and 'is_taxonomy').
-     * Always includes 'luma_product_fields_product_group' to suppress the default inline UI,
+     * Always includes 'lpf_product_group' to suppress the default inline UI,
      * since you render your own single-select control.
      *
      * @return array<string,bool>
@@ -64,7 +64,7 @@ class TaxonomyManagerInlineEdit {
         }
 
         // Also hide the default inline UI for Product group.
-        $slugs[] = 'luma_product_fields_product_group';
+        $slugs[] = 'lpf_product_group';
 
         $this->hidden = array_fill_keys( $slugs, true );
         return $this->hidden;

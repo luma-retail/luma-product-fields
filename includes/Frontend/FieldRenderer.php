@@ -63,13 +63,6 @@ class FieldRenderer
         }
         $type = $field['type'] ?? 'text';
 
-        // External custom callback
-        $cb = FieldTypeRegistry::get_callback($type, 'frontend_cb');
-        if (is_callable($cb)) {
-            return call_user_func($cb, $field, $value );
-        }
-        
-
         // Internal core renderer
         if (FieldTypeRegistry::is_core_type($type)) {
             $method = "render_{$type}_field";
@@ -78,76 +71,171 @@ class FieldRenderer
                 : esc_html($value);
         }
 
-        return esc_html($value); // fallback
+        // External custom callback
+        $cb = FieldTypeRegistry::get_callback($type, 'render_frontend_cb');
+        if (is_callable($cb)) {
+            return call_user_func($cb, $field, $value );
+        }
+
+        return esc_html($value); // fallback.
+    }
+
+    
+    /**
+     * Wrap rendered field value in semantic HTML using <dl>/<dt>/<dd>.
+     *
+     * @param array  $field Field definition.
+     * @param string $value Rendered field value.
+     * @param string $link  Optional link URL.
+     *
+     * @return string
+     */
+    public static function wrap_field( array $field, string $value, string $link = '' ): string {
+        $raw_slug = (string) ( $field['slug'] ?? '' );
+
+        if ( '' === $raw_slug ) {
+            return '';
+        }
+
+        $slug  = esc_attr( $raw_slug );
+        $label = esc_html( (string) ( $field['label'] ?? $raw_slug ) );
+
+        $tooltip    = self::build_tooltip_html( $field, $slug, $label );
+        $dd_payload = self::build_dd_payload_html( $field, $value, $link );
+
+        return sprintf(
+            "<dl class='lpf-product-meta' data-slug='%1\$s'>
+                <dt class='lpf-label'>%2\$s%3\$s:</dt>
+                <dd class='lpf-val'>%4\$s</dd>
+            </dl>",
+            $slug,
+            $label,
+            $tooltip,
+            $dd_payload
+        );
     }
 
 
     /**
-     * Wrap rendered field value in semantic HTML using <dl>/<dt>/<dd>.
-     *
-     * Adds tooltip and optional schema.org support. Fields output
-     * as properties of the parent Product entity (Yoast), avoiding nested
-     * Product scopes that cause validation errors.
+     * Build the tooltip HTML (if any) for a frontend field.
      *
      * @param array  $field Field definition.
-     * @param string $value Rendered field value (HTML-escaped).
-     * @param string $link  Optional link URL.
-     * @return string
+     * @param string $slug  Field slug, already escaped for attributes.
+     * @param string $label Field label, already escaped for display.
+     * @return string Tooltip HTML or empty string.
      */
-    public static function wrap_field(array $field, string $value, string $link = ''): string
-    {
-        $slug        = esc_attr($field['slug']);
-        $label       = esc_html($field['label'] ?? $slug);
-        $unit        = $field['unit'] ?? '';
-        $unit_html   = $unit ? Helpers::get_formatted_unit_html($unit) : '';
-        $schema_prop = $field['schema_prop'] ?? '';
-        $aria_label  = $label . ' ' . __('explanation', 'luma-product-fields');
-
-        $schema_meta   = '';
-        $itemprop_attr = '';
-
-        // If schema property is set and unit is provided (e.g., weight, dimensions)
-        if ($schema_prop && !empty($unit)) {
-            $clean_value = esc_attr( trim( wp_strip_all_tags($value) ) );
-            $schema_meta = "
-            <meta itemprop='{$schema_prop}' content='{$clean_value}'>
-            <meta itemprop='{$schema_prop}UnitText' content='" . esc_attr(trim($unit)) . "'>";
-        } elseif ($schema_prop) {
-            // Simple literal property (e.g., brand, sku, material)
-            $itemprop_attr = " itemprop='" . esc_attr($schema_prop) . "'";
+    protected static function build_tooltip_html( array $field, string $slug, string $label ): string {
+        if ( empty( $field['frontend_desc'] ) ) {
+            return '';
         }
 
-        // Detect if $value already contains schema
-        $is_html_with_schema = str_contains($value, 'itemprop=');
+        $aria_label = esc_attr( $label . ' ' . __( 'explanation', 'luma-product-fields' ) );
+        $desc = (string) $field['frontend_desc'];
 
-        // Build display value
-        if ($link) {
-            // Keep itemprop on span instead of <a> to avoid validation issues
-            $display_value = $itemprop_attr
-                ? "<a href='" . esc_url($link) . "'><span{$itemprop_attr}>{$value}</span></a>"
-                : "<a href='" . esc_url($link) . "'>{$value}</a>";
-        } else {
-            $display_value = $is_html_with_schema ? $value : "<span{$itemprop_attr}>{$value}</span>";
-        }
-
-        // Tooltip
-        $tooltip = '';
-        if (!empty($field['frontend_desc'])) {
-            $desc = wp_kses_post($field['frontend_desc']);
-            $tooltip = "
-            <span class='luma-product-fields-tooltip' tabindex='0'>
-                <span class='luma-product-fields-tooltip-trigger' role='button' aria-describedby='tip-{$slug}' aria-label='{$aria_label}'>?</span>
-                <span class='luma-product-fields-tooltip-txt' id='tip-{$slug}' role='tooltip'>{$desc}</span>
-            </span>";
-        }
-
-        return "<dl class='luma-product-fields-product-meta' data-slug='{$slug}'>
-            <dt class='luma-product-fields-label'>{$label}{$tooltip}:</dt>
-            <dd class='luma-product-fields-val'>{$display_value} {$unit_html} {$schema_meta}</dd>
-        </dl>";
+        return sprintf(
+            "<span class='lpf-tooltip' tabindex='0'>
+                <span class='lpf-tooltip-trigger' role='button' aria-describedby='tip-%1\$s' aria-label='%2\$s'>?</span>
+                <span class='lpf-tooltip-txt' id='tip-%1\$s' role='tooltip'>%3\$s</span>
+            </span>",
+            $slug,
+            $aria_label,
+            $desc
+        );
     }
 
-    
+
+    /**
+     * Build the complete <dd> payload (value + unit + schema meta).
+     *
+     * Important: This method only *builds* HTML. Final sanitizing must be done
+     * by sanitize_dd_html().
+     *
+     * @param array  $field Field definition.
+     * @param string $value Rendered value (already escaped/sanitized by renderer contract).
+     * @param string $link  Optional link URL.
+     * @return string Raw dd HTML payload.
+     */
+    protected static function build_dd_payload_html( array $field, string $value, string $link = '' ): string {
+        $unit        = (string) ( $field['unit'] ?? '' );
+        $schema_prop = (string) ( $field['schema_prop'] ?? '' );
+
+        $unit_html = $unit ? Helpers::get_formatted_unit_html( $unit ) : '';
+
+        $schema_bits = self::build_schema_bits( $schema_prop, $unit, $value );
+
+        $display_value = self::build_display_value_html(
+            $value,
+            $link,
+            $schema_bits['itemprop_attr']
+        );
+
+        return trim( $display_value . ' ' . $unit_html . ' ' . $schema_bits['schema_meta'] );
+    }
+
+
+
+    /**
+     * Build schema meta tags and/or itemprop attribute for the display value.
+     *
+     * @param string $schema_prop Schema property (e.g. "weight", "brand").
+     * @param string $unit        Unit string (e.g. "kg").
+     * @param string $value       Rendered value (may contain HTML).
+     * @return array{schema_meta:string,itemprop_attr:string}
+     */
+    protected static function build_schema_bits( string $schema_prop, string $unit, string $value ): array {
+        $schema_prop = trim( $schema_prop );
+        $unit        = trim( $unit );
+
+        if ( '' === $schema_prop ) {
+            return [
+                'schema_meta'   => '',
+                'itemprop_attr' => '',
+            ];
+        }
+        if ( '' !== $unit ) {
+            $clean_value = esc_attr( trim( wp_strip_all_tags( $value ) ) );
+
+            return [
+                'schema_meta'   => sprintf(
+                    '<meta itemprop="%1$s" content="%2$s"><meta itemprop="%1$sUnitText" content="%3$s">',
+                    esc_attr( $schema_prop ),
+                    $clean_value,
+                    esc_attr( $unit )
+                ),
+                'itemprop_attr' => '',
+            ];
+        }
+        return [
+            'schema_meta'   => '',
+            'itemprop_attr' => sprintf( ' itemprop="%s"', esc_attr( $schema_prop ) ),
+        ];
+    }
+
+
+
+    /**
+     * Build the display value HTML (value wrapped in <span>, optionally inside <a>).
+     *
+     * @param string $value         Rendered field value (may contain HTML).
+     * @param string $link          Optional URL.
+     * @param string $itemprop_attr Optional ' itemprop="..."' for the span.
+     *
+     * @return string
+     */
+    protected static function build_display_value_html( string $value, string $link, string $itemprop_attr ): string {
+        $has_schema_in_value = false !== strpos( $value, 'itemprop=' );
+
+        $inner = $has_schema_in_value
+            ? $value
+            : sprintf( '<span%1$s>%2$s</span>', $itemprop_attr, $value );
+
+        if ( '' === $link ) {
+            return $inner;
+        }
+
+        return sprintf( '<a href="%1$s">%2$s</a>', esc_url( $link ), $inner );
+    }
+        
 
     /**
      * Render a text field.

@@ -38,9 +38,6 @@ class VariationFieldRenderer {
 
         $group_slug = Helpers::get_product_group_slug( $product_id );
 
-        // This method is a template renderer for the variation admin UI.
-        // It delegates escaping to internal renderers (render_field_by_type and helpers).
-        // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
         echo '<fieldset class="luma-product-fields-variation-fields">';
 
         foreach ( Helpers::get_fields_for_group( $group_slug ) as $field ) {
@@ -52,11 +49,12 @@ class VariationFieldRenderer {
                 continue;
             }
 
-            echo $this->render_field_by_type( $field, (int) $loop, (int) $post->ID );
+            $html = $this->render_field_by_type( $field, (int) $loop, (int) $post->ID );
+            echo wp_kses( $html, wp_kses_allowed_html( 'luma_product_fields_admin_fields' ) );
+
         }
 
         echo '</fieldset>';
-        // phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
     }
 
 
@@ -80,7 +78,7 @@ class VariationFieldRenderer {
                 : $this->render_text_field( $field, $loop, $post_id );
         }
 
-        $cb = FieldTypeRegistry::get_callback( $type, 'admin_render_variation_callback' );
+        $cb = FieldTypeRegistry::get_callback( $type, 'render_admin_variation_cb' );
 
         if ( is_callable( $cb ) ) {
             return (string) call_user_func( $cb, $field['slug'], $loop, $post_id, $field );
@@ -249,51 +247,6 @@ class VariationFieldRenderer {
             </span>
         </p>
         <?php
-        $html = ob_get_clean();
-        return $html;
-    }
-
-
-    /**
-     * Render a single-select taxonomy field for a variation.
-     *
-     * @param array $field Field definition.
-     * @param int   $loop  Index of the variation in the loop.
-     * @param int   $post_id Variation post ID.
-     * @return string
-     */
-    protected function render_single_field( array $field, int $loop, int $post_id ): string {
-        $value      = Helpers::get_field_value( $post_id, $field['slug'] );
-        $terms      = get_terms(
-            [
-                'taxonomy'   => $field['slug'],
-                'hide_empty' => false,
-            ]
-        );
-        $desc_tip   = ! empty( $field['description'] );
-        $label      = $field['label'] ?? '';
-        $desc       = $field['description'] ?? '';
-        $field_id   = "variable_{$field['slug']}[$loop]";
-        $options    = [ '' => __( 'Select', 'luma-product-fields' ) ];
-
-        if ( ! is_wp_error( $terms ) ) {
-            $options += wp_list_pluck( $terms, 'name', 'slug' );
-        }
-
-        ob_start();
-        // woocommerce_wp_select() echoes full HTML, escaping internally.
-        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-        woocommerce_wp_select(
-            [
-                'id'            => $field_id,
-                'label'         => $label,
-                'wrapper_class' => 'form-row form-row-full',
-                'options'       => $options,
-                'value'         => $value,
-                'desc_tip'      => $desc_tip,
-                'description'   => $desc,
-            ]
-        );
         $html = ob_get_clean();
         return $html;
     }

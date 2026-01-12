@@ -54,7 +54,6 @@ Key classes (non-exhaustive):
 - `Utils\Helpers` – helper functions + logging
 
 ---
-
 # 2. Field Definitions & Field Types
 
 All field types (core + custom) are centrally registered via:
@@ -63,83 +62,64 @@ All field types (core + custom) are centrally registered via:
 Luma\ProductFields\Registry\FieldTypeRegistry
 ```
 
-Each field type definition typically includes:
-
-- `slug`
-- `label`
-- `datatype`
-- `supports_variations` (bool)
-- `supports_multiple_values` (bool)
-- `render_admin_cb` – callback for admin UI
-- `save_cb` – callback to save
-- `render_frontend_cb` – callback for frontend output
-- `format_cb` – optional value formatter
-- Optional custom properties
-
 Developers register new types via the `luma_product_fields_field_types` filter.
+
+Each field type is defined as an associative array. **Core types** are provided by the plugin, and **custom types** can be added by extensions/themes.
+
+> **Security note (important):** Render callbacks may return HTML. The plugin sanitizes output **at render output time** using `wp_kses()` with plugin-specific KSES contexts (admin + frontend). If your field type needs additional HTML tags/attributes, extend the allowlist via the filters documented in section **2.3 Allowed HTML (KSES contexts)**.
+
 
 ---
 
+## 2.1 Field type definition keys
 
-All field types (core + custom) are centrally registered via:
+A field type definition typically includes:
 
-Luma\ProductFields\Registry\FieldTypeRegistry
+- `label` *(string)* – Human-readable name of the field type (e.g. “Color Badge”).
+- `description` *(string, optional)* – Short help text shown in admin (tooltip/help tip).
+- `datatype` *(string)* – Underlying data type, e.g. `text` or `number`.
+- `storage` *(string)* – Where values are stored:
+  - `meta` – stored as product post meta
+  - `taxonomy` – stored as term relationships
+- `supports` *(string[], optional)* – Capability flags:
+  - `variations`
+  - `unit`
+  - `multiple_values`
+  - `link`
 
-Each field type is defined as an associative array, typically including:
+### Render callbacks
 
-    - `label` – Human-readable name of the field type (e.g. "Color Badge").
-    - `description` – Short description shown in the UI to explain what the field does.
-    - `datatype` – The underlying data type, e.g. 'text' or 'number'.
-    - `storage` – Where values are stored, e.g. 'meta' for post meta or 'taxonomy' for term-based storage.
-    - `supports` – Array of capability flags for this type, e.g.:
-        - 'variations' – field can be used on product variations.
-        - 'unit' – field supports a unit (kg, cm, etc.).
-        - 'multiple_values' – field can store multiple values.
-        - 'link' – field supports linking behavior.
-    - `admin_edit_cb` – Callback used to render the input in the Product Edit screen.
-    - `save_cb` – Callback used to sanitize and save the submitted value.
-    - `frontend_cb` – Callback used to render the value on the frontend product page.
-    - `admin_list_render_cb` – Optional callback used to render the value in admin lists (when different from the edit control).
+- `render_admin_product_cb`
+- `render_admin_variation_cb`
+- `render_admin_list_cb`
+- `render_frontend_cb`
 
-Additional keys may be added by core or extensions (via filter `luma_product_fields_field_types`) as needed, but the structure above is the recommended baseline for defining a new field type.
+### Save / migration callbacks
 
-*Important*: Only meta-based field types ('storage' => 'meta') support product variations.
-If a field type uses taxonomy storage ('storage' => 'taxonomy'), any variation-related flags in supports (such as 'variations') are ignored, and the field will only apply at product level.
+- `save_cb`
+- `migrate_cb`
 
+Only meta-based field types support variations.
 
-## 2.1 FULL EXAMPLE: Adding a Custom Field Type
+---
 
-Example field type named **"color_badge"**.
+## 2.2 FULL EXAMPLE: Adding a Custom Field Type
 
 ### Step 1: Register the field type
 
 ```php
-/**
- * Register a custom field type.
- *
- * @param array $types Existing field types.
- * @return array
- */
 function myplugin_register_color_badge_field_type( array $types ): array {
 
     $types['color_badge'] = [
-        'label'          => 'Color Badge',
-        'description'    => 'Your description here',
-        'datatype'       => 'text',         // text or number
-        'storage'        => 'meta',          // meta or taxonomy
-        'supports'    => ['variations'],    // unit, variations, multiple_values, link. Only meta fields supports variations.
+        'label'       => 'Color Badge',
+        'description' => 'Pick a color and display it as a badge.',
+        'datatype'    => 'text',
+        'storage'     => 'meta',
+        'supports'    => [ 'variations' ],
 
-        // Admin Product Edit input renderer
-        'admin_edit_cb' => [ My_Color_Badge_Field::class, 'render_admin' ],
-
-        // Save handler
-        'save_cb'         => [ My_Color_Badge_Field::class, 'save' ],
-
-        // Frontend renderer
-        'frontend_cb' => [ My_Color_Badge_Field::class, 'render_frontend' ],
-
-        // List renderer (if different from admin edit )
-        'admin_list_render_cb'       => [ My_Color_Badge_Field::class, 'render_list' ],
+        'render_admin_product_cb' => [ My_Color_Badge_Field::class, 'render_admin_product' ],
+        'save_cb'                 => [ My_Color_Badge_Field::class, 'save' ],
+        'render_frontend_cb'      => [ My_Color_Badge_Field::class, 'render_frontend' ],
     ];
 
     return $types;
@@ -154,32 +134,17 @@ namespace MyPlugin;
 
 class My_Color_Badge_Field {
 
-    /**
-     * Render input in WP Admin product UI.
-     *
-     * @param array  $field   Field definition.
-     * @param mixed  $value   Current value.
-     * @param int    $post_id Product ID.
-     * @return void
-     */
-    public static function render_admin( $field, $value, $post_id ): void {
-        printf(
+    public static function render_admin_product( array $field, int $post_id ): string {
+        $value = get_post_meta( $post_id, $field['slug'], true );
+
+        return sprintf(
             '<input type="color" name="%s" value="%s" />',
-            esc_attr( $field['slug'] ),
+            esc_attr( 'luma-product-fields-' . $field['slug'] ),
             esc_attr( (string) $value )
         );
     }
 
-
-    /**
-     * Save the field value.
-     *
-     * @param array  $field   Field definition.
-     * @param mixed  $value   Submitted value.
-     * @param int    $post_id Product ID.
-     * @return void
-     */
-    public static function save( $field, $value, $post_id ): void {
+    public static function save( array $field, $value, int $post_id ): void {
         $value = sanitize_hex_color( (string) $value );
 
         if ( $value ) {
@@ -189,49 +154,111 @@ class My_Color_Badge_Field {
         }
     }
 
-
-    /**
-     * Format value before render.
-     *
-     * @param mixed  $value   Raw value.
-     * @param array  $field   Field definition.
-     * @param int    $post_id Product ID.
-     * @return string
-     */
-    public static function format( $value, $field, $post_id ): string {
-        return esc_html( strtoupper( (string) $value ) );
-    }
-
-
-    /**
-     * Render on frontend product page.
-     *
-     * @param array  $field   Field definition.
-     * @param mixed  $value   Raw or formatted value.
-     * @param int    $post_id Product ID.
-     * @return void
-     */
-    public static function render_frontend( $field, $value, $post_id ): void {
-        if ( empty( $value ) ) {
-            return;
+    public static function render_frontend( array $field, $value ): string {
+        if ( ! $value ) {
+            return '';
         }
 
-        printf(
-            '<span class="luma-product-fields-color-badge" style="background:%s;"></span>',
+        // NOTE: The plugin sanitizes the final frontend block with wp_kses() at output.
+        // Do NOT rely on inline styles unless the plugin allowlist permits it.
+        return sprintf(
+            '<span class="lpf-color-badge" data-color="%s"></span>',
             esc_attr( (string) $value )
         );
     }
+
 }
 ```
 
-Lifecycle:
-
-- Field appears in admin with a color picker  
-- Saves using custom sanitizer  
-- Displays on frontend as a badge  
-- Format hook manipulates the value prior to output  
-
 ---
+
+## 2.3 Allowed HTML (KSES contexts)
+
+The plugin sanitizes all generated markup **at output time** using `wp_kses()` and plugin-specific KSES contexts.
+
+### Admin context
+
+- **Context name:** `luma_product_fields_admin_fields`
+- **Sanitizer call:**
+
+```php
+echo wp_kses( $html, wp_kses_allowed_html( 'luma_product_fields_admin_fields' ) );
+```
+
+- **Allowlist extension filter:** `luma_product_fields_allowed_admin_fields_html`
+
+Extensions can add tags/attributes needed by their render callbacks:
+
+```php
+add_filter( 'luma_product_fields_allowed_admin_fields_html', function( array $allowed ): array {
+
+    // Example: allow SVG in wp-admin if your field uses icons/previews.
+    $allowed['svg'] = [
+        'xmlns'       => true,
+        'viewbox'     => true,
+        'width'       => true,
+        'height'      => true,
+        'class'       => true,
+        'aria-hidden' => true,
+        'role'        => true,
+    ];
+
+    $allowed['path'] = [
+        'd'            => true,
+        'fill'         => true,
+        'stroke'       => true,
+        'stroke-width' => true,
+        'class'        => true,
+    ];
+
+    return $allowed;
+} );
+```
+
+### Frontend context
+
+- **Context name:** `luma_product_fields_frontend_fields`
+- **Sanitizer call:**
+
+```php
+echo wp_kses( $html, wp_kses_allowed_html( 'luma_product_fields_frontend_fields' ) );
+```
+
+- **Allowlist extension filter:** `luma_product_fields_allowed_frontend_fields_html`
+
+```php
+add_filter( 'luma_product_fields_allowed_frontend_fields_html', function( array $allowed ): array {
+
+    // Example: allow SVG for a frontend field type.
+    $allowed['svg'] = [
+        'xmlns'       => true,
+        'viewbox'     => true,
+        'width'       => true,
+        'height'      => true,
+        'class'       => true,
+        'aria-hidden' => true,
+        'role'        => true,
+    ];
+
+    $allowed['path'] = [
+        'd'            => true,
+        'fill'         => true,
+        'stroke'       => true,
+        'stroke-width' => true,
+        'class'        => true,
+    ];
+
+    return $allowed;
+} );
+```
+
+### Notes for field type authors
+
+- Treat all render callbacks as *HTML builders*. The plugin sanitizes the final output using the contexts above.
+- Keep your HTML minimal and predictable (WooCommerce-like markup in admin, semantic markup in frontend).
+- If you need additional tags/attributes, extend the allowlist using the relevant filter.
+- Do not output `<script>` tags or inline event handlers; they will be stripped by KSES.
+
 
 # 3. Product Groups
 
@@ -369,9 +396,7 @@ add_action(
 );
 ```
 
-Within your handler, always:
-
-- Check capabilities (e.g. `manage_woocommerce`)
+The router handles nonce and capability check ('manage_woocommerce'), but whthin your handler, always:
 - Sanitize any incoming data
 - Return a proper `wp_send_json_success()` / `wp_send_json_error()` payload
 

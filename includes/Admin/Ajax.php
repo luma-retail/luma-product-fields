@@ -17,10 +17,10 @@ use Luma\ProductFields\Registry\FieldTypeRegistry;
 /**
  * Ajax class
  *
- * Handles admin AJAX requests for the plugin, using a custom lpf_action switch.
+ * Handles admin AJAX requests for the plugin, using a custom luma_product_fields_action switch.
  *
  * @hook luma_product_fields_incoming_ajax_{$action}
- *       Fires when `lpf_action` does not correspond with an internal method.
+ *       Fires when `luma_product_fields_action` does not correspond with an internal method.
  *
  * @hook luma_product_fields_allow_external_field_slug
  *       Allow external plugins to mark a slug as editable in the ListView,
@@ -33,6 +33,32 @@ use Luma\ProductFields\Registry\FieldTypeRegistry;
 class Ajax {
 
 
+    
+	/**
+	 * WP AJAX action (admin-ajax.php router).
+	 *
+	 * @var string
+	 */
+	public const WP_AJAX_ACTION = 'luma_product_fields_ajax';
+
+
+	/**
+	 * Nonce action used with wp_create_nonce() and check_ajax_referer().
+	 *
+	 * @var string
+	 */
+	public const NONCE_ACTION = 'luma_product_fields_admin_nonce';
+
+
+	/**
+	 * Dispatcher key posted from JS (method name / action key).
+	 *
+	 * @var string
+	 */
+	public const DISPATCH_KEY = 'luma_product_fields_action';
+
+
+    
     public function __construct() {
         add_action( 'wp_ajax_luma_product_fields_ajax', [ $this, 'handle_request' ] );
     }
@@ -41,87 +67,131 @@ class Ajax {
     /**
      * Request handler for AJAX requests.
      *
-     * The value of the `lpf_action` POST parameter is used to call a method of the same name
+     * The value of the `luma_product_fields_action` POST parameter is used to call a method of the same name
      * within this class. If no matching method exists, an action hook is fired to allow other
      * classes or modules to handle the request.
-     *
-     * @since 3.x
      *
      * @return void
      */
     public function handle_request(): void {
-        check_ajax_referer( 'luma_product_fields_admin_nonce', 'nonce' );
 
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified above.
-        $action_raw = isset( $_POST['luma_product_fields_action'] ) ? wp_unslash( $_POST['luma_product_fields_action'] ) : '';   // phpcs:ignore 
-        $action     = sanitize_text_field( $action_raw );
+        check_ajax_referer( self::NONCE_ACTION, 'nonce' );
 
-        if ( method_exists( $this, $action ) ) {
-            $this->{$action}();
+        if ( ! current_user_can( 'manage_woocommerce' ) ) {
+            wp_send_json_error( [ 'error' => 'Not allowed.' ], 403 );
+        }
+
+        // Unslash once. Keep all superglobal reads inside this dispatcher.
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing
+        $payload = wp_unslash( $_POST );
+
+        $action_raw = isset( $payload[ self::DISPATCH_KEY ] ) ? (string) $payload[ self::DISPATCH_KEY ] : '';
+        $action     = sanitize_key( $action_raw );
+
+        if ( '' === $action || str_starts_with( $action, '__' ) ) {
+            wp_send_json_error( [ 'error' => 'Invalid action.' ], 400 );
+        }
+
+        if ( method_exists( $this, $action ) && is_callable( [ $this, $action ] ) ) {
+            $this->{$action}( $payload );
             return;
         }
 
-        do_action( 'luma_product_fields_incoming_ajax_' . $action );
+        /**
+         * Fires when `luma_product_fields_action` does not correspond with an internal method.
+         *
+         * Runs after nonce verification and capability checks in the dispatcher.
+         *
+         * @hook luma_product_fields_incoming_ajax_{$action}
+         *
+         * @param array<string, mixed> $payload Unslashed POST payload.
+         * @param string              $action  Action key.
+         */
+        do_action( LUMA_PRODUCT_FIELDS_PREFIX . '_incoming_ajax_' . $action, $payload, $action );
 
-        wp_send_json_error( [ 'error' => 'Unknown lpf_action: ' . $action ] );
+        wp_send_json_error( [ 'error' => 'Unknown action.' ], 400 );
     }
 
 
     /**
      * Update product group fields in the product editor.
      *
+     * If product_group is an empty string, this means "No product group set" and
+     * should return fields that are not assigned to any product group.
+     *
+     * @param array $payload AJAX payload.
      * @return void
      */
-    protected function update_product_group(): void {
-        // Nonce is verified in handle_request().
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing
-        $post_id = isset( $_POST['post_id'] ) ? (int) $_POST['post_id'] : 0;
+    protected function update_product_group( array $payload ): void {
+        $post_id = isset( $payload['post_id'] ) ? (int) $payload['post_id'] : 0;
 
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing
-        $group_raw  = isset( $_POST['product_group'] ) ? wp_unslash( $_POST['product_group'] ) : '';   // phpcs:ignore 
-        $group_slug = sanitize_text_field( $group_raw );
-
-        if ( ! $post_id || '' === $group_slug ) {
-            wp_send_json_error( [ 'error' => 'Missing post_id or product_group.' ] );
+        if ( ! array_key_exists( 'product_group', $payload ) ) {
+            wp_send_json_error( [ 'error' => 'Missing product_group.' ] );
         }
 
-        $html    = '';
+        $group_slug_raw = is_string( $payload['product_group'] ) ? $payload['product_group'] : '';
+        $group_slug     = '' !== $group_slug_raw ? sanitize_key( $group_slug_raw ) : '';
+
+        if ( ! $post_id ) {
+            wp_send_json_error( [ 'error' => 'Missing Post ID.' ] );
+        }
+
+        if ( ! current_user_can( 'edit_post', $post_id ) ) {
+            wp_send_json_error( [ 'error' => 'Not allowed.' ], 403 );
+        }
+
         $product = wc_get_product( $post_id );
-
-        if ( $product && $product->is_type( 'variable' ) ) {
-            $reminder_title = esc_html__( 'Reminder:', 'luma-product-fields' );
-            $reminder_msg   = esc_html__( 'After changing the product group, please save and update the product to load the correct fields for each variation.', 'luma-product-fields' );
-
-            $notice  = '<div class="notice notice-warning is-dismissible" style="margin:1em;"><p>';
-            $notice .= '<strong>' . $reminder_title . '</strong> ' . $reminder_msg;
-            $notice .= '</p></div>';
-
-            $html .= $notice;
+        if ( ! $product ) {
+            wp_send_json_error( [ 'error' => 'Invalid product.' ] );
         }
 
-        $html .= ( new FieldRenderer() )->render_form_fields( $group_slug, $post_id );
+        $html = '';
+
+        if ( $product->is_type( 'variable' ) ) {
+            $reminder_title = esc_html__( 'Reminder:', 'luma-product-fields' );
+            $reminder_msg   = esc_html__(
+                'After changing the product group, please save and update the product to load the correct fields for each variation.',
+                'luma-product-fields'
+            );
+
+            $html .= '<div class="notice notice-warning is-dismissible" style="margin:1em;"><p>';
+            $html .= '<strong>' . $reminder_title . '</strong> ' . $reminder_msg;
+            $html .= '</p></div>';
+        }
+
+        $form_html = ( new FieldRenderer() )->render_form_fields( $group_slug, $post_id );
+
+        $html .= wp_kses(
+            $form_html,
+            wp_kses_allowed_html( 'luma_product_fields_admin_fields' )
+        );
 
         wp_send_json_success( [ 'html' => $html ] );
     }
 
 
+
     /**
      * Handle autocomplete term search for a given taxonomy.
      *
+     * @param array $payload AJAX payload.
      * @return void
      */
-    public function autocomplete_search(): void {
-        // Nonce is verified in handle_request().
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing
-        $taxonomy_raw = isset( $_POST['taxonomy'] ) ? wp_unslash( $_POST['taxonomy'] ) : '';  // phpcs:ignore 
-        $taxonomy     = sanitize_text_field( $taxonomy_raw );
+    public function autocomplete_search( array $payload ): void {
 
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing
-        $search_raw = isset( $_POST['term'] ) ? wp_unslash( $_POST['term'] ) : '';   // phpcs:ignore 
-        $search     = sanitize_text_field( $search_raw );
+        $taxonomy     = isset( $payload['taxonomy'] ) ? sanitize_key( $payload['taxonomy'] ) : '';
+        $search = isset( $payload['term'] ) ? sanitize_text_field( $payload['term'] ) : '';
 
         if ( '' === $taxonomy ) {
-            wp_send_json_error( [ 'message' => 'Missing taxonomy' ] );
+            wp_send_json_success( [ 'message' => 'Missing taxonomy' ] );
+        }
+
+        if ( '' === $search ) {
+            wp_send_json_success( [ 'results' => [] ] );
+        }
+
+        if ( ! taxonomy_exists( $taxonomy ) ) {
+            wp_send_json_error( [ 'message' => 'Invalid taxonomy' ] );
         }
 
         $terms = get_terms(
@@ -153,16 +223,12 @@ class Ajax {
      * Used to dynamically show/hide fields like "unit" and "show taxonomy links"
      * based on the selected field type's supported features.
      *
-     * Expects POST:
-     * - field_type (string)
-     *
+     * @param array $payload AJAX payload.
      * @return void
      */
-    protected function get_field_type_capabilities(): void {
-        // Nonce is verified in handle_request().
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing
-        $type_raw = isset( $_POST['field_type'] ) ? wp_unslash( $_POST['field_type'] ) : '';  // phpcs:ignore 
-        $type     = sanitize_text_field( $type_raw );
+    protected function get_field_type_capabilities( array $payload ): void {
+
+        $type = isset( $payload['field_type'] ) ? sanitize_key( $payload['field_type'] ) : ''; 
 
         if ( ! FieldTypeRegistry::get( $type ) ) {
             wp_send_json_error( [ 'message' => 'Invalid field type' ] );
@@ -181,15 +247,19 @@ class Ajax {
     /**
      * Handles AJAX request to load variation rows for a variable product.
      *
+     * @param array $payload AJAX payload.
      * @return void
      */
-    public function load_variations(): void {
-        // Nonce is verified in handle_request().
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing
-        $product_id = isset( $_POST['product_id'] ) ? absint( wp_unslash( $_POST['product_id'] ) ) : 0;
+    public function load_variations( array $payload ): void {
+
+        $product_id = isset( $payload['product_id'] ) ? absint( $payload['product_id'] ) : 0;
 
         if ( ! $product_id ) {
             wp_send_json_error( [ 'error' => 'Missing product_id.' ] );
+        }
+
+        if ( ! current_user_can( 'edit_post', $product_id ) ) {
+            wp_send_json_error( [ 'error' => 'Not allowed.' ], 403 );
         }
 
         $product_group_slug = Helpers::get_product_group_slug( $product_id );
@@ -204,39 +274,24 @@ class Ajax {
         wp_send_json_success( $html );
     }
 
-
+    
     /**
      * AJAX: Render inline edit field for a product/field combination.
      *
+     * @param array $payload AJAX payload.
      * @return void
      */
-    public function inline_edit_render(): void {
-        // Nonce is verified in handle_request().
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing
-        $product_id = isset( $_POST['product_id'] ) ? absint( wp_unslash( $_POST['product_id'] ) ) : 0;
-
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing
-        $field_slug_raw = isset( $_POST['field_slug'] ) ? wp_unslash( $_POST['field_slug'] ) : '';   // phpcs:ignore 
-        $field_slug     = sanitize_key( $field_slug_raw );
+    public function inline_edit_render( array $payload ): void {
+        $product_id = isset( $payload['product_id'] ) ? absint( $payload['product_id'] ) : 0;
+        $field_slug = isset( $payload['field_slug'] ) ? sanitize_key( $payload['field_slug'] ) : '';
 
         if ( ! $product_id || ! $field_slug || ! current_user_can( 'edit_post', $product_id ) ) {
             wp_send_json_error( 'Permission denied.' );
         }
 
+        // If the slug is not one of ours, only allow it if explicitly whitelisted.
         $field = Helpers::get_field_definition_by_slug( $field_slug );
-
         if ( ! $field ) {
-            /**
-             * Allow external plugins to mark a slug as editable in the ListView,
-             * even if it is not registered as a Luma Product Fields field.
-             *
-             * @filter luma_product_fields_allow_external_field_slug
-             *
-             * @param bool   $allowed    Whether this slug should be accepted.
-             * @param string $field_slug Requested field slug.
-             *
-             * @return bool
-             */
             $allowed = apply_filters(
                 'luma_product_fields_allow_external_field_slug',
                 false,
@@ -249,54 +304,52 @@ class Ajax {
         }
 
         $product      = wc_get_product( $product_id );
+        if ( ! $product ) {
+            wp_send_json_error( 'Invalid product.' );
+        }
+
         $product_name = $product ? $product->get_name() : '';
 
-        $renderer = new FieldRenderer();
+        $renderer = new \Luma\ProductFields\Product\FieldRenderer();
+        $form_html = $renderer->render_form_field( $field_slug, $product_id );
 
         ob_start();
-        echo '<div class="luma-product-fields-floating-editor-inner" style="position:relative;top:0;left:0;">';
+
+        echo '<div class="lpf-floating-editor-inner" style="position:relative;top:0;left:0;">';
         echo '<form>';
-        echo '<h4>';
-        echo esc_html( $product_name );
-        echo '</h4>';
+        echo '<h4>' . esc_html( $product_name ) . '</h4>';
 
-        // This returns safe, fully-escaped HTML.
-        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-        echo $renderer->render_form_field( $field_slug, $product_id );
+        echo wp_kses( $form_html, wp_kses_allowed_html( 'luma_product_fields_admin_fields' ) );
 
-        echo '<div class="luma-product-fields-edit-controls">';
-        echo '<button class="luma-product-fields-edit-cancel" aria-label="Cancel">&#10005;</button>';
-        echo '<button class="luma-product-fields-edit-save" aria-label="Save">&#10003;</button>';
+        echo '<div class="lpf-edit-controls">';
+        echo '<button type="button" class="lpf-edit-cancel" aria-label="' . esc_attr__( 'Cancel', 'luma-product-fields' ) . '">&#10005;</button>';
+        echo '<button type="button" class="lpf-edit-save" aria-label="' . esc_attr__( 'Save', 'luma-product-fields' ) . '">&#10003;</button>';
         echo '</div>';
+
         echo '</form></div>';
+
         $html = ob_get_clean();
+
         wp_send_json_success( [ 'html' => $html ] );
     }
+
 
 
     /**
      * AJAX: Save or clear a single custom product field and return refreshed display HTML.
      *
-     * Expects:
-     * - $_POST['product_id'] (int)
-     * - $_POST['field_slug'] (string)
-     * - $_POST['value'] (mixed) optional
+     * @param array $payload AJAX payload.
+     *   Expects:
+     *   - $payload['product_id'] (int)
+     *   - $payload['field_slug'] (string)
+     *   - $payload['value'] (mixed) optional
      *
-     * @since 3.x
      * @return void
      */
-    public function inline_save_field(): void {
-        // Nonce is verified in handle_request().
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing
-        $product_id = isset( $_POST['product_id'] ) ? absint( wp_unslash( $_POST['product_id'] ) ) : 0;
-
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing
-        $field_slug_raw = isset( $_POST['field_slug'] ) ? wp_unslash( $_POST['field_slug'] ) : '';   // phpcs:ignore 
-        $field_slug     = sanitize_key( $field_slug_raw );
-
-        // Value is unslashed only; type-specific sanitization is handled inside FieldStorage::save_field().
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-        $value = isset( $_POST['value'] ) ? wp_unslash( $_POST['value'] ) : '';
+    public function inline_save_field( array $payload ): void {
+        $product_id = isset( $payload['product_id'] ) ? absint( $payload['product_id'] ) : 0;
+        $field_slug = isset( $payload['field_slug'] ) ? sanitize_key( $payload['field_slug'] ) : '';
+        $value = isset( $payload['value'] ) ? $payload['value'] : '';
 
         if ( ! $product_id || ! $field_slug || ! current_user_can( 'edit_post', $product_id ) ) {
             wp_send_json_error( 'Permission denied or invalid data.' );
@@ -308,6 +361,10 @@ class Ajax {
             /**
              * Allow external plugins to handle saving for unknown fields.
              *
+             * IMPORTANT: This is an action (not a filter). External handlers MUST terminate the request
+             * using wp_send_json_success() / wp_send_json_error(). If the handler returns normally,
+             * this method will continue and send an "Unknown field" error response.
+             * 
              * @hook luma_product_fields_inline_save_field
              *
              * @param int    $product_id
@@ -324,10 +381,9 @@ class Ajax {
             wp_send_json_error( 'Could not save field value.' );
         }
 
-        // This returns safe, fully-escaped HTML.
-        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         $updated_html = ListViewTable::render_field_cell( $product_id, $field );
+        $safe_html = wp_kses( $updated_html, wp_kses_allowed_html( 'luma_product_fields_admin_fields' ) );
 
-        wp_send_json_success( [ 'html' => $updated_html ] );
+        wp_send_json_success( [ 'html' => $safe_html ] );
     }
 }

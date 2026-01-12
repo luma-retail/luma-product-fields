@@ -1,6 +1,6 @@
-// Reusable function to initialize all .lpf-autocomplete-select fields
+// Reusable function to initialize all .luma-product-fields-autocomplete-select fields
 function initAutocompleteSelectFields() {
-    jQuery('.lpf-autocomplete-select').each(function () {
+    jQuery('.luma-product-fields-autocomplete-select').each(function () {
         const $select = jQuery(this);
         const taxonomy = $select.data('taxonomy');
 
@@ -19,7 +19,7 @@ function initAutocompleteSelectFields() {
                     return {
                         action: luma_product_fields_admin_ajaxdata.action,
                         nonce: luma_product_fields_admin_ajaxdata.nonce,
-                        lpf_action: 'autocomplete_search',
+                        luma_product_fields_action: 'autocomplete_search',
                         taxonomy: taxonomy,
                         term: params.term || ''
                     };
@@ -186,22 +186,22 @@ jQuery(function($) {
     initAutocompleteSelectFields();
 
     // On change of product group, update fields via AJAX
-    $("#lpf-product-group-select").on("change", function (e) {
+    $("#luma-product-fields-product-group-select").on("change", function (e) {
         const productGroup = $(this).find(":selected").val();
-        const $fieldsContainer  = $('#lpf-product-group-fields');
+        const $fieldsContainer  = $('#luma-product-fields-product-group-fields');
         const preservedValues = captureFieldValues($fieldsContainer);    
-        $('#lpf-product-group-fields').html(luma_product_fields_admin_ajaxdata.spinner);
+        $fieldsContainer.html(luma_product_fields_admin_ajaxdata.spinner);
 
         const data = {
             action: luma_product_fields_admin_ajaxdata.action,
             nonce: luma_product_fields_admin_ajaxdata.nonce,
-            lpf_action: 'update_product_group',
+            luma_product_fields_action: 'update_product_group',
             post_id: luma_product_fields_admin_ajaxdata.post_id,
             product_group: productGroup,
         };
 
         $.post(luma_product_fields_admin_ajaxdata.ajaxurl, data, function (response) {
-            $('#lpf-product-group-fields').html(response.data.html);
+            $fieldsContainer.html(response.data.html);
 
             restoreFieldValues($fieldsContainer, preservedValues);
             initAutocompleteSelectFields();
@@ -211,7 +211,7 @@ jQuery(function($) {
 
         
     // In field editor: Toggle unit and show taxonomy links based on selected field type
-    const $typeSelect = $('#lpf_fields_type_selector');
+    const $typeSelect = $('#luma_product_fields_fields_type_selector');
     const $unitRow = $('.field-unit-row');
     const $showLinksRow = $('.field-show-tax-links-row');
     const $variationsRow = $('.field-variations-row');
@@ -222,7 +222,7 @@ jQuery(function($) {
         $.post(luma_product_fields_admin_ajaxdata.ajaxurl, {
             action: luma_product_fields_admin_ajaxdata.action,
             nonce: luma_product_fields_admin_ajaxdata.nonce,
-            lpf_action: 'get_field_type_capabilities',
+            luma_product_fields_action: 'get_field_type_capabilities',
             field_type: selectedType
         }, function(response) {
             if (response.success) {
@@ -264,7 +264,7 @@ jQuery(function($) {
       const data = {
         action: luma_product_fields_admin_ajaxdata.action,
         nonce: luma_product_fields_admin_ajaxdata.nonce,
-        lpf_action: 'load_variations',
+        luma_product_fields_action: 'load_variations',
         product_id: productId
       };
 
@@ -323,13 +323,13 @@ jQuery(function($) {
         $.post(luma_product_fields_admin_ajaxdata.ajaxurl, {
             action: luma_product_fields_admin_ajaxdata.action,
             nonce: luma_product_fields_admin_ajaxdata.nonce,
-            lpf_action: 'inline_edit_render',
+            luma_product_fields_action: 'inline_edit_render',
             product_id: productId,
             field_slug: fieldSlug
         }, function (response) {
             if (response.success) {
                 // Create and append editor
-                const $editor = $('<div class="luma-product-fields-floating-editor">').html(response.data.html);
+                const $editor = $('<div class="lpf-floating-editor">').html(response.data.html);
                 $('#wpbody-content').append($editor);
 
                 // Make sure it measures correctly before positioning
@@ -387,10 +387,10 @@ jQuery(function($) {
 
                 // Reposition while open (scroll/resize)
                 function bindReposition() {
-                    $(window).on('scroll.fkInline resize.fkInline', positionEditor);
+                    $(window).on('scroll.lpfInline resize.lpfInline', positionEditor);
                 }
                 function unbindReposition() {
-                    $(window).off('scroll.fkInline resize.fkInline');
+                    $(window).off('scroll.lpfInline resize.lpfInline');
                 }
 
                 bindReposition();
@@ -435,13 +435,13 @@ jQuery(function($) {
                     const formData = new FormData(form);
                     const postData = {
                         action: luma_product_fields_admin_ajaxdata.action,
-                        lpf_action: 'inline_save_field',
+                        luma_product_fields_action: 'inline_save_field',
                         product_id: productId,
                         field_slug: fieldSlug,
                         nonce: luma_product_fields_admin_ajaxdata.nonce
                     };
 
-                    const valueKey = `lpf-${fieldSlug}`;
+                    const valueKey = `luma-product-fields-${fieldSlug}`;
                     let value = null;
 
                     for (const [key, rawValue] of formData.entries()) {
@@ -453,7 +453,7 @@ jQuery(function($) {
                             if (!Array.isArray(value)) value = [];
                             if (trimmed !== '') value.push(trimmed);
                         } else if (key.startsWith(`${valueKey}[`)) {
-                            const m = key.match(/^lpf-[^[]+\[([^\]]+)\]$/);
+                            const m = key.match(/^luma-product-fields-[^[]+\[([^\]]+)\]$/);
                             if (m) {
                                 if (value === null || typeof value !== 'object' || Array.isArray(value)) value = {};
                                 value[m[1]] = trimmed;
@@ -469,9 +469,9 @@ jQuery(function($) {
                             $cell.html(res.data.html).removeClass('luma-product-fields-editing');
                             $('.lpf-editable').closest('tr').removeClass('luma-product-fields-row-editing');
                             closeEditor();
-                            $cell.removeClass('luma-product-fields-save-glow lpf-save-glow-reset').addClass('luma-product-fields-save-glow');
-                            setTimeout(() => $cell.addClass('luma-product-fields-save-glow-reset'), 1000);
-                            setTimeout(() => $cell.removeClass('luma-product-fields-save-glow lpf-save-glow-reset'), 3000);
+                            $cell.removeClass('lpf-save-glow lpf-save-glow-reset').addClass('lpf-save-glow');
+                            setTimeout(() => $cell.addClass('lpf-save-glow-reset'), 1000);
+                            setTimeout(() => $cell.removeClass('lpf-save-glow lpf-save-glow-reset'), 3000);
                         } else {
                             alert(res.data || 'Failed to save.');
                             $btn.prop('disabled', false);
@@ -539,7 +539,7 @@ jQuery(document).on('click', 'a.lpf-toggle-featured', function (e) {
     jQuery.post(luma_product_fields_admin_ajaxdata.ajaxurl, {
         action:   luma_product_fields_admin_ajaxdata.action,       // "luma_product_fields_ajax"
         nonce:    luma_product_fields_admin_ajaxdata.nonce,        // "luma_product_fields_admin_nonce"
-        lpf_action:'toggle_featured_term',
+        luma_product_fields_action:'toggle_featured_term',
         term_id:  termId
     })
     .done(function (resp) {
@@ -573,7 +573,7 @@ jQuery(function($) {
             luma_product_fields_admin_ajaxdata.ajaxurl,
             {
                 action: luma_product_fields_admin_ajaxdata.action,
-                lpf_action: 'migration_meta_preview',
+                luma_product_fields_action: 'migration_meta_preview',
                 nonce: luma_product_fields_admin_ajaxdata.nonce,
                 meta_key: metaKey,
                 limit: 10
@@ -625,8 +625,8 @@ jQuery(function($) {
 
 // Field editor field type click / highlight
 jQuery(function($) {
-    var $select = $('#lpf_fields_type_selector');
-    var $items  = $('.lpf-types-desc li');
+    var $select = $('#luma_product_fields_fields_type_selector');
+    var $items  = $('.luma-product-fields-types-desc li');
 
     function highlightType(typeSlug) {
         $items.removeClass('is-active');
@@ -635,7 +635,7 @@ jQuery(function($) {
             return;
         }
 
-        var $target = $('#lpf-type-' + typeSlug);
+        var $target = $('#luma-product-fields-type-' + typeSlug);
         if ($target.length) {
             $target.addClass('is-active');
         }

@@ -90,7 +90,7 @@ class ListViewTable extends WP_List_Table {
             // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
             $args['tax_query'] = [
                 [
-                    'taxonomy' => 'luma_product_fields_product_group',
+                    'taxonomy' => 'lpf_product_group',
                     'operator' => 'NOT EXISTS',
                 ]
             ];
@@ -99,7 +99,7 @@ class ListViewTable extends WP_List_Table {
             // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
             $args['tax_query'] = [
                 [
-                    'taxonomy' => 'luma_product_fields_product_group',
+                    'taxonomy' => 'lpf_product_group',
                     'field'    => 'slug',
                     'terms'    => $this->product_group_slug,
                 ]
@@ -232,7 +232,7 @@ public function column_default( $item, $column_name ) {
         if ( $product && $product->is_type( 'variable' ) && Helpers::get_product_group_slug( $product->get_id() ) ) {
 
             $toggle = sprintf(
-                '<button class="luma-product-fields-toggle-variations" data-product-id="%d" aria-label="Toggle variations" aria-expanded="false">
+                '<button class="lpf-toggle-variations" data-product-id="%d" aria-label="Toggle variations" aria-expanded="false">
                     <span class="dashicons dashicons-arrow-right"></span>
                 </button> ',
                 $product->get_id()
@@ -343,7 +343,7 @@ public function column_default( $item, $column_name ) {
     /**
      * Render a single field cell as HTML.
      *
-     * If the field definition includes a custom 'admin_list_render_cb', it will be used.
+     * If the field definition includes a custom 'render_admin_list_cb', it will be used.
      * Otherwise, it defaults to rendering a <div> with data attributes for inline editing.
      *
      * @param int   $product_id Product or variation ID.
@@ -354,18 +354,18 @@ public function column_default( $item, $column_name ) {
     public static function render_field_cell( int $product_id, array $field ): string {
         
         $field_definition = FieldTypeRegistry::get( $field['type'] );
-        if ( isset( $field_definition['admin_list_render_cb'] ) && is_callable( $field_definition['admin_list_render_cb'] ) ) {
-            return call_user_func( $field_definition['admin_list_render_cb'], $product_id, $field );
+        if ( isset( $field_definition['render_admin_list_cb'] ) && is_callable( $field_definition['render_admin_list_cb'] ) ) {
+            return call_user_func( $field_definition['render_admin_list_cb'], $product_id, $field );
         }
 
         $raw_value  = Helpers::get_field_value( $product_id, $field['slug'] );
         $html_value = Helpers::get_formatted_field_value( $product_id, $field['slug'], false );
         
         $is_numeric = FieldTypeRegistry::field_type_is_numeric( $field['type'] ?? 'text' );
-        $classes    = [ 'luma-product-fields-editable' ];
+        $classes    = [ 'lpf-editable' ];
 
         if ( $is_numeric ) {
-            $classes[] = 'luma-product-fields-is-numeric';
+            $classes[] = 'lpf-is-numeric';
         }
 
         return sprintf(

@@ -61,6 +61,14 @@ class FieldStorage {
 	 */
 	public static function save_field( int $product_id, string $field_slug, $value ): bool
 	{
+
+		$field_slug  = sanitize_key( $field_slug );
+		$product_id  = absint( $product_id );
+
+		if ( ! $product_id || '' === $field_slug ) {
+			return false;
+		}
+
 		$field = Helpers::get_field_definition_by_slug( $field_slug );
 		if ( ! $field ) {
 			return apply_filters(
@@ -87,13 +95,10 @@ class FieldStorage {
 			($value === '' || $value === null || (is_array($value) && empty($value)))
 			&& $value !== '0' && $value !== 0
 		) {
-			// Clear the field
-			if ( ($field_type['storage'] ?? '') === 'taxonomy' ) {
-				$taxonomy = $field['taxonomy'] ?? $field['slug'];
-				wp_set_object_terms( $product_id, [], $taxonomy );
+			if ( ( $field_type['storage'] ?? '' ) === 'taxonomy' ) {
+				wp_set_object_terms( $product_id, [], $field['slug'] );
 				return true;
 			}
-
 			delete_post_meta( $product_id, $field['meta_key'] ?? self::META_PREFIX . $field_slug );
 			return true;
 		}
@@ -118,7 +123,12 @@ class FieldStorage {
 			delete_post_meta( $product_id, $meta_key );
 			return true;
 		}
-		update_post_meta( $product_id, $meta_key, sanitize_text_field( $value ) );
+
+		if ( is_array( $value ) ) {
+			$value = reset( $value );
+		}
+
+		update_post_meta( $product_id, $meta_key, sanitize_text_field( (string) $value ) );
 		return true;
 	}
 
@@ -192,7 +202,7 @@ class FieldStorage {
 			$value = isset( $value[0] ) ? $value[0] : '';
 		}
 
-		$value = sanitize_text_field( $value );
+		$value = sanitize_title( (string) $value );
 
 		// If value is now an empty string, also unset the term
 		if ( $value === '' ) {
@@ -213,7 +223,7 @@ class FieldStorage {
 			return false;
 		}
 
-		$terms = array_map( 'sanitize_text_field', $value );
+		$terms = array_filter( array_map( 'sanitize_title', (array) $value ) );
 
 		return wp_set_object_terms( $product_id, $terms, $field['slug'] ) !== false;
 	}
@@ -274,24 +284,27 @@ class FieldStorage {
 	
 	
 	/**
-	 * Call an internal save method by name. Intended for use by custom field types.
+	 * Call an internal save method by name.
+	 * 
+	 * Intended for use by custom field types if their saving method matches a core method.
 	 *
-	 * @param string $method     Internal method name, e.g. 'save_taxonomy_multiple_values'.
+	 * @param string $method Internal method name, e.g. 'save_number_value'.
 	 * @param int    $post_id
 	 * @param array  $field
 	 * @param mixed  $value
 	 *
-	 * @return void
+	 * @return bool True on success, false on failure.
 	 */
-	public static function save_by_core_method( string $method, int $post_id, array $field, $value ): void {
+	public static function save_by_core_method( string $method, int $post_id, array $field, $value ): bool {
 		if ( method_exists( self::class, $method ) ) {
-			self::$method( $field['slug'], $post_id, $value, $field );
-		} else {
-            // PHP warning for developers, not HTML output. 
-    		trigger_error( "Unknown FieldStorage method: $method", E_USER_WARNING );  // phpcs:ignore
+			return (bool) self::$method( $post_id, $field, $value );
 		}
+
+		// PHP warning for developers, not HTML output.
+		trigger_error( "Unknown FieldStorage method: $method", E_USER_WARNING ); // phpcs:ignore
+		return false;
 	}
-	
+		
 	
 	/**
 	 * Delete (clear) a field value for a product.

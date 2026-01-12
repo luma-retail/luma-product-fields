@@ -74,7 +74,7 @@ class ListView {
             $this->page_title,
             $this->page_title,
             'manage_woocommerce',
-            'luma-product-fields-list',
+            'luma-product-fields-overview',
             array( $this, 'render_list_page' ),
             5,
         );
@@ -96,16 +96,14 @@ class ListView {
 
         echo '<form method="get">';
         echo '<input type="hidden" name="post_type" value="product" />';
-        echo '<input type="hidden" name="page" value="luma-product-fields-list" />';
+        echo '<input type="hidden" name="page" value="luma-product-fields-overview" />';
         
         $args = array(
             'include_all'     => false,
             'include_general' => true,
         );
-        // get_product_group_select() returns full HTML (select + options).
-        // All dynamic pieces must be escaped inside that method.
-        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-        echo (new Admin)->get_product_group_select( 'luma-product-fields-product-group', $this->selected_group, null, $args );
+        $select_html = (new Admin)->get_product_group_select( 'luma-product-fields-product-group', $this->selected_group, null, $args );
+        echo wp_kses( $select_html, wp_kses_allowed_html( 'luma_product_fields_admin_fields' ) );
 
         echo '<input type="submit" class="button" value="' .
             esc_attr__('Choose product group', 'luma-product-fields') .
@@ -123,7 +121,7 @@ class ListView {
             $table = new ListViewTable('general');
             $table->prepare_items();
             $table->display();
-            echo '<div id="luma-product-fields-editor-overlay"></div>';
+            echo '<div id="lpf-editor-overlay"></div>';
             echo '</div>';
             return;
         }
@@ -131,7 +129,7 @@ class ListView {
         $table = new ListViewTable($this->selected_group);
         $table->prepare_items();
         $table->display();
-        echo '<div id="luma-product-fields-editor-overlay"></div>';
+        echo '<div id="lpf-editor-overlay"></div>';
         echo '</div>';
     }
 

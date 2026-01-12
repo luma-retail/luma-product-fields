@@ -8,6 +8,7 @@
 namespace Luma\ProductFields\Taxonomy;
 
 use WP_Query;
+use Luma\ProductFields\Admin\Ajax;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -24,7 +25,7 @@ class ProductGroup {
      *
      * @var string
      */
-    protected $tax = 'luma_product_fields_product_group';
+    protected static string $tax = 'lpf_product_group';
 
 
     /**
@@ -42,7 +43,7 @@ class ProductGroup {
 
 
     /**
-     * Registers the 'luma_product_fields_product_group' taxonomy for WooCommerce products (non-hierarchical).
+     * Registers the 'lpf_product_group' taxonomy for WooCommerce products (non-hierarchical).
      *
      * @return void
      */
@@ -73,7 +74,7 @@ class ProductGroup {
             'meta_box_cb'        => false,
         ];
 
-        register_taxonomy( $this->tax, 'product', $args );
+        register_taxonomy( self::$tax, 'product', $args );
     }
 
 
@@ -105,7 +106,7 @@ class ProductGroup {
      * @return array
      */
     public function register_sortable_column( array $columns ): array {
-        $columns[ 'taxonomy-' . $this->tax ] = $this->tax;
+        $columns[ 'taxonomy-' . self::$tax ] = self::$tax;
         return $columns;
     }
 
@@ -126,7 +127,7 @@ class ProductGroup {
         }
 
         // We set this orderby value in register_sortable_column()
-        if ( $this->tax !== $query->get( 'orderby' ) ) {
+        if ( self::$tax !== $query->get( 'orderby' ) ) {
             return $clauses;
         }
 
@@ -139,7 +140,7 @@ class ProductGroup {
             " LEFT JOIN {$wpdb->term_relationships} tr_pg ON ({$wpdb->posts}.ID = tr_pg.object_id)
             LEFT JOIN {$wpdb->term_taxonomy}   tt_pg ON (tr_pg.term_taxonomy_id = tt_pg.term_taxonomy_id AND tt_pg.taxonomy = %s)
             LEFT JOIN {$wpdb->terms}           t_pg  ON (tt_pg.term_id = t_pg.term_id) ",
-            $this->tax
+            self::$tax
         );
     }
 
@@ -172,12 +173,12 @@ class ProductGroup {
             return;
         }
 
-        $selected = isset( $_GET[ $this->tax ] ) ? sanitize_text_field( wp_unslash( $_GET[ $this->tax ] ) ) : '';  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $selected = isset( $_GET[ self::$tax ] ) ? sanitize_text_field( wp_unslash( $_GET[ self::$tax ] ) ) : '';  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
         wp_dropdown_categories( [
             'show_option_all' => esc_html__( 'All Product groups', 'luma-product-fields' ),
-            'taxonomy'        => $this->tax,
-            'name'            => $this->tax,
+            'taxonomy'        => self::$tax,
+            'name'            => self::$tax,
             'orderby'         => 'name',
             'selected'        => $selected,
             'hierarchical'    => false, // flat taxonomy
@@ -203,16 +204,16 @@ class ProductGroup {
             return;
         }
 
-        if ( empty( $_GET[ $this->tax ] ) || '0' === $_GET[ $this->tax ] ) {  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        if ( empty( $_GET[ self::$tax ] ) || '0' === $_GET[ self::$tax ] ) {  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             return;
         }
 
-        $value = sanitize_text_field( wp_unslash( $_GET[ $this->tax ] ) );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $value = sanitize_text_field( wp_unslash( $_GET[ self::$tax ] ) );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
         if ( is_numeric( $value ) ) {
             $query->set( 'tax_query', [
                 [
-                    'taxonomy' => $this->tax,
+                    'taxonomy' => self::$tax,
                     'field'    => 'term_id',
                     'terms'    => (int) $value,
                 ],
@@ -220,7 +221,7 @@ class ProductGroup {
         } else {
             $query->set( 'tax_query', [
                 [
-                    'taxonomy' => $this->tax,
+                    'taxonomy' => self::$tax,
                     'field'    => 'slug',
                     'terms'    => $value,
                 ],
@@ -246,7 +247,7 @@ class ProductGroup {
         }
 
         $terms = get_terms( [
-            'taxonomy'   => $this->tax,
+            'taxonomy'   => self::$tax,
             'hide_empty' => false,
             'orderby'    => 'name',
             'order'      => 'ASC',
@@ -315,7 +316,7 @@ class ProductGroup {
         $product_id = $product->get_id();
 
         if ( '__clear__' === $raw ) {
-            wp_set_object_terms( $product_id, [], $this->tax, false );
+            wp_set_object_terms( $product_id, [], self::$tax, false );
             return;
         }
 
@@ -325,7 +326,7 @@ class ProductGroup {
         }
 
         $exists = get_terms( [
-            'taxonomy'   => $this->tax,
+            'taxonomy'   => self::$tax,
             'include'    => [ $term_id ],
             'hide_empty' => false,
             'fields'     => 'ids',
@@ -335,7 +336,7 @@ class ProductGroup {
             return;
         }
 
-        wp_set_object_terms( $product_id, [ $term_id ], $this->tax, false );
+        wp_set_object_terms( $product_id, [ $term_id ], self::$tax, false );
     }
 
 
@@ -393,7 +394,7 @@ class ProductGroup {
      */
     public function render_quick_edit_field() {
         $terms = get_terms( [
-            'taxonomy'   => $this->tax,
+            'taxonomy'   => self::$tax,
             'hide_empty' => false,
             'orderby'    => 'name',
             'order'      => 'ASC',
@@ -404,7 +405,7 @@ class ProductGroup {
         $nonce_name  = LUMA_PRODUCT_FIELDS_PREFIX . '_quick_edit_nonce';
         ?>
         <br/>
-        <?php wp_nonce_field( LUMA_PRODUCT_FIELDS_NONCE_ACTION, $nonce_name ); ?>
+        <?php wp_nonce_field( Ajax::NONCE_ACTION, $nonce_name ); ?>
         <div class="inline-edit-group">
             <label class="alignleft" style="min-width: 260px;">
                 <span class="title"><?php echo esc_html__( 'Product group', 'luma-product-fields' ); ?></span>
@@ -459,7 +460,7 @@ class ProductGroup {
             ? sanitize_text_field( wp_unslash( $_REQUEST[ $nonce_key ] ) )
             : '';
 
-        if ( '' === $nonce || ! wp_verify_nonce( $nonce, LUMA_PRODUCT_FIELDS_NONCE_ACTION ) ) {
+        if ( '' === $nonce || ! wp_verify_nonce( $nonce, Ajax::NONCE_ACTION ) ) {
             return;
         }
 
@@ -471,7 +472,7 @@ class ProductGroup {
         }
 
         if ( '__clear__' === $raw ) {
-            wp_set_object_terms( $product_id, [], $this->tax, false );
+            wp_set_object_terms( $product_id, [], self::$tax, false );
             return;
         }
 
@@ -481,7 +482,7 @@ class ProductGroup {
         }
 
         $exists = get_terms( [
-            'taxonomy'   => $this->tax,
+            'taxonomy'   => self::$tax,
             'include'    => [ $term_id ],
             'fields'     => 'ids',
             'hide_empty' => false,
@@ -491,7 +492,7 @@ class ProductGroup {
             return;
         }
 
-        wp_set_object_terms( $product_id, [ $term_id ], $this->tax, false );
+        wp_set_object_terms( $product_id, [ $term_id ], self::$tax, false );
     }
 
 
@@ -525,7 +526,7 @@ class ProductGroup {
             'luma-product-fields-quickedit',
             'lumaProductFieldsQuickEdit',
             [
-                'columnSelector' => 'td.column-taxonomy-' . $this->tax,
+                'columnSelector' => 'td.column-taxonomy-' . self::$tax,
                 'selectSelector' => 'select.' . LUMA_PRODUCT_FIELDS_PREFIX . '-pg-quick-single',
                 'debug'          => defined( 'WP_DEBUG' ) && WP_DEBUG,
             ]
@@ -534,4 +535,49 @@ class ProductGroup {
         wp_enqueue_script( 'luma-product-fields-quickedit' );
     }
 
+
+    /**
+     * Get all product groups.
+     *
+     * Returns product groups as an associative array:
+     * [
+     *     'general' => 'General',
+     *     'yarn'    => 'Yarn',
+     * ]
+     *
+    * Keys are sanitized slugs, values are raw term names
+    * (escape on output).
+    *
+    * @return array<string,string>
+    */
+    public static function get_product_groups(): array {
+
+        static $cache = null;
+
+        if ( null !== $cache ) {
+            return $cache;
+        }
+
+        $terms = get_terms(
+            [
+                'taxonomy'   => static::$tax,
+                'hide_empty' => false,
+            ]
+        );
+
+        if ( is_wp_error( $terms ) || empty( $terms ) ) {
+            $cache = [];
+            return $cache;
+        }
+
+        $groups = [];
+
+        foreach ( $terms as $term ) {
+            $groups[ sanitize_key( $term->slug ) ] = $term->name;
+        }
+
+        $cache = $groups;
+
+        return $cache;
+    }
 }

@@ -11,6 +11,7 @@ defined('ABSPATH') || exit;
 use Luma\ProductFields\Utils\Helpers;
 use Luma\ProductFields\Taxonomy\ProductGroup;
 use Luma\ProductFields\Admin\TaxonomyAdminPanel;
+use Luma\ProductFields\Admin\Ajax;
 use Luma\ProductFields\Product\FieldRenderer;
 use Luma\ProductFields\Product\VariationFieldRenderer;
 use Luma\ProductFields\Admin\Migration\MigrationAjax;
@@ -74,35 +75,35 @@ class Admin {
         global $post;
 
         $data = [
-            'ajaxurl' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('luma_product_fields_admin_nonce'),
-            'action' => 'luma_product_fields_ajax',
-            'slug_warning' => __('WARNING! When you change the slug, existing data from this field will no longer be shown. Are you really sure you want to do this?', 'luma-product-fields'),
-            'delete_warning' => __('Are you sure you want to delete this field? Existing data will no longer be shown to the customers.', 'luma-product-fields'),
-            'autocomplete_placeholder' => __('Just start typing...', 'luma-product-fields'),
+            'ajaxurl' => admin_url( 'admin-ajax.php' ),
+            'nonce'   => wp_create_nonce( Ajax::NONCE_ACTION ),
+            'action'  => Ajax::WP_AJAX_ACTION,
+            'action_key'  => Ajax::DISPATCH_KEY,
+
+            'delete_warning' => __( 'Are you sure you want to delete this field? Existing data will no longer be shown to the customers.', 'luma-product-fields' ),
+            'autocomplete_placeholder' => __( 'Just start typing...', 'luma-product-fields' ),
             /* translators: %d: minimum number of characters the user must type before search starts. */
             'autocomplete_min_chars'   => __( 'Enter at least %d characters', 'luma-product-fields' ),
             'autocomplete_searching'   => __( 'Searching…', 'luma-product-fields' ),
             'spinner' => '<div style="text-align:center;padding:3em;"><img src="/wp-admin/images/spinner-2x.gif" /></div>',
         ];
 
-        if (isset($post)) {
-            $data['post_id'] = $post->ID;
+        if ( isset( $post ) ) {
+            $data['post_id'] = (int) $post->ID;
         }
 
         return $data;
     }
 
 
+
     /**
      * Returns a <select> element for choosing or filtering product groups.
      *
-     * @param string      $id            HTML name/id of the select.
-     * @param string|null $selected_slug Currently selected group slug.
-     * @param string|null $unselected_string 
-     *        If provided, renders an empty-value <option>. 
-     *        Used for product edit screen ("No group selected").
-     *
+     * @param string      $id                HTML name/id of the select.
+     * @param string|null $selected_slug     Currently selected group slug.
+     * @param string|null $unselected_string If provided, renders an empty-value <option>.
+     *                                      Used for product edit screen ("No group selected").
      * @param array       $args {
      *     Optional options (ignored if $unselected_string is provided).
      *
@@ -121,65 +122,64 @@ class Admin {
         array $args = []
     ): string {
 
-        $args = wp_parse_args($args, [
-            'include_all'     => false,
-            'include_general' => false,
-            'all_label'       => __('All', 'luma-product-fields'),
-            'general_label'   => __('No group', 'luma-product-fields'),
-        ]);
+        $args = wp_parse_args(
+            $args,
+            [
+                'include_all'     => false,
+                'include_general' => false,
+                'all_label'       => __( 'All', 'luma-product-fields' ),
+                'general_label'   => __( 'No group', 'luma-product-fields' ),
+            ]
+        );
 
-        $terms = get_terms([
-            'taxonomy'   => 'luma_product_fields_product_group',
-            'hide_empty' => false,
-        ]);
+        $selected_slug = null !== $selected_slug ? sanitize_key( $selected_slug ) : '';
 
-        if (is_wp_error($terms)) {
-            return '';
-        }
+        $groups = ProductGroup::get_product_groups(); // [ 'slug' => 'Name' ]
 
-        $html = '<select name="' . esc_attr($id) . '" id="' . esc_attr($id) . '">';
+        $html  = '<select name="' . esc_attr( $id ) . '" id="' . esc_attr( $id ) . '">';
 
         /**
          * MODE 1: Product Edit Screen
          * If $unselected_string is provided → render exactly one default empty option
-         * and DO NOT render “all/general”, because this is NOT a filter selector.
+         * and DO NOT render “all/general”, since this is not a filter selector.
          */
-        if ($unselected_string !== null) {
+        if ( null !== $unselected_string ) {
             $html .= sprintf(
                 '<option value="" %s>%s</option>',
-                selected($selected_slug, '', false),
-                esc_html($unselected_string)
+                selected( $selected_slug, '', false ),
+                esc_html( $unselected_string )
             );
-        } 
-        /**
-         * MODE 2: Filter selectors (ListView, FieldOverview)
-         * $unselected_string is NULL → use filtering options if enabled
-         */
-        else {
-            if ($args['include_all']) {
+        } else {
+            /**
+             * MODE 2: Filter selectors (ListView, FieldOverview)
+             * $unselected_string is NULL → use filtering options if enabled
+             */
+            if ( ! empty( $args['include_all'] ) ) {
                 $html .= sprintf(
                     '<option value="all"%s>%s</option>',
-                    selected($selected_slug, 'all', false),
-                    esc_html($args['all_label'])
+                    selected( $selected_slug, 'all', false ),
+                    esc_html( (string) $args['all_label'] )
                 );
             }
 
-            if ($args['include_general']) {
+            if ( ! empty( $args['include_general'] ) ) {
                 $html .= sprintf(
                     '<option value="general"%s>%s</option>',
-                    selected($selected_slug, 'general', false),
-                    esc_html($args['general_label'])
+                    selected( $selected_slug, 'general', false ),
+                    esc_html( (string) $args['general_label'] )
                 );
             }
         }
 
-        // Always show actual product groups
-        foreach ($terms as $term) {
+        // Always show actual product groups.
+        foreach ( $groups as $slug => $label ) {
+            $slug = sanitize_key( (string) $slug );
+
             $html .= sprintf(
                 '<option value="%s"%s>%s</option>',
-                esc_attr($term->slug),
-                selected($selected_slug, $term->slug, false),
-                esc_html($term->name)
+                esc_attr( $slug ),
+                selected( $selected_slug, $slug, false ),
+                esc_html( (string) $label )
             );
         }
 
@@ -187,7 +187,6 @@ class Admin {
 
         return $html;
     }
-
 
 
     /**
@@ -198,27 +197,30 @@ class Admin {
      *
      * @return string
      */
-    public function get_product_group_checkboxes(string $name, array $selected = []): string {
-        $groups = get_terms([
-            'taxonomy'   => 'luma_product_fields_product_group',
-            'hide_empty' => false,
-        ]);
+    public function get_product_group_checkboxes( string $name, array $selected = [] ): string {
 
-        if (is_wp_error($groups)) {
+        $groups = ProductGroup::get_product_groups(); 
+
+        if ( empty( $groups ) ) {
             return '';
         }
 
+        $selected = array_map( 'sanitize_key', $selected );
+
         $html = '<fieldset>';
-        foreach ($groups as $group) {
-            $checked = in_array($group->slug, $selected, true) ? 'checked' : '';
+
+        foreach ( $groups as $slug => $label ) {
+            $slug = sanitize_key( (string) $slug );
+
             $html .= sprintf(
-                '<label><input type="checkbox" name="%s[]" value="%s" %s> %s</label><br>',
-                esc_attr($name),
-                esc_attr($group->slug),
-                $checked,
-                esc_html($group->name)
+                '<label><input type="checkbox" name="%s[]" value="%s"%s> %s</label><br>',
+                esc_attr( $name ),
+                esc_attr( $slug ),
+                checked( in_array( $slug, $selected, true ), true, false ),
+                esc_html( (string) $label )
             );
         }
+
         $html .= '</fieldset>';
 
         return $html;
@@ -235,7 +237,7 @@ class Admin {
 
         if ($screen && $screen->taxonomy) {
             $custom_taxonomies = array_column(\Luma\ProductFields\Taxonomy\TaxonomyManager::get_all(), 'slug');
-            if ( in_array($screen->taxonomy, $custom_taxonomies, true) || $screen->taxonomy === 'luma_product_fields_product_group' ) {
+            if ( in_array($screen->taxonomy, $custom_taxonomies, true) || $screen->taxonomy === 'lpf_product_group' ) {
                 self::show_back_button();
             }
         }
@@ -248,7 +250,7 @@ class Admin {
      * @return void
      */
     public static function show_back_button() {
-        echo '<p><a href="' . esc_url( admin_url( 'edit.php?post_type=product&page=lpf-fields' ) ) . '" class="button-secondary">&larr; ' . esc_html__( 'Back to Field Overview', 'luma-product-fields' ) . '</a></p>';
+        echo '<p><a href="' . esc_url( admin_url( 'edit.php?post_type=product&page=luma-product-fields' ) ) . '" class="button-secondary">&larr; ' . esc_html__( 'Back to Field Overview', 'luma-product-fields' ) . '</a></p>';
     }
 
 }

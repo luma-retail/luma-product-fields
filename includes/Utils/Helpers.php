@@ -61,7 +61,7 @@ class Helpers {
             $post_id = $product->get_parent_id();
         }
 
-        $terms = get_the_terms($post_id, 'luma_product_fields_product_group');
+        $terms = get_the_terms($post_id, 'lpf_product_group');
         if (empty($terms)) {
             return false;
         }
@@ -69,20 +69,6 @@ class Helpers {
         return $terms[0];
     }
 
-
-    /**
-     * Get the product group term ID for a given post.
-     *
-     * @param int $post_id
-     * @return int|false
-     */
-    public static function get_product_group_id( $post_id ) {
-        $group = self::get_product_group( $post_id );
-        if (!$group) {
-            return false;
-        }
-        return $group->term_id;
-    }
 
 
     /**
@@ -114,37 +100,10 @@ class Helpers {
      * @return string|null
      */
     public static function get_product_group_slug_from_term_id($term_id) {
-        $term = get_term_by('term_id', $term_id, 'luma_product_fields_product_group');
+        $term = get_term_by('term_id', $term_id, 'lpf_product_group');
         return $term->slug;
     }
 
-
-   /**
-    * Get all fields for a given product group term ID.
-    *
-    * @param int $term_id
-    * @return array<int, array{
-    *     label: string,
-    *     description: string,
-    *     frontend_desc: string,
-    *     slug: string,
-    *     type: string,
-    *     unit: string,
-    *     groups: array<int,string>,
-    *     hide_in_frontend: bool,
-    *     variation: bool,
-    *     is_taxonomy: bool,
-    *     show_links: bool,
-    *     schema_prop: string,
-    *     tax_description?: string
-    * }>
-    */
-    public static function get_fields_for_group_id($term_id) {
-        $slug = self::get_product_group_slug_from_term_id($term_id);
-        return self::get_all_fields($slug);
-    }
-    
-    
     
     /**
      * Retrieve the fields attached to a specific group slug.
@@ -363,54 +322,6 @@ class Helpers {
 
 
     /**
-     * Get all frontend-visible fields for a given product.
-     *
-     * Retrieves and filters all fields belonging to the product’s group,
-     * respecting visibility and variation settings, and returns structured
-     * data ready for frontend rendering.
-     *
-     * @param int  $product_id                Product ID (simple or variation).
-     * @param bool $include_variation_fields  Whether to include fields marked for variation use.
-     *
-     * @return array<int,array<string,mixed>> List of frontend-visible fields.
-     */
-    public static function get_frontend_fields_for_product( int $product_id, bool $include_variation_fields = true ): array {
-        $fields_to_display = [];
-
-        $product_group = self::get_product_group_slugs( $product_id )[0] ?? 'general';
-        $all_fields = self::get_all_fields( $product_group );
-
-        foreach ( $all_fields as $field ) {
-            if ( ! empty( $field['hide_in_frontend'] ) ) {
-                continue;
-            }
-            if ( ! $include_variation_fields && ! empty( $field['variation'] ) ) {
-                continue;
-            }
-
-            $value = self::get_field_value( $product_id, $field['slug'] );
-            if ( $value === '' || $value === null || ( is_array( $value ) && empty( $value ) ) ) {
-                continue;
-            }
-
-            $link = ! empty( $field['is_taxonomy'] ) ? self::get_term_link( $value ) : '';
-            $fields_to_display[] = [
-                'slug'          => $field['slug'],
-                'label'         => $field['label'],
-                'value'         => $value,
-                'link'          => $link,
-                'unit'          => $field['unit'] ?? '',
-                'frontend_desc' => $field['frontend_desc'] ?? '',
-            ];
-        }
-
-        return $fields_to_display;
-    }
-
-
-
-
-    /**
      * Retrieve a full field definition by its storage key.
      *
      * @param string $slug
@@ -512,7 +423,7 @@ class Helpers {
     public static function get_formatted_unit_html( $unit ) {
         $registered_units = FieldTypeRegistry::get_units();
         $unit_label = $registered_units[ $unit ] ?? $unit;                
-        return ' <span class="luma-product-fields-unit">' . esc_html( $unit_label ) . '</span>';
+        return ' <span class="lpf-unit">' . esc_html( $unit_label ) . '</span>';
     }
     
     

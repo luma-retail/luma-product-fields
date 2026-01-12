@@ -104,7 +104,7 @@ class Onboarding {
             'luma_product_fields_dismiss_welcome'
         );
 
-        $fields_url = admin_url( 'edit.php?post_type=product&page=lpf-fields' );
+        $fields_url = admin_url( 'edit.php?post_type=product&page=luma-product-fields' );
 
         // WooCommerce → Settings → Products → (your section).
         $settings_url = add_query_arg(

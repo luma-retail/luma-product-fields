@@ -53,7 +53,7 @@ class CacheInvalidator {
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		$transients = $wpdb->get_col(
-			"SELECT option_name FROM $wpdb->options WHERE option_name LIKE '_transient_lpf_meta_fields_%'"
+			"SELECT option_name FROM $wpdb->options WHERE option_name LIKE '_transient_luma_product_fields_meta_fields_%'"
 		);
 
 		foreach ( $transients as $transient ) {

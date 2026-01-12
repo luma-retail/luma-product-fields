@@ -30,7 +30,22 @@ defined('ABSPATH') || exit;
  */
 class FieldTypeRegistry
 {
-        
+
+    /**
+     * Cached field type registry for the current request.
+     *
+     * @var array<string, array>|null
+     */
+    private static ?array $cache = null;
+
+
+    /**
+     * Initialize the field type registry.
+     *
+     * This method preloads all field types into the cache.
+     *
+     * @return void
+     */        
     public static function init(): void {
         self::get_all();
     }
@@ -40,18 +55,33 @@ class FieldTypeRegistry
      * Get all registered field types.
      *
      * Each field type is keyed by a string identifier (e.g. 'text', 'number') and maps to
-     * an array describing the field's behavior and capabilities.
+     * an array describing the type’s behavior and capabilities.
      *
      * Keys in the inner array:
      * - `label` (string): Human-readable name shown in admin UI.
-     * - `description` (string, optional): Optional tooltip/help text for the field type.
+     * - `description` (string, optional): Tooltip/help text for the field type (admin).
+     * - `datatype` ('text'|'number'): Underlying data type used by the plugin for formatting/logic.
      * - `storage` ('meta'|'taxonomy'): Indicates how the value is stored.
-     * - `supports` (string[], optional): List of supported features like 'unit', 'variations', etc.
-     * - `validation` (string, optional): Validation type (e.g. 'float', 'range', 'int').
-     * - `render_product_form_cb` (callable, optional): Callback to render the field in the product editor.
-     * - `render_variation_form_cb` (callable, optional): Callback to render the field in variation edit view.
-     * - `render_frontend_cb` (callable, optional): Callback to render the field on the frontend.
-     * - `save_cb` (callable, optional): Callback to handle saving the field value.
+     * - `supports` (string[], optional): Supported features, e.g. 'unit', 'variations', 'multiple_values', 'link'.
+     * - `validation` (string, optional): Validation type (e.g. 'float', 'integer', 'range').
+     *
+     * Callbacks (all optional):
+     * Render callbacks:
+     * - `render_admin_product_cb` (callable): Render input HTML in the Product Edit screen.
+     *      Signature: function( string $field_slug, int $post_id, array $field ): string
+     * - `render_admin_variation_cb` (callable): Render input HTML in the Variation edit panel.
+     *      Signature: function( string $field_slug, int $variation_id, array $field, int $loop = 0 ): string
+     * - `render_admin_list_cb` (callable): Render the value in admin list tables.
+     *      Signature: function( int $product_id, array $field ): string
+     * - `render_frontend_cb` (callable): Render a frontend value (raw value formatting).
+     *      Signature: function( array $field, mixed $value ): string
+     *
+     * Save/migration callbacks:
+     * - `save_cb` (callable): Sanitize and persist a value for a product.
+     *      Signature: function( int $product_id, array $field, mixed $value ): bool
+     * - `migrate_cb` (callable): Handle legacy migration for this type (optional).
+     *      Signature: function( array $context ): array|false
+     *
      *
      * @hook luma_product_fields_field_types
      * Allows external plugins to register custom field types.
@@ -59,29 +89,35 @@ class FieldTypeRegistry
      * @return array<string, array{
      *     label: string,
      *     description?: string,
+     *     datatype: 'text'|'number',
      *     storage: 'meta'|'taxonomy',
      *     supports?: string[],
      *     validation?: string,
-     *     render_product_form_cb?: callable,
-     *     render_variation_form_cb?: callable,
+     *     render_admin_product_cb?: callable,
+     *     render_admin_variation_cb?: callable,
+     *     render_admin_list_cb?: callable,
      *     render_frontend_cb?: callable,
-     *     save_cb?: callable
+     *     save_cb?: callable,
+     *     migrate_cb?: callable,
      * }>
      */
     public static function get_all(): array {
+        if ( null !== self::$cache ) {
+            return self::$cache;
+        }
+
         $core_types = self::get_core_field_types();
-        
+
         /**
          * @hook luma_product_fields_field_types
          * Filters the field registry array.
          *
          * @param array $fields Registered fields.
-         *
-         */         
-        $all_types = apply_filters( 'luma_product_fields_field_types', $core_types );
-        return $all_types;
-    }
+         */
+        self::$cache = apply_filters( 'luma_product_fields_field_types', $core_types );
 
+        return self::$cache;
+    }
 
     /**
      * Return built-in core field types.
@@ -150,6 +186,16 @@ class FieldTypeRegistry
 
 
     /**
+     * Clear the cached registry.
+     *
+     * @return void
+     */
+    public static function flush_cache(): void {
+        self::$cache = null;
+    }
+
+
+    /**
      *  Get available units for numeric fields.
      *
      * @return array
@@ -160,7 +206,7 @@ class FieldTypeRegistry
             'cm'        => __('cm', 'luma-product-fields'),
             'mm'        => __('mm', 'luma-product-fields'),
             'm'         => __('meters', 'luma-product-fields'),
-            'g'         => __('gram', 'luma-product-fields'),
+            'g'         => __('grams', 'luma-product-fields'),
             'kg'        => __('kg', 'luma-product-fields'),
             '"'         => __('inches', 'luma-product-fields'),
             'ft.'       => __('feet', 'luma-product-fields'),
@@ -307,6 +353,7 @@ class FieldTypeRegistry
     }
 
 
+    
 
 
 
