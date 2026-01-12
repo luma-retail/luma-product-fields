@@ -96,7 +96,7 @@ You can start with a single shared field set for all products, or use **Product 
 
 5. **Automatic Frontend Display**
 
-   The plugin outputs a clean, structured specification section on product pages:
+   The plugin outputs a clean, structured specification section (the Additional Information tab) on product pages:
 
    - No theme editing required
    - Works with any WooCommerce theme
@@ -108,7 +108,10 @@ You can start with a single shared field set for all products, or use **Product 
    - Optional tooltips from the field’s frontend description can be shown
    - Graceful fallback if some values are missing
 
-   Templates can be overridden in your theme if you need full control.
+  In settings, you can opt to also show values like SKU, Product Tags, weight, dimensions, categories and the new woo native GTIN, in the same table. 
+
+  The frontend output can be customized using hooks and filters.  
+  For advanced use cases, developers can fully override or replace the rendering logic via theme or plugin code.
 
 ### SEO & structured data
 
@@ -146,9 +149,8 @@ Luma Product Fields is designed to be **SEO-friendly**:
 - Custom product specification fields
 - Optional Product Group–based field schemas
 - Inline editing with AJAX
-- Field sorting in admin (numbers, text, taxonomies)
 - Multi-value support (where relevant)
-- Variation support
+- Variation support (some field types only)
 - Automatic frontend rendering
 - Optional taxonomy-based fields with linkable values
 - Frontend tooltips via field descriptions
@@ -202,12 +204,8 @@ However, the plugin is developer-friendly and can be extended to create filters 
 
 = Can I display fields in custom places on the product page? =
 
-Yes. You can:
-
-- Use the provided hooks, or
-- Override templates in your theme at:
-
-`yourtheme/luma-product-fields/`
+Not out of the box. The fields are by default shown in the "Additional information" tab. 
+But there are plenty of hooks you can use to show it wherever you want.
 
 = Is it developer-friendly? =
 
