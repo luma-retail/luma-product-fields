@@ -37,35 +37,25 @@ class Onboarding {
      * @return void
      */
     public static function handle_dismiss(): void {
+        $nonce = isset( $_GET['_wpnonce'] ) ? sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ) : '';
+
+        if ( ! wp_verify_nonce( $nonce, 'luma_product_fields_dismiss_welcome' ) ) {
+            return;
+        }
+
         if ( ! current_user_can( 'manage_woocommerce' ) ) {
             return;
         }
 
+        $dismiss = isset( $_GET['luma_product_fields_dismiss_welcome'] ) ? absint( $_GET['luma_product_fields_dismiss_welcome'] ) : 0;
 
-        $dismiss = isset( $_GET['luma_product_fields_dismiss_welcome'] )
-            ? sanitize_text_field( wp_unslash( $_GET['luma_product_fields_dismiss_welcome'] ) )
-            : '';
-
-        $nonce = isset( $_GET['_wpnonce'] )
-            ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) )
-            : '';
-
-        if ( '1' !== $dismiss ) {
-            return;
-        }
-
-        if ( '' === $nonce || ! wp_verify_nonce( $nonce, 'luma_product_fields_dismiss_welcome' ) ) {
-            return;
-        }
-
-        // Single small scalar option, autoloaded, and cleaned up on uninstall.
-        if ( false === get_option( static::OPTION_WELCOME_DISMISSED, false ) ) {
-            add_option( static::OPTION_WELCOME_DISMISSED, 'yes' );
+        if ( 1 !== $dismiss ) {
             return;
         }
 
         update_option( static::OPTION_WELCOME_DISMISSED, 'yes' );
     }
+
 
     
     
@@ -106,7 +96,6 @@ class Onboarding {
 
         $fields_url = admin_url( 'edit.php?post_type=product&page=luma-product-fields' );
 
-        // WooCommerce → Settings → Products → (your section).
         $settings_url = add_query_arg(
             [
                 'page'    => 'wc-settings',

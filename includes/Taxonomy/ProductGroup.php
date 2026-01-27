@@ -29,6 +29,24 @@ class ProductGroup {
 
 
     /**
+     * Nonce action for bulk edit / quick edit.
+     *
+     * @var string
+     */
+    private const INLINE_EDIT_NONCE_ACTION = 'luma_product_fields_product_group_inline_edit';
+
+
+    /**
+     * Nonce field name for bulk edit / quick edit.
+     *
+     * @var string
+     */
+    private const INLINE_EDIT_NONCE_FIELD = 'luma_product_fields_pg_inline_nonce';
+
+
+
+
+    /**
      * Constructor.
     */
     public function __construct() {
@@ -64,12 +82,12 @@ class ProductGroup {
             'labels'             => $labels,
             'rewrite'            => [ 'slug' => 'productgroup' ],
             'description'        => __( 'Main product groups in the shop', 'luma-product-fields' ),
-            'hierarchical'       => false, // Product groups are flat
+            'hierarchical'       => false, 
             'public'             => true,
             'show_in_rest'       => false,
             'show_ui'            => true,
             'show_in_menu'       => false,
-            'show_admin_column'  => true,  // Adds the column in Products list
+            'show_admin_column'  => true,  
             'query_var'          => true,
             'meta_box_cb'        => false,
         ];
@@ -257,8 +275,9 @@ class ProductGroup {
         $field_class = LUMA_PRODUCT_FIELDS_PREFIX . '-pg-single';
         ?>
         <div class="inline-edit-group">
-            <h4><?php echo esc_html__( 'Product group', 'luma-product-fields' ); ?></h4>
+            <?php wp_nonce_field( self::INLINE_EDIT_NONCE_ACTION, self::INLINE_EDIT_NONCE_FIELD ); ?>
 
+            <h4><?php echo esc_html__( 'Product group', 'luma-product-fields' ); ?></h4>
             <label class="alignleft">
                 <span class="title"><?php echo esc_html__( 'Set to', 'luma-product-fields' ); ?></span>
                 <span class="input-text-wrap">
@@ -298,22 +317,37 @@ class ProductGroup {
      * @return void
      */
     public function handle_bulk_edit_save( $product ) {
+
+        $nonce = isset( $_REQUEST[ self::INLINE_EDIT_NONCE_FIELD ] )
+            ? sanitize_text_field( wp_unslash( $_REQUEST[ self::INLINE_EDIT_NONCE_FIELD ] ) )
+            : '';
+
+        if ( ! wp_verify_nonce( $nonce, self::INLINE_EDIT_NONCE_ACTION ) ) {
+            return;
+        }
+
         if ( ! $product instanceof \WC_Product ) {
             return;
         }
-        if ( ! $this->verify_bulk_edit_request() ) {
+
+        $product_id = (int) $product->get_id();
+        if ( $product_id <= 0 ) {
+            return;
+        }
+
+        if ( ! current_user_can( 'edit_post', $product_id ) ) {
             return;
         }
 
         $field_key = LUMA_PRODUCT_FIELDS_PREFIX . '_pg_single';
 
-        $raw = isset( $_REQUEST[ $field_key ] ) ? sanitize_text_field( wp_unslash( $_REQUEST[ $field_key ] ) ) : '';  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $raw = isset( $_REQUEST[ $field_key ] ) ? sanitize_text_field( wp_unslash( $_REQUEST[ $field_key ] ) ) : '';  
 
         if ( '' === $raw ) {
             return;
         }
 
-        $product_id = $product->get_id();
+
 
         if ( '__clear__' === $raw ) {
             wp_set_object_terms( $product_id, [], self::$tax, false );
@@ -340,47 +374,6 @@ class ProductGroup {
     }
 
 
-    /**
-     * Verify this request is a valid bulk-edit request
-     * (WooCommerce or core list-table).
-     *
-     * @return bool
-     */
-    protected function verify_bulk_edit_request(): bool {
-        if ( ! is_admin() || ! current_user_can( 'edit_products' ) ) {
-            return false;
-        }
-
-        // WooCommerce bulk edit nonce.
-        $wc_nonce = isset( $_REQUEST['_woocommerce_bulk_edit_nonce'] )
-            ? sanitize_text_field( wp_unslash( $_REQUEST['_woocommerce_bulk_edit_nonce'] ) )
-            : '';
-
-        if ( '' !== $wc_nonce && wp_verify_nonce( $wc_nonce, 'woocommerce_bulk_edit' ) ) {
-            return true;
-        }
-
-        // Alt Woo flow sometimes uses "security".
-        $security_nonce = isset( $_REQUEST['security'] )
-            ? sanitize_text_field( wp_unslash( $_REQUEST['security'] ) )
-            : '';
-
-        if ( '' !== $security_nonce && wp_verify_nonce( $security_nonce, 'woocommerce_bulk_edit' ) ) {
-            return true;
-        }
-
-        // Core WP list-table bulk edit nonce.
-        $wp_nonce = isset( $_REQUEST['_wpnonce'] )
-            ? sanitize_text_field( wp_unslash( $_REQUEST['_wpnonce'] ) )
-            : '';
-
-        if ( '' !== $wp_nonce && wp_verify_nonce( $wp_nonce, 'bulk-posts' ) ) {
-            return true;
-        }
-
-        return false;
-    }
-
 
     /**
      * Renders a single-select field for Product group in Quick Edit.
@@ -402,10 +395,9 @@ class ProductGroup {
 
         $field_name  = LUMA_PRODUCT_FIELDS_PREFIX . '_pg_quick_single';
         $field_class = LUMA_PRODUCT_FIELDS_PREFIX . '-pg-quick-single';
-        $nonce_name  = LUMA_PRODUCT_FIELDS_PREFIX . '_quick_edit_nonce';
         ?>
         <br/>
-        <?php wp_nonce_field( Ajax::NONCE_ACTION, $nonce_name ); ?>
+        <?php wp_nonce_field( self::INLINE_EDIT_NONCE_ACTION, self::INLINE_EDIT_NONCE_FIELD ); ?>
         <div class="inline-edit-group">
             <label class="alignleft" style="min-width: 260px;">
                 <span class="title"><?php echo esc_html__( 'Product group', 'luma-product-fields' ); ?></span>
@@ -442,6 +434,15 @@ class ProductGroup {
      * @return void
      */
     public function handle_quick_edit_save( $product ) {
+
+        $nonce = isset( $_REQUEST[ self::INLINE_EDIT_NONCE_FIELD ] )
+            ? sanitize_text_field( wp_unslash( $_REQUEST[ self::INLINE_EDIT_NONCE_FIELD ] ) )
+            : '';
+
+        if ( ! wp_verify_nonce( $nonce, self::INLINE_EDIT_NONCE_ACTION ) ) {
+            return;
+        }
+
         if ( ! $product instanceof \WC_Product ) {
             return;
         }
@@ -452,15 +453,6 @@ class ProductGroup {
         }
 
         if ( ! current_user_can( 'edit_post', $product_id ) ) {
-            return;
-        }
-
-        $nonce_key = LUMA_PRODUCT_FIELDS_PREFIX . '_quick_edit_nonce';
-        $nonce     = isset( $_REQUEST[ $nonce_key ] )
-            ? sanitize_text_field( wp_unslash( $_REQUEST[ $nonce_key ] ) )
-            : '';
-
-        if ( '' === $nonce || ! wp_verify_nonce( $nonce, Ajax::NONCE_ACTION ) ) {
             return;
         }
 
@@ -537,14 +529,9 @@ class ProductGroup {
 
 
     /**
-     * Get all product groups.
-     *
-     * Returns product groups as an associative array:
-     * [
-     *     'general' => 'General',
-     *     'yarn'    => 'Yarn',
-     * ]
-     *
+    * Get all product groups.
+    *
+    * Returns product groups as an associative array.
     * Keys are sanitized slugs, values are raw term names
     * (escape on output).
     *

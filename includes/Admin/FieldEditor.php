@@ -14,9 +14,9 @@ use Luma\ProductFields\Registry\FieldTypeRegistry;
 use Luma\ProductFields\Admin\NotificationManager;
 use Luma\ProductFields\Taxonomy\ProductGroup;
 use Luma\ProductFields\Utils\CacheInvalidator;
+use Luma\ProductFields\Utils\Helpers;
 
 defined( 'ABSPATH' ) || exit;
-
 
  /**
  * Field Editor class
@@ -33,11 +33,12 @@ defined( 'ABSPATH' ) || exit;
  *      To add additional data to the field editor.
  *      @param array $field 
  *
- *
- * @hook luma_product_fields_field_editor_form_data
- *      Filters the data sent to TaxonomyManager or MetaManager for saving.
- *      @param array $data 
- *
+ * @hook luma_product_fields_field_saved
+ *       Fires after a field has been saved (created or updated).
+ *       @param array  $data          The field data that was sanitized and saved.
+ *       @param string $action        The action performed: 'created' or 'updated'.
+ *       @param bool   $is_tax        Whether the field is taxonomy-backed.
+ *       @param string $original_slug The original slug when editing, or empty when creating.
  *
  * @hook luma_product_fields_field_editor_success_message
  *      Filters the success message shown after a field is created or updated.
@@ -146,7 +147,7 @@ class FieldEditor {
         echo '<input type="hidden" name="action" value="luma_product_fields_save_field_editor" />';
         wp_nonce_field( 'luma_product_fields_save_field_editor', 'luma_product_fields_nonce' );
         if ( $slug ) {
-            echo '<input type="hidden" name="original_slug" value="' . esc_attr( $slug ) . '" />';
+            echo '<input type="hidden" name="lrpf_original_slug" value="' . esc_attr( $slug ) . '" />';
         }
 
         echo '<table class="form-table">';
@@ -154,7 +155,7 @@ class FieldEditor {
         // Type.
         echo '<tr><th><label>' . esc_html__( 'Type', 'luma-product-fields' ) . '</label></th>';
         echo '<td><div class="field-types">';
-        echo '<select name="luma_product_fields_fields[type]" id="luma_product_fields_fields_type_selector">';
+        echo '<select name="lrpf_type" id="luma_product_fields_fields_type_selector">';
         foreach ( $types as $type_slug => $info ) {
             echo '<option value="' . esc_attr( $type_slug ) . '"' . selected( $field['type'] ?? '', $type_slug, false ) . '>' . esc_html( $info['label'] ) . '</option>';
         }
@@ -165,7 +166,7 @@ class FieldEditor {
 
         // Label.
         echo '<tr><th><label>' . esc_html__( 'Label', 'luma-product-fields' ) . '</label></th>';
-        echo '<td><input name="luma_product_fields_fields[label]" type="text" value="' . esc_attr( $field['label'] ?? '' ) . '" class="regular-text" /></td></tr>';
+        echo '<td><input name="lrpf_label" type="text" value="' . esc_attr( $field['label'] ?? '' ) . '" class="regular-text" /></td></tr>';
 
         do_action( 'luma_product_fields_field_editor_after_label', $field );
 
@@ -191,7 +192,7 @@ class FieldEditor {
 
         // Tooltip (admin).
         echo '<tr><th><label>' . esc_html__( 'Tooltip (for admin)', 'luma-product-fields' ) . '</label></th>';
-        echo '<td><textarea name="luma_product_fields_fields[description]" rows="3" class="large-text">';
+        echo '<td><textarea name="lrpf_description" rows="3" class="large-text">';
         echo esc_textarea( (string) ( $field['description'] ?? '' ) );
         echo '</textarea>';
         echo '<p>' . esc_html__( 'A tooltip for the shop manager to better understand what to do. Just leave this field empty to omit.', 'luma-product-fields' ) . '</p>';
@@ -199,7 +200,7 @@ class FieldEditor {
 
         // Unit.
         echo '<tr class="' . esc_attr( $unit_row_class ) . '"><th><label>' . esc_html__( 'Unit', 'luma-product-fields' ) . '</label></th>';
-        echo '<td><select name="luma_product_fields_fields[unit]">';
+        echo '<td><select name="lrpf_unit]">';
         echo '<option value="">' . esc_html__( 'None', 'luma-product-fields' ) . '</option>';
 
         foreach ( FieldTypeRegistry::get_units() as $value => $label ) {
@@ -210,35 +211,42 @@ class FieldEditor {
         // Product groups.
         echo '<tr><th><label>' . esc_html__( 'Product Groups', 'luma-product-fields' ) . '</label></th>';
         echo '<td>';
-        $html = ( new Admin() )->get_product_group_checkboxes( 'luma_product_fields_fields[groups]', $field['groups'] ?? [ 'general' ] );
+        $html = ( new Admin() )->get_product_group_checkboxes( 'lrpf_groups', $field['groups'] ?? [ 'general' ] );
         echo wp_kses( $html, wp_kses_allowed_html( 'luma_product_fields_admin_fields' ) );
         echo '<p>' . esc_html__( 'Leave empty to show across all products', 'luma-product-fields' ) . '</p>';
         echo '</td></tr>';
 
         // Frontend visibility.
         echo '<tr><th><label>' . esc_html__( 'Frontend Visibility', 'luma-product-fields' ) . '</label></th>';
-        echo '<td><label><input type="checkbox" name="luma_product_fields_fields[hide_in_frontend]" value="1"' . checked( $field['hide_in_frontend'] ?? false, true, false ) . ' /> ';
+        echo '<td><label><input type="checkbox" name="lrpf_hide_in_frontend" value="1"' . checked( $field['hide_in_frontend'] ?? false, true, false ) . ' /> ';
         echo esc_html__( 'Hide in frontend', 'luma-product-fields' ) . '</label></td></tr>';
 
         // Variations.
         echo '<tr class="' . esc_attr( $variations_row_class ) . '"><th><label>' . esc_html__( 'Use in variations', 'luma-product-fields' ) . '</label></th>';
-        echo '<td><label><input type="checkbox" name="luma_product_fields_fields[variation]" value="1"' . checked( $field['variation'] ?? false, true, false ) . ' /> ';
+        echo '<td><label><input type="checkbox" name="lrpf_variation" value="1"' . checked( $field['variation'] ?? false, true, false ) . ' /> ';
         echo esc_html__( 'Yes', 'luma-product-fields' ) . '</label></td></tr>';
 
         // Schema property.
-        echo '<tr><th><label>' . esc_html__( 'Schema Property', 'luma-product-fields' ) . '</label></th>';
-        echo '<td><input name="luma_product_fields_fields[schema_prop]" type="text" value="' . esc_attr( $field['schema_prop'] ?? '' ) . '" class="regular-text" /><br />';
+        echo '<tr>';
+        echo '<th><label for="lrpf_schema_prop">' . esc_html__( 'Schema Property', 'luma-product-fields' ) . '</label></th>';
+        echo '<td>';
+        echo '<input id="lrpf_schema_prop" name="lrpf_schema_prop" type="text" value="' . esc_attr( $field['schema_prop'] ?? '' ) . '" class="regular-text"/>';
+        echo '<p class="description">';
         echo esc_html__(
             'Schema Property controls how the value is included in your product’s structured data (schema.org). Adding a valid schema property (e.g. weight, brand, material) helps Google and other search engines better understand your product, which may improve how it appears in search results.',
             'luma-product-fields'
         );
-        echo ' <a target="_blank" rel="noopener noreferrer" href="https://schema.org/Product">';
+        echo ' ';
+        echo '<a href="' . esc_url( 'https://schema.org/Product' ) . '" target="_blank" rel="noopener noreferrer">';
         echo esc_html__( 'See list of available schema.org properties for products', 'luma-product-fields' );
-        echo '</a></td></tr>';
+        echo '</a></p>';
+        echo '</td>';
+        echo '</tr>';
+
 
         // Taxonomy links.
         echo '<tr class="' . esc_attr( $links_row_class ) . '"><th><label>' . esc_html__( 'Show Taxonomy Links', 'luma-product-fields' ) . '</label></th>';
-        echo '<td><label><input type="checkbox" name="luma_product_fields_fields[show_links]" value="1"' . checked( $field['show_links'] ?? false, true, false ) . ' /> ';
+        echo '<td><label><input type="checkbox" name="lrpf_show_links" value="1"' . checked( $field['show_links'] ?? false, true, false ) . ' /> ';
         echo esc_html__( 'Link to products with same value in front end', 'luma-product-fields' ) . '</label></td></tr>';
 
         do_action( 'luma_product_fields_field_editor_form_bottom', $field );
@@ -251,174 +259,183 @@ class FieldEditor {
     }
 
 
+/**
+ * Handles saving the field definition.
+ *
+ * @return void
+ */
+public function handle_save(): void {
+
+    if ( ! current_user_can( 'manage_woocommerce' ) ) {
+        wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'luma-product-fields' ) );
+    }
+
+    check_admin_referer( 'luma_product_fields_save_field_editor', 'luma_product_fields_nonce' );
+
+    $label_raw = isset( $_POST['lrpf_label'] ) ? wp_unslash( $_POST['lrpf_label'] ) : '';
+    $type_raw  = isset( $_POST['lrpf_type'] ) ? wp_unslash( $_POST['lrpf_type'] ) : '';
+
+    $label = sanitize_text_field( is_string( $label_raw ) ? $label_raw : '' );
+    $type  = sanitize_key( is_string( $type_raw ) ? $type_raw : '' );
+
+    if ( '' === $label || '' === $type ) {
+        $this->redirect_with_notice( __( 'You must enter both label and type.', 'luma-product-fields' ), 'error' );
+    }
+
+    if ( ! FieldTypeRegistry::get( $type ) ) {
+        $this->redirect_with_notice( __( 'Invalid field type.', 'luma-product-fields' ), 'error' );
+    }
+
+    $original_slug = isset( $_POST['lrpf_original_slug'] )
+        ? sanitize_key( wp_unslash( $_POST['lrpf_original_slug'] ) )
+        : '';
+
+    $slug = $original_slug ?: sanitize_title( $label );
+
+    if ( '' === $slug ) {
+        $this->redirect_with_notice( __( 'Could not generate a valid slug from the label.', 'luma-product-fields' ), 'error' );
+    }
+
+    if ( empty( $original_slug ) && $this->slug_conflicts( $slug ) ) {
+        $this->redirect_with_notice(
+            __( 'A field or taxonomy with this name already exists. Please choose another name.', 'luma-product-fields' ),
+            'error'
+        );
+    }
+
+    $info   = FieldTypeRegistry::get( $type ) ?? [];
+    $is_tax = ( ( $info['storage'] ?? '' ) === 'taxonomy' );
+
+    $before = null;
+    if ( $is_tax && ! empty( $original_slug ) ) {
+        $before = TaxonomyManager::get_field( $original_slug );
+    }
+
+    // Product groups (optional).
+    $groups = [];
+    if ( isset( $_POST['lrpf_groups'] ) ) {
+        $raw_groups = wp_unslash( $_POST['lrpf_groups'] );
+        $raw_groups = is_array( $raw_groups ) ? $raw_groups : [];
+
+        $submitted = array_map(
+            'sanitize_key',
+            array_filter( $raw_groups )
+        );
+
+        if ( ! empty( $submitted ) ) {
+            $allowed = array_keys( ProductGroup::get_product_groups() );
+
+            $groups = array_values(
+                array_intersect( $submitted, $allowed )
+            );
+        }
+    }
+
+    // Unit (optional, allowlisted).
+    $unit_raw = isset( $_POST['lrpf_unit'] ) ? wp_unslash( $_POST['lrpf_unit'] ) : '';
+    $unit     = sanitize_key( is_string( $unit_raw ) ? $unit_raw : '' );
+
+    $allowed_units = array_keys( FieldTypeRegistry::get_units() );
+    if ( '' !== $unit && ! in_array( $unit, $allowed_units, true ) ) {
+        $unit = '';
+    }
+
+    // Schema property (optional).
+    $schema_prop_raw = isset( $_POST['lrpf_schema_prop'] ) ? wp_unslash( $_POST['lrpf_schema_prop'] ) : '';
+    $schema_prop     = sanitize_key( is_string( $schema_prop_raw ) ? $schema_prop_raw : '' );
+
+    // Tooltip (admin).
+    $description_raw = isset( $_POST['lrpf_description'] ) ? wp_unslash( $_POST['lrpf_description'] ) : '';
+    $description     = sanitize_textarea_field( is_string( $description_raw ) ? $description_raw : '' );
+
+    // Tooltip (frontend) via wp_editor field name.
+    $frontend_desc_raw = isset( $_POST['luma_product_fields_fields_frontend_desc'] )
+        ? wp_unslash( $_POST['luma_product_fields_fields_frontend_desc'] )
+        : '';
+    $frontend_desc = wp_kses_post( is_string( $frontend_desc_raw ) ? $frontend_desc_raw : '' );
+
+    $data = [
+        'label'            => $label,
+        'description'      => $description,
+        'frontend_desc'    => $frontend_desc,
+        'slug'             => $slug,
+        'type'             => $type,
+        'unit'             => $unit,
+        'schema_prop'      => $schema_prop,
+        'groups'           => $groups,
+        'hide_in_frontend' => ! empty( $_POST['lrpf_hide_in_frontend'] ),
+        'variation'        => ! empty( $_POST['lrpf_variation'] ),
+        'show_links'       => ! empty( $_POST['lrpf_show_links'] ),
+    ];
+
+    // Save field data.
+    if ( $is_tax ) {
+        TaxonomyManager::save_field( $data );
+    } else {
+        MetaManager::save_field( $data );
+    }
+
+    $action = $original_slug ? 'updated' : 'created';
+
     /**
-     * Handles saving the field definition.
+     * Fires after a field definition is saved.
      *
+     * This hook is intended for extensions that store their data separately
+     * from the core field definition.
+     *
+     * @hook luma_product_fields_field_saved
+     *
+     * @param array  $data          The field data that was saved (sanitized).
+     * @param string $action        The action performed: 'created' or 'updated'.
+     * @param bool   $is_tax        Whether the field is taxonomy-backed.
+     * @param string $original_slug The original slug when editing, or empty when creating.
      *
      * @return void
      */
-    public function handle_save(): void
-    {
+    do_action( 'luma_product_fields_field_saved', $data, $action, $is_tax, $original_slug );
 
-        if (! current_user_can( 'manage_woocommerce' ) ) {
-            wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'luma-product-fields' ) );
-        }
-
-        check_admin_referer( 'luma_product_fields_save_field_editor', 'luma_product_fields_nonce' );
-
-
-        if ( empty( $_POST['luma_product_fields_fields'] ) || ! is_array( $_POST['luma_product_fields_fields'] ) ) {
-            $this->redirect_with_notice(
-                __( 'Error in submission.', 'luma-product-fields' ),
-                'error'
-            );
-        }
-
-        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-        $field_input_raw = wp_unslash( $_POST['luma_product_fields_fields'] );
-        // Raw input is sanitized and validated per-field below.
-        $field_input     = is_array( $field_input_raw ) ? $field_input_raw : [];        
-
-        $original_slug = isset( $_POST['original_slug'] )
-            ? sanitize_key( wp_unslash( $_POST['original_slug'] ) )
-            : '';
-
-        $label  = sanitize_text_field( $field_input['label'] ?? '' );
-
-        if ( '' === $label ) {
-            $this->redirect_with_notice( __( 'Label is required.', 'luma-product-fields' ), 'error' );
-        }
-
-        $type   = sanitize_key( $field_input['type'] ?? '' );
-
-        if ( ! FieldTypeRegistry::get( $type ) ) {
-            $this->redirect_with_notice(
-                __( 'Invalid field type.', 'luma-product-fields' ),
-                'error'
-            );
-        }
-
-        $info   = FieldTypeRegistry::get( $type ) ?? [];
-        $is_tax = ( $info['storage'] ?? '' ) === 'taxonomy';
-
-        $slug = $original_slug ?: sanitize_title( $label );
-
-        if ( '' === $slug ) {
-            $this->redirect_with_notice( __( 'Could not generate a valid slug from the label.', 'luma-product-fields' ), 'error' );
-        }
-
-        // Prevent creating new fields with conflicting slugs.
-        if ( empty( $original_slug ) && $this->slug_conflicts( $slug ) ) {
-            $this->redirect_with_notice(
-                __( 'A field or taxonomy with this name already exists. Please choose another name.', 'luma-product-fields' ),
-                'error'
-            );
-        }
-
-        $before = null;
-        if ( $is_tax && ! empty( $original_slug ) ) {
-            $before = TaxonomyManager::get_field( $original_slug );
-        }
-
-        $groups = [];
-        if ( isset( $field_input['groups'] ) ) {
-            $submitted = array_map(
-                'sanitize_key',
-                array_filter( (array) $field_input['groups'] )
-            );
-
-            if ( ! empty( $submitted ) ) {
-                $allowed = array_keys( ProductGroup::get_product_groups() );
-
-                $groups = array_values(
-                    array_intersect( $submitted, $allowed )
-                );
-            }
-        }
-
-        $unit = sanitize_key( (string) ( $field_input['unit'] ?? '' ) );
-
-        $allowed_units = array_keys( FieldTypeRegistry::get_units() );
-
-        if ( '' !== $unit && ! in_array( $unit, $allowed_units, true ) ) {
-            $unit = '';
-        }
-
-        $schema_prop = sanitize_key( $field_input['schema_prop'] ?? '' );
-
-        $frontend_desc_raw = isset( $_POST['luma_product_fields_fields_frontend_desc'] )
-            ? wp_unslash( $_POST['luma_product_fields_fields_frontend_desc'] ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            : '';
-
-        $data = [
-            'label'            => $label,
-            'description'      => sanitize_textarea_field( $field_input['description'] ?? '' ),
-            'frontend_desc'    => wp_kses_post( $frontend_desc_raw ),
-            'slug'             => $slug,
-            'type'             => $type,
-            'unit'             => $unit,
-            'schema_prop'      => $schema_prop,
-            'groups'           => $groups,
-            'hide_in_frontend' => ! empty( $field_input['hide_in_frontend'] ),
-            'variation'        => ! empty( $field_input['variation'] ),
-            'show_links'       => ! empty( $field_input['show_links'] ),
-        ];
-
-        $data = apply_filters( 'luma_product_fields_field_editor_form_data', $data );
-
-        // Save field data.
-        if ( $is_tax ) {
-            TaxonomyManager::save_field( $data );
-        } else {
-            MetaManager::save_field( $data );
-        }
-
-        if ( $this->should_flag_rewrite_flush( $before, $data ) ) {
-            $this->flag_rewrite_flush();
-        }
-
-        CacheInvalidator::invalidate_all_meta_caches();
-
-        $action = $original_slug ? 'updated' : 'created';
-        if ( $is_tax ) {
-            $message = ( 'created' === $action )
-                ? __( 'Field created successfully. You can now add terms via the Manage Terms button.', 'luma-product-fields' )
-                : __( 'Field updated successfully. Manage Terms is available for editing values.', 'luma-product-fields' );
-        } else {
-            $message = ( 'created' === $action )
-                ? __( 'Field created successfully.', 'luma-product-fields' )
-                : __( 'Field updated successfully.', 'luma-product-fields' );
-        }
-        
-        /**
-         * Filters the success message shown after a field is created or updated.
-         *
-         * Allows developers to modify the confirmation text displayed on the
-         * Product Fields overview page after saving a field definition.
-         *
-         * @hook luma_product_fields_field_editor_success_message
-         *
-         * @param string $message  The success message to be displayed.
-         * @param string $action   The action performed: 'created' or 'updated'.
-         * @param array  $data     The field data that was saved.
-         * @param bool   $is_tax   Whether the field is a taxonomy field.
-         *
-         * @return string Filtered success message.
-         */
-        $message = apply_filters(
-            'luma_product_fields_field_editor_success_message',
-            $message,
-            $action,
-            $data,
-            $is_tax
-        );
-
-        $this->redirect_with_notice(
-            $message,
-            'success',
-            admin_url( 'edit.php?post_type=product&page=luma-product-fields' )
-        );
+    if ( $this->should_flag_rewrite_flush( $before, $data ) ) {
+        $this->flag_rewrite_flush();
     }
+
+    CacheInvalidator::invalidate_all_meta_caches();
+
+    if ( $is_tax ) {
+        $message = ( 'created' === $action )
+            ? __( 'Field created successfully. You can now add terms via the Manage Terms button.', 'luma-product-fields' )
+            : __( 'Field updated successfully. Manage Terms is available for editing values.', 'luma-product-fields' );
+    } else {
+        $message = ( 'created' === $action )
+            ? __( 'Field created successfully.', 'luma-product-fields' )
+            : __( 'Field updated successfully.', 'luma-product-fields' );
+    }
+
+    /**
+     * Filters the success message shown after a field is created or updated.
+     *
+     * @hook luma_product_fields_field_editor_success_message
+     *
+     * @param string $message The success message to be displayed.
+     * @param string $action  The action performed: 'created' or 'updated'.
+     * @param array  $data    The field data that was saved.
+     * @param bool   $is_tax  Whether the field is a taxonomy field.
+     *
+     * @return string
+     */
+    $message = apply_filters(
+        'luma_product_fields_field_editor_success_message',
+        $message,
+        $action,
+        $data,
+        $is_tax
+    );
+
+    $this->redirect_with_notice(
+        $message,
+        'success',
+        admin_url( 'edit.php?post_type=product&page=luma-product-fields' )
+    );
+}
 
     
     /**
