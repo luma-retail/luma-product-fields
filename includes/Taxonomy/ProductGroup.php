@@ -191,7 +191,24 @@ class ProductGroup {
             return;
         }
 
-        $selected = isset( $_GET[ self::$tax ] ) ? sanitize_text_field( wp_unslash( $_GET[ self::$tax ] ) ) : '';  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only list filter; nonce verified below when present.
+        $get = wp_unslash( $_GET );
+
+        $nonce = isset( $get['luma_product_fields_pg_nonce'] )
+            ? sanitize_text_field( (string) $get['luma_product_fields_pg_nonce'] )
+            : '';
+
+        // Add a nonce to the posts list-table filter form.
+        // This runs inside the existing <form method="get"> in wp-admin.
+        wp_nonce_field( 'luma_product_fields_pg_filter', 'luma_product_fields_pg_nonce', false );
+
+        // Read-only UI selection; if a nonce is present, require it to be valid.
+        $selected = '';
+        if ( '' === $nonce || wp_verify_nonce( $nonce, 'luma_product_fields_pg_filter' ) ) {
+            $selected = ( isset( $get[ self::$tax ] ) && is_scalar( $get[ self::$tax ] ) )
+                ? sanitize_title( (string) $get[ self::$tax ] )
+                : '';
+        }
 
         wp_dropdown_categories( [
             'show_option_all' => esc_html__( 'All Product groups', 'luma-product-fields' ),
@@ -222,11 +239,25 @@ class ProductGroup {
             return;
         }
 
-        if ( empty( $_GET[ self::$tax ] ) || '0' === $_GET[ self::$tax ] ) {  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only list filter; nonce verified below when present.
+        $get = wp_unslash( $_GET );
+
+        $nonce = isset( $get['luma_product_fields_pg_nonce'] )
+            ? sanitize_text_field( (string) $get['luma_product_fields_pg_nonce'] )
+            : '';
+
+        // If a nonce is present, require it; otherwise allow legacy deep links (recommended context).
+        if ( '' !== $nonce && ! wp_verify_nonce( $nonce, 'luma_product_fields_pg_filter' ) ) {
             return;
         }
 
-        $value = sanitize_text_field( wp_unslash( $_GET[ self::$tax ] ) );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $value = ( isset( $get[ self::$tax ] ) && is_scalar( $get[ self::$tax ] ) )
+            ? sanitize_text_field( (string) $get[ self::$tax ] )
+            : '';
+
+        if ( '' === $value || '0' === $value ) {
+            return;
+        }
 
         if ( is_numeric( $value ) ) {
             $query->set( 'tax_query', [
@@ -241,7 +272,7 @@ class ProductGroup {
                 [
                     'taxonomy' => self::$tax,
                     'field'    => 'slug',
-                    'terms'    => $value,
+                    'terms'    => sanitize_title( $value ),
                 ],
             ] );
         }

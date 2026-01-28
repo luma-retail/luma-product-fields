@@ -65,7 +65,7 @@ class FieldOptionsOverview {
             <div class="luma-product-fields-filters">
                 <form method="get">
                     <input type="hidden" name="post_type" value="product" />
-                    <input type="hidden" name="page" value="luma-product-fields-fields" />
+                    <input type="hidden" name="page" value="luma-product-fields" />
                     <label for="group"><?php esc_html_e( 'Filter product group', 'luma-product-fields' ); ?></label>
                     <?php
                     $args = array(
@@ -114,7 +114,8 @@ class FieldOptionsOverview {
 
         echo '<table class="widefat striped">';
         echo '<thead><tr>';
-        do_action( 'luma_product_fields_Field_options_overview_table_head_start' );
+        // Hook name (documented) with access to the full field list.
+        do_action( 'luma_product_fields_field_options_overview_table_head_start', $fields );
         echo '<th>' . esc_html__( 'Label', 'luma-product-fields' ) . '</th>';
         echo '<th>' . esc_html__( 'Slug', 'luma-product-fields' ) . '</th>';
         echo '<th>' . esc_html__( 'Type', 'luma-product-fields' ) . '</th>';

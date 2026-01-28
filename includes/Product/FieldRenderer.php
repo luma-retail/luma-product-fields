@@ -1,8 +1,14 @@
 <?php
 /**
- * Admin field renderer class
+ * Admin field renderer class.
  *
  * @package Luma\ProductFields
+ *
+ * @hook luma_product_fields_allow_external_field_slug
+ *       Filter to allow external plugins to define non-LPF slugs that should
+ *       be rendered as simple text fields in the inline editor.
+ *       @param bool   $allowed Whether the slug is allowed.
+ *       @param string $slug    Requested field slug.
  */
 
 namespace Luma\ProductFields\Product;
@@ -14,18 +20,6 @@ use Luma\ProductFields\Product\FieldStorage;
 use Luma\ProductFields\Registry\FieldTypeRegistry;
 
 defined( 'ABSPATH' ) || exit;
-
-/**
- * Admin field renderer class
- *
- * Handles rendering and saving of custom product fields in the WooCommerce product editor.
- *
- * @hook luma_product_fields_allow_external_field_slug
- *      Filter to allow external plugins to define non-HPF slugs that should
- *      be rendered as simple text fields in the inline editor.
- *      @param bool   $allowed Whether the slug is allowed.
- *      @param string $slug    Requested field slug.
- */
 class FieldRenderer {
 
     /**
@@ -125,7 +119,7 @@ class FieldRenderer {
 
         if ( ! $field ) {
             /**
-             * Allow external plugins to define non-HPF slugs that should
+             * Allow external plugins to define non-LPF slugs that should
              * be rendered as simple text fields in the inline editor.
              *
              * @filter luma_product_fields_allow_external_field_slug
@@ -521,7 +515,7 @@ class FieldRenderer {
         }
 
         $group_slug = isset( $_POST['luma-product-fields-product-group-select'] )
-            ? sanitize_text_field( wp_unslash( $_POST['luma-product-fields-product-group-select'] ) )
+            ? sanitize_title( wp_unslash( $_POST['luma-product-fields-product-group-select'] ) )
             : '';
 
         $group_term = $group_slug
@@ -543,8 +537,14 @@ class FieldRenderer {
             $key  = 'luma-product-fields-' . $slug;
 
             if ( isset( $_POST[ $key ] ) ) {
+                // Normalize early: strip tags/junk while keeping type-specific validation in FieldStorage.
                 $raw_value = wp_unslash( $_POST[ $key ] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                FieldStorage::save_field( $post_id, $slug, $raw_value );
+
+                $value = is_array( $raw_value )
+                    ? array_map( 'sanitize_text_field', $raw_value )
+                    : sanitize_text_field( (string) $raw_value );
+
+                FieldStorage::save_field( $post_id, $slug, $value );
             }
         }
     }

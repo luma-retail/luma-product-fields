@@ -283,7 +283,12 @@ class VariationFieldRenderer {
             if ( isset( $_POST[ $input_name ][ $loop ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing	               
                 // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Missing
                 $raw_value = wp_unslash( $_POST[ $input_name ][ $loop ] );
-                FieldStorage::save_field( $variation_id, $slug, $raw_value );
+
+                $value = is_array( $raw_value )
+                    ? array_map( 'sanitize_text_field', $raw_value )
+                    : sanitize_text_field( (string) $raw_value );
+
+                FieldStorage::save_field( $variation_id, $slug, $value );
             }
         }
     }

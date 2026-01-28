@@ -182,7 +182,7 @@ public function column_default( $item, $column_name ) {
         return wp_kses( $html, wp_kses_allowed_html( 'luma_product_fields_admin_fields' ) );
     }
 
-    // 🔹 External override for non-HPF fields
+    // External override for non-LPF fields
     $override = apply_filters(
         'luma_product_fields_listview_column_value',
         null,          
@@ -374,7 +374,7 @@ public function column_default( $item, $column_name ) {
                 data-field-slug="%s" 
                 data-field-type="%s"
                 data-original-value="%s"
-                id="fkf-%d-%s">%s</div>',
+                id="lpf-%d-%s">%s</div>',
             esc_attr( implode( ' ', $classes ) ),
             $product_id,
             esc_attr( $field['slug'] ),

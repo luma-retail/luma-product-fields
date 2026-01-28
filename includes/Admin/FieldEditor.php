@@ -200,7 +200,7 @@ class FieldEditor {
 
         // Unit.
         echo '<tr class="' . esc_attr( $unit_row_class ) . '"><th><label>' . esc_html__( 'Unit', 'luma-product-fields' ) . '</label></th>';
-        echo '<td><select name="lrpf_unit]">';
+        echo '<td><select name="lrpf_unit">';
         echo '<option value="">' . esc_html__( 'None', 'luma-product-fields' ) . '</option>';
 
         foreach ( FieldTypeRegistry::get_units() as $value => $label ) {
@@ -272,11 +272,12 @@ public function handle_save(): void {
 
     check_admin_referer( 'luma_product_fields_save_field_editor', 'luma_product_fields_nonce' );
 
-    $label_raw = isset( $_POST['lrpf_label'] ) ? wp_unslash( $_POST['lrpf_label'] ) : '';
-    $type_raw  = isset( $_POST['lrpf_type'] ) ? wp_unslash( $_POST['lrpf_type'] ) : '';
-
-    $label = sanitize_text_field( is_string( $label_raw ) ? $label_raw : '' );
-    $type  = sanitize_key( is_string( $type_raw ) ? $type_raw : '' );
+    $label = ( isset( $_POST['lrpf_label'] ) && is_scalar( $_POST['lrpf_label'] ) )
+        ? sanitize_text_field( wp_unslash( (string) $_POST['lrpf_label'] ) )
+        : '';
+    $type = ( isset( $_POST['lrpf_type'] ) && is_scalar( $_POST['lrpf_type'] ) )
+        ? sanitize_key( wp_unslash( (string) $_POST['lrpf_type'] ) )
+        : '';
 
     if ( '' === $label || '' === $type ) {
         $this->redirect_with_notice( __( 'You must enter both label and type.', 'luma-product-fields' ), 'error' );
@@ -313,13 +314,11 @@ public function handle_save(): void {
 
     // Product groups (optional).
     $groups = [];
-    if ( isset( $_POST['lrpf_groups'] ) ) {
-        $raw_groups = wp_unslash( $_POST['lrpf_groups'] );
-        $raw_groups = is_array( $raw_groups ) ? $raw_groups : [];
-
-        $submitted = array_map(
-            'sanitize_key',
-            array_filter( $raw_groups )
+    if ( isset( $_POST['lrpf_groups'] ) && is_array( $_POST['lrpf_groups'] ) ) {
+        $submitted = array_values(
+            array_filter(
+                array_map( 'sanitize_key', wp_unslash( $_POST['lrpf_groups'] ) )
+            )
         );
 
         if ( ! empty( $submitted ) ) {
@@ -332,8 +331,9 @@ public function handle_save(): void {
     }
 
     // Unit (optional, allowlisted).
-    $unit_raw = isset( $_POST['lrpf_unit'] ) ? wp_unslash( $_POST['lrpf_unit'] ) : '';
-    $unit     = sanitize_key( is_string( $unit_raw ) ? $unit_raw : '' );
+    $unit = ( isset( $_POST['lrpf_unit'] ) && is_scalar( $_POST['lrpf_unit'] ) )
+        ? sanitize_key( wp_unslash( (string) $_POST['lrpf_unit'] ) )
+        : '';
 
     $allowed_units = array_keys( FieldTypeRegistry::get_units() );
     if ( '' !== $unit && ! in_array( $unit, $allowed_units, true ) ) {
@@ -341,18 +341,19 @@ public function handle_save(): void {
     }
 
     // Schema property (optional).
-    $schema_prop_raw = isset( $_POST['lrpf_schema_prop'] ) ? wp_unslash( $_POST['lrpf_schema_prop'] ) : '';
-    $schema_prop     = sanitize_key( is_string( $schema_prop_raw ) ? $schema_prop_raw : '' );
+    $schema_prop = ( isset( $_POST['lrpf_schema_prop'] ) && is_scalar( $_POST['lrpf_schema_prop'] ) )
+        ? sanitize_key( wp_unslash( (string) $_POST['lrpf_schema_prop'] ) )
+        : '';
 
     // Tooltip (admin).
-    $description_raw = isset( $_POST['lrpf_description'] ) ? wp_unslash( $_POST['lrpf_description'] ) : '';
-    $description     = sanitize_textarea_field( is_string( $description_raw ) ? $description_raw : '' );
+    $description = ( isset( $_POST['lrpf_description'] ) && is_scalar( $_POST['lrpf_description'] ) )
+        ? sanitize_textarea_field( wp_unslash( (string) $_POST['lrpf_description'] ) )
+        : '';
 
     // Tooltip (frontend) via wp_editor field name.
-    $frontend_desc_raw = isset( $_POST['luma_product_fields_fields_frontend_desc'] )
-        ? wp_unslash( $_POST['luma_product_fields_fields_frontend_desc'] )
+    $frontend_desc = ( isset( $_POST['luma_product_fields_fields_frontend_desc'] ) && is_scalar( $_POST['luma_product_fields_fields_frontend_desc'] ) )
+        ? wp_kses_post( wp_unslash( (string) $_POST['luma_product_fields_fields_frontend_desc'] ) )
         : '';
-    $frontend_desc = wp_kses_post( is_string( $frontend_desc_raw ) ? $frontend_desc_raw : '' );
 
     $data = [
         'label'            => $label,
@@ -367,6 +368,21 @@ public function handle_save(): void {
         'variation'        => ! empty( $_POST['lrpf_variation'] ),
         'show_links'       => ! empty( $_POST['lrpf_show_links'] ),
     ];
+
+    /**
+     * Filters the normalized field data array before it is saved.
+     *
+     * Extensions can use this to persist extra keys alongside the core field definition.
+     *
+     * @hook luma_product_fields_field_editor_form_data
+     *
+     * @param array<string,mixed> $data Field data, including label, description, type, etc.
+     * @return array<string,mixed>
+     */
+    $data = apply_filters( 'luma_product_fields_field_editor_form_data', $data );
+
+    // Ensure filter callbacks can't break the expected array shape.
+    $data = is_array( $data ) ? $data : [];
 
     // Save field data.
     if ( $is_tax ) {

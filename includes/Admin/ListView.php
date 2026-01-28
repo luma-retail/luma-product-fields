@@ -87,9 +87,19 @@ class ListView {
      * @return void
      */
     public function render_list_page() {
-        
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-        $this->selected_group = isset( $_GET['luma-product-fields-product-group']) ? sanitize_text_field( wp_unslash( $_GET['luma-product-fields-product-group'] ) ) : null;
+
+        // Filter selection is read-only, but still verify a nonce because this page
+        // processes user-supplied input from a GET form.
+        $nonce = isset( $_GET['luma_product_fields_overview_nonce'] )
+            ? sanitize_text_field( wp_unslash( (string) $_GET['luma_product_fields_overview_nonce'] ) )
+            : '';
+
+        $this->selected_group = null;
+        if ( isset( $_GET['luma-product-fields-product-group'] ) ) {
+            if ( '' !== $nonce && wp_verify_nonce( $nonce, 'luma_product_fields_overview_filter' ) ) {
+                $this->selected_group = sanitize_title( wp_unslash( (string) $_GET['luma-product-fields-product-group'] ) );
+            }
+        }
 
         echo '<div id="luma-product-fields-fields-overview" class="wrap">';
         echo '<h1>' . esc_html($this->page_title) . '</h1>';
@@ -97,6 +107,8 @@ class ListView {
         echo '<form method="get">';
         echo '<input type="hidden" name="post_type" value="product" />';
         echo '<input type="hidden" name="page" value="luma-product-fields-overview" />';
+
+        wp_nonce_field( 'luma_product_fields_overview_filter', 'luma_product_fields_overview_nonce', false );
         
         $args = array(
             'include_all'     => false,

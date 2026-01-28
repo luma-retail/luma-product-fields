@@ -16,7 +16,12 @@ Fired by the internal AJAX router for Luma Product Fields admin requests.
 
 **Parameters:**
 
-- `array $request` – Parsed request data (usually `$_POST` or `$_GET` wrapped).
+- `string $action` – The action key (from `luma_product_fields_action`).
+
+**Request data:**
+
+This hook does **not** receive a request payload. Handlers should read from
+`wp_unslash( $_POST )` and sanitize only the keys they expect.
 
 Use this to register custom AJAX handlers, e.g.:
 
@@ -59,14 +64,18 @@ Use this to inject extra buttons or controls (bulk actions, import/export, etc.)
 
 ---
 
-#### `luma_product_fields_Field_options_overview_table_head_start`
+#### `luma_product_fields_field_options_overview_table_head_start`
 
 **Type:** `do_action`  
 **Location:** `includes/Admin/FieldOptionsOverview.php`  
 
 Called at the start of the `<thead>` row in the Field Options Overview table.
 
-Use this to append extra `<th>` header cells for each field column.
+**Parameters:**
+
+- `array $fields` – Array of field definition arrays being rendered in the table.
+
+Use this to append extra `<th>` header cells and/or inspect the field list.
 
 ---
 

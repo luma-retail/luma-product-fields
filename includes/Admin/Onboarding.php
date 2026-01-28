@@ -47,7 +47,9 @@ class Onboarding {
             return;
         }
 
-        $dismiss = isset( $_GET['luma_product_fields_dismiss_welcome'] ) ? absint( $_GET['luma_product_fields_dismiss_welcome'] ) : 0;
+        $dismiss = isset( $_GET['luma_product_fields_dismiss_welcome'] )
+            ? absint( wp_unslash( $_GET['luma_product_fields_dismiss_welcome'] ) )
+            : 0;
 
         if ( 1 !== $dismiss ) {
             return;
