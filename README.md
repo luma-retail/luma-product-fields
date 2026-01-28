@@ -236,7 +236,10 @@ This plugin is fully extensible. Developers can:
 - Map fields to schema.org properties via the schema property setting on each field  
 - Use tooltips and unit settings to drive consistent UX both in admin and on the frontend
 
-Full developer documentation is included in the `/docs/` folder.
+Developer documentation for this plugin lives in:
+
+- `DEVELOPER.md`
+- `DEVELOPER-HOOKS.md`
 
 ---
 

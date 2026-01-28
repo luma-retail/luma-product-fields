@@ -3,7 +3,7 @@ Contributors: lumaretail
 Tags: woocommerce, product fields, custom fields, product specifications, product data
 Requires at least: 6.0
 Tested up to: 6.9
-Requires PHP: 7.4
+Requires PHP: 8.0
 Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -20,7 +20,7 @@ It’s fast, intuitive, and built specifically for WooCommerce — ideal for sho
 
 Even if the plugin works without touching code or modifying templates, it is also **developer-friendly and fully extendable**, making it suitable for agencies, freelancers, and stores with custom logic.
 
-### What this plugin does
+= What this plugin does =
 
 Luma Product Fields lets you define and display custom product specification fields such as:
 
@@ -36,7 +36,7 @@ Luma Product Fields lets you define and display custom product specification fie
 
 These fields are **not WooCommerce attributes** and won’t affect variations, filters, or stock — they are strictly for **product specification data**, similar to how large online stores manage structured specs.
 
-### How it works
+= How it works =
 
 You can start with a single shared field set for all products, or use **Product Groups** to give different product types different schemas.
 
@@ -113,7 +113,7 @@ You can start with a single shared field set for all products, or use **Product 
   The frontend output can be customized using hooks and filters.  
   For advanced use cases, developers can fully override or replace the rendering logic via theme or plugin code.
 
-### SEO & structured data
+= SEO & structured data =
 
 Luma Product Fields is designed to be **SEO-friendly**:
 
@@ -121,7 +121,7 @@ Luma Product Fields is designed to be **SEO-friendly**:
 - Each field can optionally declare a **schema property** (for example: `material`, `color`, `width`) so themes or SEO plugins can map product specs into **schema.org** structured data (microdata or JSON-LD).
 - This makes it straightforward to integrate your specification fields into existing SEO setups or custom structured data implementations.
 
-### Why choose this plugin?
+= Why choose this plugin? =
 
 - **WooCommerce-native design**  
   No external field frameworks — just clean, optimized product metadata.
@@ -144,7 +144,7 @@ Luma Product Fields is designed to be **SEO-friendly**:
 - **Future-proof schema**  
   Product Groups let you enforce consistent data structures across similar products.
 
-### Features
+= Features =
 
 - Custom product specification fields
 - Optional Product Group–based field schemas
