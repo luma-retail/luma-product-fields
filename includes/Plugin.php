@@ -22,6 +22,7 @@ use Luma\ProductFields\Admin\NotificationManager;
 use Luma\ProductFields\Admin\Onboarding;
 use Luma\ProductFields\Frontend\FrontendController;
 use Luma\ProductFields\Frontend\Kses as FrontendKses;
+use Luma\ProductFields\Frontend\TaxonomyArchiveController;
 
 defined('ABSPATH') || exit;
 
@@ -85,6 +86,7 @@ class Plugin {
 
         if ( ! is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
             ( new Frontend\FrontendController() )->initialize_hooks();
+            ( new TaxonomyArchiveController() )->register();
             ( new FrontendKses() )->register();
         }
     }
