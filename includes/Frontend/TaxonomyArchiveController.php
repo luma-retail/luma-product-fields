@@ -59,6 +59,7 @@ class TaxonomyArchiveController {
 
 		$classes[] = 'woocommerce';
 		$classes[] = 'woocommerce-page';
+		$classes[] = 'woocommerce-shop';
 		$classes[] = 'archive';
 		$classes[] = 'post-type-archive-product';
 		$classes[] = 'lpf-taxonomy-archive';

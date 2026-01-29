@@ -113,6 +113,16 @@ You can start with a single shared field set for all products, or use **Product 
   The frontend output can be customized using hooks and filters.  
   For advanced use cases, developers can fully override or replace the rendering logic via theme or plugin code.
 
+= Block themes (FSE) – current status =
+
+The plugin works on block themes (for example Twenty Twenty-Four), but the taxonomy term archives for linkable fields are currently rendered via a PHP template for maximum compatibility.
+
+Technical note: Because these archives are rendered via a custom PHP template (not a native block template), the template explicitly enqueues block/global styles and renders the theme header/footer template parts early so block themes keep expected typography and navigation layout.
+
+This means some “pixel-perfect parity” details (for example button styles and some typography that would normally be applied by native Woo/blocks) may differ.
+
+Full “pure blocks / block template” parity for these archives is planned for v1.1.
+
 = SEO & structured data =
 
 Luma Product Fields is designed to be **SEO-friendly**:
