@@ -241,7 +241,7 @@ jQuery(function($) {
 
 
     // Toggle and load variation table in ListViewTable
-    $('.lpf-toggle-variations').on('click', function () {
+    $('.lumaprfi-toggle-variations').on('click', function () {
       const $btn = $(this);
       const $icon = $btn.find('.dashicons');
       const productId = $btn.data('product-id');
@@ -293,14 +293,14 @@ jQuery(function($) {
     function closeEditor() {
         if (currentEditor) {
             currentEditor.remove();
-            $('#lpf-editor-overlay').hide();
+            $('#lumaprfi-editor-overlay').hide();
             currentEditor = null;
-            $('.lpf-editable').removeClass('luma-product-fields-editing');
-            $('.lpf-editable').closest('tr').removeClass('luma-product-fields-row-editing');
+            $('.lumaprfi-editable').removeClass('luma-product-fields-editing');
+            $('.lumaprfi-editable').closest('tr').removeClass('luma-product-fields-row-editing');
         }
     }
 
-    $(document).on('click', '.lpf-editable', function () {
+    $(document).on('click', '.lumaprfi-editable', function () {
         const $cell = $(this);
         const productId = $cell.data('product-id');
         const fieldSlug = $cell.data('field-slug');
@@ -311,7 +311,7 @@ jQuery(function($) {
         }
 
         closeEditor();
-        $('#lpf-editor-overlay')
+        $('#lumaprfi-editor-overlay')
             .show()
             .off('click')
             .on('click', function () {
@@ -329,7 +329,7 @@ jQuery(function($) {
         }, function (response) {
             if (response.success) {
                 // Create and append editor
-                const $editor = $('<div class="lpf-floating-editor">').html(response.data.html);
+                const $editor = $('<div class="lumaprfi-floating-editor">').html(response.data.html);
                 $('#wpbody-content').append($editor);
 
                 // Make sure it measures correctly before positioning
@@ -409,8 +409,8 @@ jQuery(function($) {
                     unbindReposition();
                     $editor.remove();
                     currentEditor = null;
-                    $('.lpf-editable').removeClass('luma-product-fields-editing');
-                    $('.lpf-editable').closest('tr').removeClass('luma-product-fields-row-editing');
+                    $('.lumaprfi-editable').removeClass('luma-product-fields-editing');
+                    $('.lumaprfi-editable').closest('tr').removeClass('luma-product-fields-row-editing');
                 }
 
 
@@ -426,7 +426,7 @@ jQuery(function($) {
                             
 
                 // ✅ SAVE 
-                $editor.find('.lpf-edit-save').on('click', function (e) {
+                $editor.find('.lumaprfi-edit-save').on('click', function (e) {
                     e.preventDefault();
                     e.stopPropagation();                    
                     const $btn = $(this);
@@ -467,11 +467,11 @@ jQuery(function($) {
                     $.post(luma_product_fields_admin_ajaxdata.ajaxurl, postData, function (res) {
                         if (res.success) {
                             $cell.html(res.data.html).removeClass('luma-product-fields-editing');
-                            $('.lpf-editable').closest('tr').removeClass('luma-product-fields-row-editing');
+                            $('.lumaprfi-editable').closest('tr').removeClass('luma-product-fields-row-editing');
                             closeEditor();
-                            $cell.removeClass('lpf-save-glow lpf-save-glow-reset').addClass('lpf-save-glow');
-                            setTimeout(() => $cell.addClass('lpf-save-glow-reset'), 1000);
-                            setTimeout(() => $cell.removeClass('lpf-save-glow lpf-save-glow-reset'), 3000);
+                            $cell.removeClass('lumaprfi-save-glow lumaprfi-save-glow-reset').addClass('lumaprfi-save-glow');
+                            setTimeout(() => $cell.addClass('lumaprfi-save-glow-reset'), 1000);
+                            setTimeout(() => $cell.removeClass('lumaprfi-save-glow lumaprfi-save-glow-reset'), 3000);
                         } else {
                             alert(res.data || 'Failed to save.');
                             $btn.prop('disabled', false);
@@ -480,12 +480,12 @@ jQuery(function($) {
                 });
 
                 // Cancel
-                $editor.find('.lpf-edit-cancel').on('click', function (e) {
+                $editor.find('.lumaprfi-edit-cancel').on('click', function (e) {
                     e.preventDefault();
                     e.stopPropagation();
                     const $btn = $(this);
                     $btn.prop('disabled', true)
-                    $('.lpf-editable').closest('tr').removeClass('luma-product-fields-row-editing');
+                    $('.lumaprfi-editable').closest('tr').removeClass('luma-product-fields-row-editing');
                     $cell.removeClass('luma-product-fields-editing');
                     closeEditor();
                 });
@@ -500,15 +500,15 @@ jQuery(function($) {
     $(document).on('click', function (e) {
         const $target = $(e.target);
         const isInsideEditor =
-            $target.closest('.lpf-floating-editor').length > 0 ||
-            $target.closest('.lpf-editable').length > 0 ||
+            $target.closest('.lumaprfi-floating-editor').length > 0 ||
+            $target.closest('.lumaprfi-editable').length > 0 ||
             $target.closest('.select2-container').length > 0 ||
             $target.closest('.select2-dropdown').length > 0 ||
             $target.closest('.select2-selection__choice__remove').length > 0;
 
         if (!isInsideEditor) {
-            $('.lpf-editable').closest('tr').removeClass('luma-product-fields-row-editing');
-            $('.lpf-editable').removeClass('luma-product-fields-editing');
+            $('.lumaprfi-editable').closest('tr').removeClass('luma-product-fields-row-editing');
+            $('.lumaprfi-editable').removeClass('luma-product-fields-editing');
             closeEditor();
         }
     });
@@ -524,7 +524,7 @@ jQuery(function($) {
 
 
 // Toggle featured taxonomy
-jQuery(document).on('click', 'a.lpf-toggle-featured', function (e) {
+jQuery(document).on('click', 'a.lumaprfi-toggle-featured', function (e) {
     e.preventDefault();
 
     var $a     = jQuery(this);

@@ -236,7 +236,10 @@ class Admin {
 
         if ($screen && $screen->taxonomy) {
             $custom_taxonomies = array_column(\Luma\ProductFields\Taxonomy\TaxonomyManager::get_all(), 'slug');
-            if ( in_array($screen->taxonomy, $custom_taxonomies, true) || $screen->taxonomy === 'lpf_product_group' ) {
+            if (
+                in_array($screen->taxonomy, $custom_taxonomies, true)
+                || $screen->taxonomy === ProductGroup::$tax_name
+            ) {
                 self::show_back_button();
             }
         }

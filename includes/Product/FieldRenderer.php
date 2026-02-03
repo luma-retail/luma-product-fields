@@ -200,7 +200,7 @@ class FieldRenderer {
 
         ob_start();
 
-        echo "<p class='form-field lpf-fieldtype-text'>";
+        echo "<p class='form-field lumaprfi-fieldtype-text'>";
         echo '<label>' . esc_html( $label );
         if ( $tip_html ) {
             echo wp_kses_post( $tip_html );
@@ -232,7 +232,7 @@ class FieldRenderer {
 
         ob_start();
         ?>
-        <p class="form-field lpf-fieldtype-number">
+        <p class="form-field lumaprfi-fieldtype-number">
             <label>
                 <?php echo esc_html( $field['label'] ?? '' ); ?>
                 <?php echo $tip_html ? wp_kses_post( $tip_html ) : ''; ?>
@@ -268,7 +268,7 @@ class FieldRenderer {
 
         ob_start();
         ?>
-        <p class="form-field lpf-fieldtype-integer">
+        <p class="form-field lumaprfi-fieldtype-integer">
             <label>
                 <?php echo esc_html( $field['label'] ?? '' ); ?>
                 <?php echo $tip_html ? wp_kses_post( $tip_html ) : ''; ?>
@@ -306,7 +306,7 @@ class FieldRenderer {
 
         ob_start();
         ?>
-        <p class="form-field lpf-fieldtype-minmax">
+        <p class="form-field lumaprfi-fieldtype-minmax">
             <label>
                 <?php echo esc_html( $field['label'] ?? '' ); ?>
                 <?php echo $tip_html ? wp_kses_post( $tip_html ) : ''; ?>
@@ -391,7 +391,7 @@ class FieldRenderer {
         }
 
         return sprintf(
-            "<p class='form-field lpf-fieldtype-single'><label>%s%s</label><select name='luma-product-fields-%s'>%s</select></p>",
+            "<p class='form-field lumaprfi-fieldtype-single'><label>%s%s</label><select name='luma-product-fields-%s'>%s</select></p>",
             esc_html( $field['label'] ?? '' ),
             $tip_html ? wp_kses_post( $tip_html ) : '',
             esc_attr( $field['slug'] ),
@@ -437,7 +437,7 @@ class FieldRenderer {
         );
 
         return sprintf(
-            "<p class='form-field lpf-fieldtype-multiple'><label>%s%s</label>%s</p>",
+            "<p class='form-field lumaprfi-fieldtype-multiple'><label>%s%s</label>%s</p>",
             esc_html( $field['label'] ?? '' ),
             $tip_html ? wp_kses_post( $tip_html ) : '',
             implode( '', $options )
@@ -477,7 +477,7 @@ class FieldRenderer {
         }
 
         return sprintf(
-            '<p class="form-field lpf-fieldtype-%1$s">
+            '<p class="form-field lumaprfi-fieldtype-%1$s">
                 <label>%2$s %3$s</label>
                 <select name="luma-product-fields-%4$s[]" multiple="multiple" class="luma-product-fields-autocomplete-select" data-taxonomy="%5$s" style="width: 100%%;">%6$s</select>
             </p>',
@@ -499,10 +499,11 @@ class FieldRenderer {
      */
     public function save_the_fields( int $post_id ): void {
 
-        if (
-            ! isset( $_POST['luma_product_fields_product_fields_nonce'] )
-            || ! wp_verify_nonce( sanitize_text_field( (wp_unslash( $_POST['luma_product_fields_product_fields_nonce'] ) ) ), 'luma_product_fields_save_product_fields' )  // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-        ) {
+        $nonce = isset( $_POST['luma_product_fields_product_fields_nonce'] )
+            ? sanitize_text_field( wp_unslash( $_POST['luma_product_fields_product_fields_nonce'] ) )
+            : '';
+
+        if ( '' === $nonce || ! wp_verify_nonce( $nonce, 'luma_product_fields_save_product_fields' ) ) {
             return;
         }
 
@@ -519,14 +520,14 @@ class FieldRenderer {
             : '';
 
         $group_term = $group_slug
-            ? get_term_by( 'slug', $group_slug, 'lpf_product_group' )
+            ? get_term_by( 'slug', $group_slug, ProductGroup::$tax_name )
             : null;
 
         if ( $group_term && ! is_wp_error( $group_term ) ) {
-            wp_set_post_terms( $post_id, [ (int) $group_term->term_id ], 'lpf_product_group' );
+            wp_set_post_terms( $post_id, [ (int) $group_term->term_id ], ProductGroup::$tax_name );
             $effective_group = $group_term->slug;
         } else {
-            wp_set_post_terms( $post_id, [], 'lpf_product_group' );
+            wp_set_post_terms( $post_id, [], ProductGroup::$tax_name );
             $effective_group = 'general';
         }
 
@@ -538,11 +539,14 @@ class FieldRenderer {
 
             if ( isset( $_POST[ $key ] ) ) {
                 // Normalize early: strip tags/junk while keeping type-specific validation in FieldStorage.
-                $raw_value = wp_unslash( $_POST[ $key ] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-
-                $value = is_array( $raw_value )
-                    ? array_map( 'sanitize_text_field', $raw_value )
-                    : sanitize_text_field( (string) $raw_value );
+                if ( is_array( $_POST[ $key ] ) ) {
+                    $value = array_map(
+                        'sanitize_text_field',
+                        wp_unslash( (array) $_POST[ $key ] )
+                    );
+                } else {
+                    $value = sanitize_text_field( wp_unslash( (string) $_POST[ $key ] ) );
+                }
 
                 FieldStorage::save_field( $post_id, $slug, $value );
             }

@@ -11,6 +11,7 @@ namespace Luma\ProductFields\Utils;
 defined( 'ABSPATH' ) || exit;
 
 use Luma\ProductFields\Registry\FieldTypeRegistry;
+use Luma\ProductFields\Taxonomy\ProductGroup;
 use Luma\ProductFields\Taxonomy\TaxonomyManager;
 use Luma\ProductFields\Meta\MetaManager;
 use Luma\ProductFields\Frontend\FieldRenderer;
@@ -61,7 +62,7 @@ class Helpers {
             $post_id = $product->get_parent_id();
         }
 
-        $terms = get_the_terms($post_id, 'lpf_product_group');
+        $terms = get_the_terms($post_id, ProductGroup::$tax_name);
         if (empty($terms)) {
             return false;
         }
@@ -100,7 +101,7 @@ class Helpers {
      * @return string|null
      */
     public static function get_product_group_slug_from_term_id($term_id) {
-        $term = get_term_by('term_id', $term_id, 'lpf_product_group');
+        $term = get_term_by('term_id', $term_id, ProductGroup::$tax_name);
         return $term->slug;
     }
 
@@ -423,7 +424,7 @@ class Helpers {
     public static function get_formatted_unit_html( $unit ) {
         $registered_units = FieldTypeRegistry::get_units();
         $unit_label = $registered_units[ $unit ] ?? $unit;                
-        return ' <span class="lpf-unit">' . esc_html( $unit_label ) . '</span>';
+        return ' <span class="lumaprfi-unit">' . esc_html( $unit_label ) . '</span>';
     }
     
     

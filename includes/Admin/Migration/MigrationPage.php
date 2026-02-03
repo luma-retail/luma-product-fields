@@ -103,11 +103,9 @@ class MigrationPage {
                 $map_key   = 'map_' . $slug;
                 $index_key = 'number_index_' . $slug;
 
-                $meta_key_raw = isset( $_POST[ $map_key ] ) ? wp_unslash( $_POST[ $map_key ] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                $meta_key     = sanitize_text_field( $meta_key_raw );
+                $meta_key = isset( $_POST[ $map_key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $map_key ] ) ) : '';
 
-                $index_raw   = isset( $_POST[ $index_key ] ) ? wp_unslash( $_POST[ $index_key ] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                $index_value = (int) $index_raw;
+                $index_value   = isset( $_POST[ $index_key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $index_key ] ) ) : ''; 
 
                 if ( '' === $meta_key ) {
                     continue;
@@ -212,8 +210,7 @@ class MigrationPage {
 
             echo '<td><select name="map_' . esc_attr( $slug ) . '"><option value="">' . esc_html_x( '--', 'no meta key selected', 'luma-product-fields' ) . '</option>';
             $map_key           = 'map_' . $slug;
-            $selected_key_raw  = isset( $_POST[ $map_key ] ) ? wp_unslash( $_POST[ $map_key ] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            $selected_key      = sanitize_text_field( $selected_key_raw );
+            $selected_key = isset( $_POST[ $map_key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $map_key ] ) ) : ''; 
             foreach ( $distinct_keys as $key ) {
                 $selected_attr = selected( $selected_key, $key, false );
                 // "selected" attribute string is safe, all dynamic pieces must be escaped above.
@@ -233,8 +230,7 @@ class MigrationPage {
             
             if ( in_array( $field['type'], [ 'number', 'integer' ], true ) ) {
                 $index_key          = 'number_index_' . $slug;
-                $selected_index_raw = isset( $_POST[ $index_key ] ) ? wp_unslash( $_POST[ $index_key ] ) : '0'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                $selected_index     = sanitize_text_field( $selected_index_raw );
+                $selected_index = isset( $_POST[ $index_key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $index_key ] ) ) : '0'; 
 
                 echo '<label>' . esc_html__( 'Which number?', 'luma-product-fields' ) . ' ';
                 echo '<select name="number_index_' . esc_attr( $slug ) . '">';
@@ -245,8 +241,7 @@ class MigrationPage {
                 echo '</label>';
 
                 $match_unit_key   = 'match_unit_' . $slug;
-                $match_unit_raw   = isset( $_POST[ $match_unit_key ] ) ? wp_unslash( $_POST[ $match_unit_key ] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                $match_unit_check = ! empty( $match_unit_raw );
+                $match_unit_check = filter_input( INPUT_POST, $match_unit_key, FILTER_VALIDATE_BOOLEAN ) ?? false;
 
                 echo '<label>';
                 echo '<input type="checkbox" name="match_unit_' . esc_attr( $slug ) . '" ' .
@@ -342,12 +337,12 @@ class MigrationPage {
         echo '<p><strong>' . esc_html__( 'Migration Summary', 'luma-product-fields' ) . '</strong></p>';
 
         echo '<ul class="luma-product-fields-counters-list">';
-        echo '<li><span class="luma-product-fields-count lpf-count-green">' . esc_html( (string) $counts['migrated'] ) . '</span> ' . esc_html__( 'migrated', 'luma-product-fields' ) . '</li>';
-        echo '<li><span class="luma-product-fields-count lpf-count-blue">' . esc_html( (string) $counts['dry_run'] ) . '</span> ' . esc_html__( 'dry-run changes', 'luma-product-fields' ) . '</li>';
-        echo '<li><span class="luma-product-fields-count lpf-count-orange">' . esc_html( (string) $counts['skipped_existing'] ) . '</span> ' . esc_html__( 'skipped (existing value)', 'luma-product-fields' ) . '</li>';
-        echo '<li><span class="luma-product-fields-count lpf-count-gray">' . esc_html( (string) $counts['skipped_invalid'] ) . '</span> ' . esc_html__( 'skipped (no valid data)', 'luma-product-fields' ) . '</li>';
+        echo '<li><span class="luma-product-fields-count lumaprfi-count-green">' . esc_html( (string) $counts['migrated'] ) . '</span> ' . esc_html__( 'migrated', 'luma-product-fields' ) . '</li>';
+        echo '<li><span class="luma-product-fields-count lumaprfi-count-blue">' . esc_html( (string) $counts['dry_run'] ) . '</span> ' . esc_html__( 'dry-run changes', 'luma-product-fields' ) . '</li>';
+        echo '<li><span class="luma-product-fields-count lumaprfi-count-orange">' . esc_html( (string) $counts['skipped_existing'] ) . '</span> ' . esc_html__( 'skipped (existing value)', 'luma-product-fields' ) . '</li>';
+        echo '<li><span class="luma-product-fields-count lumaprfi-count-gray">' . esc_html( (string) $counts['skipped_invalid'] ) . '</span> ' . esc_html__( 'skipped (no valid data)', 'luma-product-fields' ) . '</li>';
         if ( $counts['external_save'] > 0 ) {
-            echo '<li><span class="luma-product-fields-count lpf-count-purple">' . esc_html( (string) $counts['external_save'] ) . '</span> ' . esc_html__( 'handled by external save callback', 'luma-product-fields' ) . '</li>';
+            echo '<li><span class="luma-product-fields-count lumaprfi-count-purple">' . esc_html( (string) $counts['external_save'] ) . '</span> ' . esc_html__( 'handled by external save callback', 'luma-product-fields' ) . '</li>';
         }
         echo '</ul>';
         echo '</div>';

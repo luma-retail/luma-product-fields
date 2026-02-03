@@ -27,10 +27,10 @@ if ( function_exists( 'wp_is_block_theme' ) && wp_is_block_theme() ) {
 
 	// Pre-render template parts before wp_head() so any styles they enqueue are
 	// available in the document head.
-	$header_html = function_exists( 'do_blocks' )
+	$lumapf_header_html = function_exists( 'do_blocks' )
 		? do_blocks( '<!-- wp:template-part {"slug":"header","tagName":"header"} /-->' )
 		: '';
-	$footer_html = function_exists( 'do_blocks' )
+	$lumapf_footer_html = function_exists( 'do_blocks' )
 		? do_blocks( '<!-- wp:template-part {"slug":"footer","tagName":"footer"} /-->' )
 		: '';
 
@@ -44,18 +44,18 @@ if ( function_exists( 'wp_is_block_theme' ) && wp_is_block_theme() ) {
 	<body <?php body_class( [ 'woocommerce' ] ); ?>>
 		<?php wp_body_open(); ?>
 		<div class="wp-site-blocks">
-			<?php echo $header_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			<?php echo $lumapf_header_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 		<?php
 		// Prevent nested <main> output.
 		// WooCommerce's default wrappers output <main id="main" class="site-main">...
 		// In block themes we render our own container instead.
-		$wrapper_priority = has_action( 'woocommerce_before_main_content', 'woocommerce_output_content_wrapper' );
-		if ( false !== $wrapper_priority ) {
-			remove_action( 'woocommerce_before_main_content', 'woocommerce_output_content_wrapper', (int) $wrapper_priority );
+		$lumapf_wrapper_priority = has_action( 'woocommerce_before_main_content', 'woocommerce_output_content_wrapper' );
+		if ( false !== $lumapf_wrapper_priority ) {
+			remove_action( 'woocommerce_before_main_content', 'woocommerce_output_content_wrapper', (int) $lumapf_wrapper_priority );
 		}
-		$wrapper_end_priority = has_action( 'woocommerce_after_main_content', 'woocommerce_output_content_wrapper_end' );
-		if ( false !== $wrapper_end_priority ) {
-			remove_action( 'woocommerce_after_main_content', 'woocommerce_output_content_wrapper_end', (int) $wrapper_end_priority );
+		$lumapf_wrapper_end_priority = has_action( 'woocommerce_after_main_content', 'woocommerce_output_content_wrapper_end' );
+		if ( false !== $lumapf_wrapper_end_priority ) {
+			remove_action( 'woocommerce_after_main_content', 'woocommerce_output_content_wrapper_end', (int) $lumapf_wrapper_end_priority );
 		}
 		?>
 
@@ -104,7 +104,7 @@ if ( function_exists( 'wp_is_block_theme' ) && wp_is_block_theme() ) {
 		// Calling the Woo sidebar hook can trigger get_sidebar() and cause a deprecation notice.
 		// If a site wants a sidebar on archives in a block theme, it should be handled by the theme template.
 		?>
-			<?php echo $footer_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			<?php echo $lumapf_footer_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 		</div>
 		<?php wp_footer(); ?>
 	</body>

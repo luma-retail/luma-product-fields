@@ -104,9 +104,9 @@ class FieldRenderer
         $dd_payload = self::build_dd_payload_html( $field, $value, $link );
 
         return sprintf(
-            "<dl class='lpf-product-meta' data-slug='%1\$s'>
-                <dt class='lpf-label'>%2\$s%3\$s:</dt>
-                <dd class='lpf-val'>%4\$s</dd>
+            "<dl class='lumaprfi-product-meta' data-slug='%1\$s'>
+                <dt class='lumaprfi-label'>%2\$s%3\$s:</dt>
+                <dd class='lumaprfi-val'>%4\$s</dd>
             </dl>",
             $slug,
             $label,
@@ -133,9 +133,9 @@ class FieldRenderer
         $desc = (string) $field['frontend_desc'];
 
         return sprintf(
-            "<span class='lpf-tooltip' tabindex='0'>
-                <span class='lpf-tooltip-trigger' role='button' aria-describedby='tip-%1\$s' aria-label='%2\$s'>?</span>
-                <span class='lpf-tooltip-txt' id='tip-%1\$s' role='tooltip'>%3\$s</span>
+            "<span class='lumaprfi-tooltip' tabindex='0'>
+                <span class='lumaprfi-tooltip-trigger' role='button' aria-describedby='tip-%1\$s' aria-label='%2\$s'>?</span>
+                <span class='lumaprfi-tooltip-txt' id='tip-%1\$s' role='tooltip'>%3\$s</span>
             </span>",
             $slug,
             $aria_label,
@@ -157,58 +157,12 @@ class FieldRenderer
      */
     protected static function build_dd_payload_html( array $field, string $value, string $link = '' ): string {
         $unit        = (string) ( $field['unit'] ?? '' );
-        $schema_prop = (string) ( $field['schema_prop'] ?? '' );
 
         $unit_html = $unit ? Helpers::get_formatted_unit_html( $unit ) : '';
 
-        $schema_bits = self::build_schema_bits( $schema_prop, $unit, $value );
+        $display_value = self::build_display_value_html( $value, $link );
 
-        $display_value = self::build_display_value_html(
-            $value,
-            $link,
-            $schema_bits['itemprop_attr']
-        );
-
-        return trim( $display_value . ' ' . $unit_html . ' ' . $schema_bits['schema_meta'] );
-    }
-
-
-
-    /**
-     * Build schema meta tags and/or itemprop attribute for the display value.
-     *
-     * @param string $schema_prop Schema property (e.g. "weight", "brand").
-     * @param string $unit        Unit string (e.g. "kg").
-     * @param string $value       Rendered value (may contain HTML).
-     * @return array{schema_meta:string,itemprop_attr:string}
-     */
-    protected static function build_schema_bits( string $schema_prop, string $unit, string $value ): array {
-        $schema_prop = trim( $schema_prop );
-        $unit        = trim( $unit );
-
-        if ( '' === $schema_prop ) {
-            return [
-                'schema_meta'   => '',
-                'itemprop_attr' => '',
-            ];
-        }
-        if ( '' !== $unit ) {
-            $clean_value = esc_attr( trim( wp_strip_all_tags( $value ) ) );
-
-            return [
-                'schema_meta'   => sprintf(
-                    '<meta itemprop="%1$s" content="%2$s"><meta itemprop="%1$sUnitText" content="%3$s">',
-                    esc_attr( $schema_prop ),
-                    $clean_value,
-                    esc_attr( $unit )
-                ),
-                'itemprop_attr' => '',
-            ];
-        }
-        return [
-            'schema_meta'   => '',
-            'itemprop_attr' => sprintf( ' itemprop="%s"', esc_attr( $schema_prop ) ),
-        ];
+        return trim( $display_value . ' ' . $unit_html );
     }
 
 
@@ -218,16 +172,15 @@ class FieldRenderer
      *
      * @param string $value         Rendered field value (may contain HTML).
      * @param string $link          Optional URL.
-     * @param string $itemprop_attr Optional ' itemprop="..."' for the span.
      *
      * @return string
      */
-    protected static function build_display_value_html( string $value, string $link, string $itemprop_attr ): string {
+    protected static function build_display_value_html( string $value, string $link ): string {
         $has_schema_in_value = false !== strpos( $value, 'itemprop=' );
 
         $inner = $has_schema_in_value
             ? $value
-            : sprintf( '<span%1$s>%2$s</span>', $itemprop_attr, $value );
+            : sprintf( '<span>%s</span>', $value );
 
         if ( '' === $link ) {
             return $inner;

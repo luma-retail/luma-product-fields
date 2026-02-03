@@ -34,7 +34,7 @@ class FieldStorage {
      *
      * @const string
      */
-    public const META_PREFIX = '_lpf_';
+    public const META_PREFIX = '_lumapf_';
 	
 	
 

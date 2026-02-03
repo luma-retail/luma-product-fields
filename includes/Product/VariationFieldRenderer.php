@@ -106,7 +106,7 @@ class VariationFieldRenderer {
 
         ob_start();
         ?>
-        <p class="form-row lpf-fieldtype-text">
+        <p class="form-row lumaprfi-fieldtype-text">
             <label>
                 <?php echo esc_html( $label ); ?>
                 <?php echo $tip_html ? wp_kses_post( $tip_html ) : ''; ?>
@@ -142,7 +142,7 @@ class VariationFieldRenderer {
 
         ob_start();
         ?>
-        <p class="form-row lpf-fieldtype-number">
+        <p class="form-row lumaprfi-fieldtype-number">
             <label>
                 <?php echo esc_html( $label ); ?>
                 <?php echo $tip_html ? wp_kses_post( $tip_html ) : ''; ?>
@@ -180,7 +180,7 @@ class VariationFieldRenderer {
 
         ob_start();
         ?>
-        <p class="form-row lpf-fieldtype-integer">
+        <p class="form-row lumaprfi-fieldtype-integer">
             <label>
                 <?php echo esc_html( $label ); ?>
                 <?php echo $tip_html ? wp_kses_post( $tip_html ) : ''; ?>
@@ -221,7 +221,7 @@ class VariationFieldRenderer {
 
         ob_start();
         ?>
-        <p class="form-row lpf-fieldtype-minmax">
+        <p class="form-row lumaprfi-fieldtype-minmax">
             <label>
                 <?php echo esc_html( $label ); ?>
                 <?php echo $tip_html ? wp_kses_post( $tip_html ) : ''; ?>
@@ -280,13 +280,23 @@ class VariationFieldRenderer {
             $slug       = $field['slug'];
             $input_name = 'variable_' . $slug;
 
-            if ( isset( $_POST[ $input_name ][ $loop ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing	               
-                // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Missing
-                $raw_value = wp_unslash( $_POST[ $input_name ][ $loop ] );
+            $value_input = filter_input( INPUT_POST, $input_name, FILTER_DEFAULT, FILTER_REQUIRE_ARRAY );
+            if ( null === $value_input ) {
+                $value_input = filter_input( INPUT_POST, $input_name, FILTER_DEFAULT );
+            }
 
-                $value = is_array( $raw_value )
-                    ? array_map( 'sanitize_text_field', $raw_value )
-                    : sanitize_text_field( (string) $raw_value );
+            if ( null !== $value_input && isset( $value_input[ $loop ] ) ) {
+                $raw = $value_input[ $loop ];
+                if ( is_array( $raw ) ) {
+                    $value = array_map(
+                        'sanitize_text_field',
+                        wp_unslash( (array) $raw )
+                    );
+                } else {
+                    $value = sanitize_text_field(
+                        wp_unslash( (string) $raw )
+                    );
+                }
 
                 FieldStorage::save_field( $variation_id, $slug, $value );
             }

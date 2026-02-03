@@ -57,7 +57,6 @@ Each field has:
 - Optional **clickable links** for taxonomy-based values, taking the customer to a listing of products with the same term  
 - Optional **unit label** (e.g. `cm`, `g`, `mm`, `kg`) shown in admin and frontend  
 - Optional frontend description (shown as a **tooltip** on the product page)  
-- Optional **schema property** for SEO/structured data integrations  
 - An option to mark the field as **backend-only** (never shown on the frontend)
 
 You can also add fields used only internally (e.g. internal notes, vendor SKU, etc.).
@@ -151,8 +150,7 @@ Full “pure blocks / block template” parity for these archives is planned for
 Luma Product Fields is designed to be **SEO-friendly**:
 
 - All values are stored as standard product metadata and rendered as regular HTML, so they are easily crawlable.
-- Each field can optionally declare a **schema property** (e.g. `material`, `color`, `width`) so themes or SEO plugins can map product specs into **schema.org** structured data (microdata or JSON-LD).
-- This makes it straightforward to integrate your specification fields into existing SEO setups or custom structured data implementations.
+- For schema.org mappings and structured data integrations, use the **Luma Product Fields SEO** extension.
 
 ---
 
@@ -199,7 +197,6 @@ Product Groups let you enforce consistent data structures across similar product
 - Frontend tooltips via field descriptions  
 - Backend-only fields for internal metadata  
 - **Unit labels** for numeric fields and compatible types  
-- Optional schema property on fields for SEO/structured data integrations  
 - Template override support  
 - Fully extendable through actions & filters  
 

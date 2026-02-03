@@ -162,7 +162,7 @@ class My_Color_Badge_Field {
         // NOTE: The plugin sanitizes the final frontend block with wp_kses() at output.
         // Do NOT rely on inline styles unless the plugin allowlist permits it.
         return sprintf(
-            '<span class="lpf-color-badge" data-color="%s"></span>',
+            '<span class="lumaprfi-color-badge" data-color="%s"></span>',
             esc_attr( (string) $value )
         );
     }

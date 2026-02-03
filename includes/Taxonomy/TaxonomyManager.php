@@ -17,6 +17,9 @@ use WP_Taxonomy;
  *
  * Registers dynamic field taxonomies for field types that are taxonomies.
  *
+ * Note: Identifiers use the full "luma_product_fields" prefix; storage/taxonomy
+ * prefixes use "lumapf".
+ *
  * @hook luma_product_fields_taxonomy_registered
  *       Fires after custom taxonomy is registered.
  *       For 3rd parties to customize taxonomies.
@@ -60,7 +63,6 @@ class TaxonomyManager
      * - variation        bool
      * - is_taxonomy      bool
      * - show_links       bool
-     * - schema_prop      string
      * - tax_description  string (optional)
      *
      * @param string|null $group Product group slug to filter by, or null for all.
@@ -75,8 +77,7 @@ class TaxonomyManager
      *     hide_in_frontend: bool,
      *     variation: bool,
      *     is_taxonomy: bool,
-     *     show_links: bool,
-     *     schema_prop: string,
+    *     show_links: bool,
      *     tax_description?: string
      * }>
      */
@@ -121,8 +122,7 @@ class TaxonomyManager
      *     hide_in_frontend: bool,
      *     variation: bool,
      *     is_taxonomy: bool,
-     *     show_links: bool,
-     *     schema_prop: string,
+    *     show_links: bool,
      *     tax_description?: string
      * }>
      */

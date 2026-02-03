@@ -7,7 +7,7 @@ This is a WordPress plugin for WooCommerce that adds structured, searchable prod
 - **Namespace**: `Luma\ProductFields\` with PSR-4 autoloading from `/includes/`
 - **Bootstrap**: [`luma-product-fields.php`](../luma-product-fields.php) → [`includes/Plugin.php`](../includes/Plugin.php#L55)
 - **Field Storage**: Dual-mode - `meta` (post_meta) or `taxonomy` (term relationships)
-- **Product Groups**: Optional taxonomy (`lpf_product_group`) for schema segregation - different field sets per product type
+- **Product Groups**: Optional taxonomy (`ProductGroup::$tax_name`) for schema segregation - different field sets per product type
 
 ### Core Components
 
@@ -41,7 +41,7 @@ This is a WordPress plugin for WooCommerce that adds structured, searchable prod
 ```
 
 **Key distinction**: 
-- `storage: 'meta'` → saved via `update_post_meta()` with `_lpf_{slug}` keys
+- `storage: 'meta'` → saved via `update_post_meta()` with `_lumapf_{slug}` keys
 - `storage: 'taxonomy'` → dynamic taxonomies registered at runtime ([`TaxonomyManager::register_dynamic_taxonomies()`](../includes/Taxonomy/TaxonomyManager.php#L42))
 
 ### 2. AJAX Router Pattern
@@ -62,6 +62,7 @@ All admin AJAX uses custom router in [`Admin/Ajax.php`](../includes/Admin/Ajax.p
 - A product has **one** group; a field can belong to **multiple** groups
 - Helper: [`Helpers::get_product_group_slug()`](../includes/Utils/Helpers.php#L71) returns "general" if none assigned
 - Fields are filtered by group via [`Helpers::get_fields_for_group()`](../includes/Utils/Helpers.php#L137)
+- Taxonomy name is centralized in `ProductGroup::$tax_name`
 
 ### 4. Variation Support
 
@@ -69,7 +70,7 @@ Only meta-based fields can support variations ([`VariationFieldRenderer`](../inc
 
 - Field must have `'variation' => true` AND type must support `'variations'` capability
 - Inherits parent product's Product Group assignment
-- Storage key pattern: `_lpf_{slug}` on variation post
+- Storage key pattern: `_lumapf_{slug}` on variation post
 
 ### 5. KSES & Security
 
@@ -121,7 +122,7 @@ See [`DEVELOPER-HOOKS.md`](../DEVELOPER-HOOKS.md) for full hook reference. Most 
 
 ### When Working with Meta
 
-- **Always** use `FieldStorage::META_PREFIX` constant (`_lpf_`)
+- **Always** use `FieldStorage::META_PREFIX` constant (`_lumapf_`)
 - Leverage [`Helpers::get_product_meta()`](../includes/Utils/Helpers.php#L184) for unified retrieval (handles variations, external fields)
 - Cache-aware: plugin uses object caching + invalidation on product save
 
@@ -145,6 +146,7 @@ See [`DEVELOPER-HOOKS.md`](../DEVELOPER-HOOKS.md) for full hook reference. Most 
 3. **Storage Mode**: Once a field is created (meta or taxonomy), storage mode cannot be changed without data migration.
 4. **Dynamic Taxonomies**: Taxonomy-based fields create WP taxonomies at runtime. These persist until field deletion.
 5. **ListView Inline Editing**: Uses custom editable cell system ([`Admin/ListViewTable.php`](../includes/Admin/ListViewTable.php#L186)). Check `luma_product_fields_allow_external_field_slug` filter to add external fields.
+6. **CSS Class Prefix**: Plugin UI classes use the `lumaprfi-` prefix.
 
 ## Code Style
 

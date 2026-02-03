@@ -54,6 +54,10 @@ class FieldEditor {
     {
         add_action('admin_menu', [$this, 'register_editor_page']);
         add_action('admin_post_luma_product_fields_save_field_editor', [$this, 'handle_save']);
+        add_filter( 'parent_file', [ $this, 'filter_parent_file' ] );
+        add_filter( 'submenu_file', [ $this, 'filter_submenu_file' ] );
+        add_action( 'admin_head', [ $this, 'hide_editor_submenu_css' ] );
+        add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_editor_menu_script' ], 100 );
     }
 
 
@@ -66,7 +70,6 @@ class FieldEditor {
      * @return void
      */
     public function register_editor_page(): void {
-
         $parent_slug = 'edit.php?post_type=product';
         $menu_slug   =  'luma-product-fields-edit';
 
@@ -79,8 +82,6 @@ class FieldEditor {
             [ $this, 'render_editor' ]
         );
 
-        // Hide it from the submenu UI while keeping the page accessible via direct URL.
-//        remove_submenu_page( $parent_slug, $menu_slug );
     }
 
 
@@ -91,15 +92,17 @@ class FieldEditor {
      */
     public function render_editor(): void
     { 
-
-        $slug = isset( $_GET['edit'] ) ? sanitize_key( wp_unslash( $_GET['edit'] ) ) : '';   // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $edit_input = filter_input( INPUT_GET, 'edit', FILTER_DEFAULT );
+        $slug = is_string( $edit_input ) ? sanitize_key( wp_unslash( $edit_input ) ) : '';
+        global $parent_file, $submenu_file;
+        $parent_file  = 'edit.php?post_type=product';
+        $submenu_file = 'edit.php?post_type=product&page=luma-product-fields';
 
         $field          = MetaManager::get_field( $slug ) ?? TaxonomyManager::get_field( $slug );
         $field = is_array( $field ) ? $field : [];
         $field_defaults = [
             'type'             => '',
             'label'            => '',
-            'schema_prop'      => '',
             'description'      => '',
             'frontend_desc'    => '',
             'unit'             => '',
@@ -143,7 +146,7 @@ class FieldEditor {
         echo '</h1>';
         NotificationManager::render( 'field_editor' ); 
 
-        echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="luma-product-fields-field-editor">';
+        echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="lumaprfi-field-editor">';
         echo '<input type="hidden" name="action" value="luma_product_fields_save_field_editor" />';
         wp_nonce_field( 'luma_product_fields_save_field_editor', 'luma_product_fields_nonce' );
         if ( $slug ) {
@@ -226,24 +229,6 @@ class FieldEditor {
         echo '<td><label><input type="checkbox" name="lrpf_variation" value="1"' . checked( $field['variation'] ?? false, true, false ) . ' /> ';
         echo esc_html__( 'Yes', 'luma-product-fields' ) . '</label></td></tr>';
 
-        // Schema property.
-        echo '<tr>';
-        echo '<th><label for="lrpf_schema_prop">' . esc_html__( 'Schema Property', 'luma-product-fields' ) . '</label></th>';
-        echo '<td>';
-        echo '<input id="lrpf_schema_prop" name="lrpf_schema_prop" type="text" value="' . esc_attr( $field['schema_prop'] ?? '' ) . '" class="regular-text"/>';
-        echo '<p class="description">';
-        echo esc_html__(
-            'Schema Property controls how the value is included in your product’s structured data (schema.org). Adding a valid schema property (e.g. weight, brand, material) helps Google and other search engines better understand your product, which may improve how it appears in search results.',
-            'luma-product-fields'
-        );
-        echo ' ';
-        echo '<a href="' . esc_url( 'https://schema.org/Product' ) . '" target="_blank" rel="noopener noreferrer">';
-        echo esc_html__( 'See list of available schema.org properties for products', 'luma-product-fields' );
-        echo '</a></p>';
-        echo '</td>';
-        echo '</tr>';
-
-
         // Taxonomy links.
         echo '<tr class="' . esc_attr( $links_row_class ) . '"><th><label>' . esc_html__( 'Show Taxonomy Links', 'luma-product-fields' ) . '</label></th>';
         echo '<td><label><input type="checkbox" name="lrpf_show_links" value="1"' . checked( $field['show_links'] ?? false, true, false ) . ' /> ';
@@ -256,6 +241,97 @@ class FieldEditor {
         submit_button( __( 'Save Field', 'luma-product-fields' ) );
 
         echo '</form></div>';
+    }
+
+
+    /**
+     * Hide the field editor submenu item while keeping it registered.
+     *
+     * @return void
+     */
+    public function hide_editor_submenu_css(): void
+    {
+        echo '<style>#menu-posts-product .wp-submenu a[href="edit.php?post_type=product&page=luma-product-fields-edit"]{display:none;}</style>';
+    }
+
+
+    /**
+     * Enqueue admin JS to force menu highlighting on the editor screen.
+     *
+     * @return void
+     */
+    public function enqueue_editor_menu_script(): void
+    {
+        if ( ! self::is_field_editor_screen() ) {
+            return;
+        }
+
+        wp_enqueue_script(
+            'luma-product-fields-editor-menu',
+            LUMA_PRODUCT_FIELDS_PLUGIN_URL . 'js/field-editor-menu.js',
+            [],
+            LUMA_PRODUCT_FIELDS_PLUGIN_VER,
+            true
+        );
+    }
+
+
+    /**
+     * Force Products > Product Fields to highlight when viewing the field editor.
+     *
+     * @param string $parent_file Current parent file.
+     * @return string
+     */
+    public function filter_parent_file( string $parent_file ): string
+    {
+        return self::is_field_editor_screen()
+            ? 'edit.php?post_type=product'
+            : $parent_file;
+    }
+
+
+    /**
+     * Force the Product Fields submenu highlight when viewing the field editor.
+     *
+     * @param string|null $submenu_file Current submenu file.
+     * @return string|null
+     */
+    public function filter_submenu_file( ?string $submenu_file ): ?string
+    {
+        return self::is_field_editor_screen()
+            ? 'edit.php?post_type=product&page=luma-product-fields'
+            : $submenu_file;
+    }
+
+
+    /**
+     * Check if the current admin screen is the field editor.
+     *
+     * @return bool
+     */
+    /**
+     * Helper for core + extensions to detect the field editor screen.
+     *
+     * @return bool
+     */
+    public static function is_field_editor_screen(): bool
+    {
+        if ( ! is_admin() ) {
+            return false;
+        }
+
+        $page_input = filter_input( INPUT_GET, 'page', FILTER_DEFAULT );
+        $post_type_input = filter_input( INPUT_GET, 'post_type', FILTER_DEFAULT );
+
+        $page = is_string( $page_input ) ? sanitize_key( wp_unslash( $page_input ) ) : '';
+        $post_type = is_string( $post_type_input ) ? sanitize_key( wp_unslash( $post_type_input ) ) : '';
+
+        if ( $page !== 'luma-product-fields-edit' ) {
+            return false;
+        }
+
+        // Some links omit post_type, so accept both.
+        return ( '' === $post_type ) || ( 'product' === $post_type );
     }
 
 
@@ -340,11 +416,6 @@ public function handle_save(): void {
         $unit = '';
     }
 
-    // Schema property (optional).
-    $schema_prop = ( isset( $_POST['lrpf_schema_prop'] ) && is_scalar( $_POST['lrpf_schema_prop'] ) )
-        ? sanitize_key( wp_unslash( (string) $_POST['lrpf_schema_prop'] ) )
-        : '';
-
     // Tooltip (admin).
     $description = ( isset( $_POST['lrpf_description'] ) && is_scalar( $_POST['lrpf_description'] ) )
         ? sanitize_textarea_field( wp_unslash( (string) $_POST['lrpf_description'] ) )
@@ -362,7 +433,6 @@ public function handle_save(): void {
         'slug'             => $slug,
         'type'             => $type,
         'unit'             => $unit,
-        'schema_prop'      => $schema_prop,
         'groups'           => $groups,
         'hide_in_frontend' => ! empty( $_POST['lrpf_hide_in_frontend'] ),
         'variation'        => ! empty( $_POST['lrpf_variation'] ),

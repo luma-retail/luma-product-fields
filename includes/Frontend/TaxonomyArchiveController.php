@@ -17,6 +17,7 @@ defined( 'ABSPATH' ) || exit;
 
 use Luma\ProductFields\Registry\FieldTypeRegistry;
 use Luma\ProductFields\Utils\Helpers;
+use Luma\ProductFields\Taxonomy\ProductGroup;
 
 class TaxonomyArchiveController {
 
@@ -62,7 +63,7 @@ class TaxonomyArchiveController {
 		$classes[] = 'woocommerce-shop';
 		$classes[] = 'archive';
 		$classes[] = 'post-type-archive-product';
-		$classes[] = 'lpf-taxonomy-archive';
+		$classes[] = 'lumaprfi-taxonomy-archive';
 
 		return array_values( array_unique( $classes ) );
 	}
@@ -139,7 +140,7 @@ class TaxonomyArchiveController {
 	 */
 	protected function should_handle_taxonomy_archive( string $taxonomy ): bool {
 		// Product Groups should behave like a product archive too.
-		if ( 'lpf_product_group' === $taxonomy ) {
+		if ( ProductGroup::$tax_name === $taxonomy ) {
 			return true;
 		}
 
