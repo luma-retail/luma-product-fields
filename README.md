@@ -242,7 +242,6 @@ This plugin is fully extensible. Developers can:
 - Hook into storage and save routines  
 - Extend admin interfaces and inline editors  
 - Integrate with reporting, feeds, or external systems  
-- Map fields to schema.org properties via the schema property setting on each field  
 - Use tooltips and unit settings to drive consistent UX both in admin and on the frontend
 
 Developer documentation for this plugin lives in:

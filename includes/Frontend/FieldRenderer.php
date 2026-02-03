@@ -100,8 +100,8 @@ class FieldRenderer
         $slug  = esc_attr( $raw_slug );
         $label = esc_html( (string) ( $field['label'] ?? $raw_slug ) );
 
-        $tooltip    = self::build_tooltip_html( $field, $slug, $label );
-        $dd_payload = self::build_dd_payload_html( $field, $value, $link );
+        $tooltip = self::build_tooltip_html( $field, $slug, $label );
+        $dd_value = self::build_dd_payload_html( $field, $value, $link );
 
         return sprintf(
             "<dl class='lumaprfi-product-meta' data-slug='%1\$s'>
@@ -111,7 +111,7 @@ class FieldRenderer
             $slug,
             $label,
             $tooltip,
-            $dd_payload
+            $dd_value
         );
     }
 
@@ -145,7 +145,7 @@ class FieldRenderer
 
 
     /**
-     * Build the complete <dd> payload (value + unit + schema meta).
+    * Build the complete <dd> payload (value + unit).
      *
      * Important: This method only *builds* HTML. Final sanitizing must be done
      * by sanitize_dd_html().
@@ -168,7 +168,7 @@ class FieldRenderer
 
 
     /**
-     * Build the display value HTML (value wrapped in <span>, optionally inside <a>).
+    * Build the display value HTML (value wrapped in <span>, optionally inside <a>).
      *
      * @param string $value         Rendered field value (may contain HTML).
      * @param string $link          Optional URL.
@@ -176,9 +176,9 @@ class FieldRenderer
      * @return string
      */
     protected static function build_display_value_html( string $value, string $link ): string {
-        $has_schema_in_value = false !== strpos( $value, 'itemprop=' );
+        $has_html = $value !== wp_strip_all_tags( $value );
 
-        $inner = $has_schema_in_value
+        $inner = $has_html
             ? $value
             : sprintf( '<span>%s</span>', $value );
 

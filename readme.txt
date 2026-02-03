@@ -127,7 +127,6 @@ Full “pure blocks / block template” parity for these archives is planned for
 Luma Product Fields is designed to be **SEO-friendly**:
 
 - All values are stored as standard product metadata and rendered as regular HTML, so they are easily crawlable.
-- For schema.org mappings and structured data integrations, use the **Luma Product Fields SEO** extension.
 
 = Why choose this plugin? =
 
