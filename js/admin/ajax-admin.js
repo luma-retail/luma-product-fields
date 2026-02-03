@@ -449,6 +449,7 @@ jQuery(function($) {
 
                         if (key === valueKey) {
                             value = trimmed;
+                            postData[key] = trimmed;
                         } else if (key === `${valueKey}[]`) {
                             if (!Array.isArray(value)) value = [];
                             if (trimmed !== '') value.push(trimmed);
@@ -462,7 +463,13 @@ jQuery(function($) {
                             postData[key] = trimmed;
                         }
                     }
-                    postData.value = value;
+
+                    if (value === null && formData.has(valueKey)) {
+                        const fallbackValue = formData.get(valueKey);
+                        value = (typeof fallbackValue === 'string') ? fallbackValue.trim() : fallbackValue;
+                    }
+
+                    postData.value = (value === null) ? '' : value;
 
                     $.post(luma_product_fields_admin_ajaxdata.ajaxurl, postData, function (res) {
                         if (res.success) {

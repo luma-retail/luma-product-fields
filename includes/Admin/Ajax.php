@@ -367,13 +367,6 @@ class Ajax {
 
         $product_id = isset( $_POST['product_id'] ) ? absint( wp_unslash( $_POST['product_id'] ) ) : 0;
         $field_slug = isset( $_POST['field_slug'] ) ? sanitize_key( wp_unslash( $_POST['field_slug'] ) ) : '';
-        $value_input = filter_input( INPUT_POST, 'value', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY );
-        if ( null === $value_input ) {
-            $value_input = filter_input( INPUT_POST, 'value', FILTER_DEFAULT );
-        }
-
-        $value_raw = null === $value_input ? '' : wp_unslash( $value_input );
-
         if ( ! $product_id || ! $field_slug || ! current_user_can( 'edit_post', $product_id ) ) {
             wp_send_json_error( 'Permission denied or invalid data.' );
         }
@@ -399,61 +392,49 @@ class Ajax {
 
         $type       = (string) ( $field['type'] ?? 'text' );
         $definition = FieldTypeRegistry::get( $type ) ?? [];
+        $datatype   = (string) ( $definition['datatype'] ?? 'text' );
         $validation = (string) ( $definition['validation'] ?? '' );
+
+        // Read raw input from generic `value` payload only.
+        if ( ! isset( $_POST['value'] ) ) {
+            wp_send_json_error( 'Missing value.' );
+        }
+
+        $is_range   = ( $validation === 'range' ) || ( $type === 'minmax' );
+        $is_integer = ( $validation === 'integer' ) || ( $type === 'integer' );
+        $is_numeric = ( $datatype === 'number' );
 
         if ( FieldTypeRegistry::supports( $type, 'multiple_values' ) ) {
             $value = array_filter(
-                array_map( 'sanitize_text_field', (array) $value_raw ),
+                array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['value'] ) ),
                 static fn( $item ) => $item !== ''
             );
+        } elseif ( $is_range ) {
+            if ( ! is_array( $_POST['value'] ) ) {
+                wp_send_json_error( 'Invalid range value.' );
+            }
+
+            $min = isset( $_POST['value']['min'] )
+                ? sanitize_text_field( wp_unslash( (string) $_POST['value']['min'] ) )
+                : '';
+            $max = isset( $_POST['value']['max'] )
+                ? sanitize_text_field( wp_unslash( (string) $_POST['value']['max'] ) )
+                : '';
+
+            $value = [
+                'min' => $min,
+                'max' => $max,
+            ];
+        } elseif ( $is_integer ) {
+            $value = sanitize_text_field( wp_unslash( (string) $_POST['value'] ) );
+        } elseif ( $is_numeric ) {
+            $value = sanitize_text_field( wp_unslash( (string) $_POST['value'] ) );
         } else {
-            $value = is_array( $value_raw ) ? (string) reset( $value_raw ) : (string) $value_raw;
-            $value = sanitize_text_field( $value );
-        }
-
-        switch ( $validation ) {
-            case 'integer':
-                $normalized = str_replace( ',', '.', (string) $value );
-                $validated  = filter_var( $normalized, FILTER_VALIDATE_INT );
-
-                if ( $value !== '' && $validated === false ) {
-                    wp_send_json_error( 'Invalid numeric value.' );
-                }
-
-                $value = $value === '' ? '' : (string) $validated;
-                break;
-
-            case 'float':
-                $normalized = str_replace( ',', '.', (string) $value );
-                $validated  = filter_var( $normalized, FILTER_VALIDATE_FLOAT );
-
-                if ( $value !== '' && $validated === false ) {
-                    wp_send_json_error( 'Invalid numeric value.' );
-                }
-
-                $value = $value === '' ? '' : (string) $validated;
-                break;
-
-            case 'range':
-                if ( ! is_array( $value_raw ) ) {
-                    wp_send_json_error( 'Invalid range value.' );
-                }
-
-                $min = isset( $value_raw['min'] ) ? sanitize_text_field( (string) $value_raw['min'] ) : '';
-                $max = isset( $value_raw['max'] ) ? sanitize_text_field( (string) $value_raw['max'] ) : '';
-
-                $min = $min !== '' ? filter_var( str_replace( ',', '.', $min ), FILTER_VALIDATE_FLOAT ) : '';
-                $max = $max !== '' ? filter_var( str_replace( ',', '.', $max ), FILTER_VALIDATE_FLOAT ) : '';
-
-                if ( ( $min !== '' && $min === false ) || ( $max !== '' && $max === false ) ) {
-                    wp_send_json_error( 'Invalid range value.' );
-                }
-
-                $value = [
-                    'min' => $min === '' ? '' : $min,
-                    'max' => $max === '' ? '' : $max,
-                ];
-                break;
+            if ( is_array( $_POST['value'] ) ) {
+                $value = array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['value'] ) );
+            } else {
+                $value = sanitize_text_field( wp_unslash( (string) $_POST['value'] ) );
+            }
         }
 
         $ok = FieldStorage::save_field( $product_id, $field_slug, $value );
