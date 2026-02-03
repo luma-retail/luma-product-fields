@@ -4,13 +4,14 @@ namespace Luma\ProductFields\Taxonomy;
 defined( 'ABSPATH' ) || exit;
 
 use Luma\ProductFields\Taxonomy\TaxonomyManager;
+use Luma\ProductFields\Taxonomy\ProductGroup;
 
 /**
  * Class TaxonomyManagerInlineEdit
  *
  * Hides inline (Quick/Bulk) edit controls for taxonomies managed by the plugin.
  * Uses TaxonomyManager::get_all() to resolve taxonomy slugs, and also hides the
- * default inline UI for lpf_product_group (since you render a custom control).
+ * default inline UI for ProductGroup::$tax_name (since you render a custom control).
  */
 class TaxonomyManagerInlineEdit {
 
@@ -44,7 +45,7 @@ class TaxonomyManagerInlineEdit {
      * Returns (and memoizes) the map of taxonomies to hide in Quick/Bulk Edit.
      *
      * Uses TaxonomyManager::get_all() (list of arrays with at least 'slug' and 'is_taxonomy').
-     * Always includes 'lpf_product_group' to suppress the default inline UI,
+    * Always includes ProductGroup::$tax_name to suppress the default inline UI,
      * since you render your own single-select control.
      *
      * @return array<string,bool>
@@ -64,7 +65,7 @@ class TaxonomyManagerInlineEdit {
         }
 
         // Also hide the default inline UI for Product group.
-        $slugs[] = 'lpf_product_group';
+        $slugs[] = ProductGroup::$tax_name;
 
         $this->hidden = array_fill_keys( $slugs, true );
         return $this->hidden;

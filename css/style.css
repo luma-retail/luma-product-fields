@@ -1,16 +1,16 @@
 
 
-.lpf-tooltip ol,
-.lpf-tooltip ul {
+.lumaprfi-tooltip ol,
+.lumaprfi-tooltip ul {
     margin:0;
 }
-.lpf-tooltip {
+.lumaprfi-tooltip {
     position: relative;
     display: inline-block;
 }
 
 /* The "?" icon */
-.lpf-tooltip-trigger {
+.lumaprfi-tooltip-trigger {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -27,14 +27,14 @@
     transition: background-color 0.2s ease;
 }
 
-.lpf-tooltip:hover .lpf-tooltip-trigger,
-.lpf-tooltip:focus-within .lpf-tooltip-trigger {
+.lumaprfi-tooltip:hover .lumaprfi-tooltip-trigger,
+.lumaprfi-tooltip:focus-within .lumaprfi-tooltip-trigger {
     background-color: #3e6647;
 }
 
 
 /* Tooltip box */
-.lpf-tooltip-txt {
+.lumaprfi-tooltip-txt {
     position: absolute;
     top: 140%;
     left: 50%;
@@ -58,12 +58,12 @@
     font-weight: normal;
 }
 
-.lpf-tooltip-txt li {
+.lumaprfi-tooltip-txt li {
     padding-left:1em;
 }
 
 /* Tooltip arrow */
-.lpf-tooltip-txt::before {
+.lumaprfi-tooltip-txt::before {
     content: '';
     position: absolute;
     top: -6px;
@@ -76,14 +76,14 @@
 }
 
 /* Show on hover or focus */
-.lpf-tooltip:hover .lpf-tooltip-txt,
-.lpf-tooltip:focus-within .lpf-tooltip-txt {
+.lumaprfi-tooltip:hover .lumaprfi-tooltip-txt,
+.lumaprfi-tooltip:focus-within .lumaprfi-tooltip-txt {
     opacity: 1;
     pointer-events: auto;
 }
 
 
-#luma-product-fields-list .lpf-product-meta {
+#luma-product-fields-list .lumaprfi-product-meta {
   display: grid;
   grid-template-columns: max-content 1fr;
   gap: 0.5em;
@@ -91,11 +91,11 @@
   margin-bottom:.3em;
   
 }
-.lpf-product-meta dt {
+.lumaprfi-product-meta dt {
     font-weight:bold;
 }
 
-.lpf-product-meta dd {
+.lumaprfi-product-meta dd {
   font-weight:normal;
   margin: 0;
 }

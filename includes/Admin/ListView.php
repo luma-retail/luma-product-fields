@@ -133,7 +133,7 @@ class ListView {
             $table = new ListViewTable('general');
             $table->prepare_items();
             $table->display();
-            echo '<div id="lpf-editor-overlay"></div>';
+            echo '<div id="lumaprfi-editor-overlay"></div>';
             echo '</div>';
             return;
         }
@@ -141,7 +141,7 @@ class ListView {
         $table = new ListViewTable($this->selected_group);
         $table->prepare_items();
         $table->display();
-        echo '<div id="lpf-editor-overlay"></div>';
+        echo '<div id="lumaprfi-editor-overlay"></div>';
         echo '</div>';
     }
 

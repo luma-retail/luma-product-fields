@@ -10,6 +10,7 @@ namespace Luma\ProductFields\Admin;
 use Luma\ProductFields\Taxonomy\TaxonomyManager;
 use Luma\ProductFields\Meta\MetaManager;
 use Luma\ProductFields\Utils\Helpers;
+use Luma\ProductFields\Taxonomy\ProductGroup;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -83,12 +84,12 @@ class FieldOptionsOverview {
 
             <?php $this->render_table(); ?>
 
-            <div class="lpf-actions">
+            <div class="lumaprfi-actions">
                 <a href="<?php echo esc_url( admin_url( 'admin.php?page=luma-product-fields-edit' ) ); ?>" class="button button-primary button-large" style="margin-left: 1em;">
                     <span class="dashicons dashicons-plus-alt"></span><?php esc_html_e( 'Add New Field', 'luma-product-fields' ); ?>
                 </a>
 
-                <a href="<?php echo esc_url( admin_url( 'edit-tags.php?taxonomy=lpf_product_group' ) ); ?>" class="button button-large" style="margin-left: 1em;">
+                <a href="<?php echo esc_url( admin_url( 'edit-tags.php?taxonomy=' . ProductGroup::$tax_name ) ); ?>" class="button button-large" style="margin-left: 1em;">
                     <?php esc_html_e( 'Edit product groups', 'luma-product-fields' ); ?>
                 </a>
 

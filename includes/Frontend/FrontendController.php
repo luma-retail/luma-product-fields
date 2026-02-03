@@ -270,7 +270,6 @@ class FrontendController {
             $output .= FieldRenderer::wrap_field([
                 'label' => __('Brand', 'luma-product-fields'),
                 'slug'  => 'brand',
-                'schema_prop'   => 'brand',
             ], esc_html($brand->name), esc_url(get_term_link($brand)));
         }
 
@@ -280,7 +279,6 @@ class FrontendController {
                 'label'         => __( 'Package weight', 'luma-product-fields' ),
                 'slug'          => 'weight',
                 'unit'          => get_option( 'woocommerce_weight_unit' ),
-                'schema_prop'   => 'weight',
                 'frontend_desc' => __( 'The weight of the product including packaging.', 'luma-product-fields' ),
             ], esc_html( $product->get_weight() ) );
         }
@@ -292,7 +290,6 @@ class FrontendController {
                 'label'         => __( 'Package size', 'luma-product-fields' ),
                 'slug'          => 'dimensions',
                 'unit'          => get_option( 'woocommerce_dimension_unit' ),
-                'schema_prop'   => 'size',
                 'frontend_desc' => __( 'The size of the product including packaging.', 'luma-product-fields' ),
             ], trim( implode( ' × ', $dimensions ) ) );
         }
@@ -303,7 +300,6 @@ class FrontendController {
             $output .= FieldRenderer::wrap_field([
                 'label' => __('SKU', 'luma-product-fields'),
                 'slug'  => 'sku',
-                'schema_prop'   => 'sku',
             ], esc_html($product->get_sku()));            
         }
         
@@ -318,7 +314,6 @@ class FrontendController {
                         [
                             'label'       => __( 'GTIN / EAN', 'luma-product-fields' ),
                             'slug'        => 'global_unique_id',
-                            'schema_prop' => 'gtin',
                         ],
                         esc_html( $global_unique_id )
                     );
@@ -333,7 +328,6 @@ class FrontendController {
                 $output .= FieldRenderer::wrap_field([
                     'label'       => __( 'Tags', 'luma-product-fields' ),
                     'slug'        => 'product_tags',
-                    'schema_prop' => 'keywords',
                 ], $tags_html );
             }
         }
@@ -344,7 +338,6 @@ class FrontendController {
                 $output .= FieldRenderer::wrap_field([
                     'label'       => __( 'Categories', 'luma-product-fields' ),
                     'slug'        => 'product_cats',
-                    'schema_prop' => 'category',
                 ], $cats_html );
             }
         }

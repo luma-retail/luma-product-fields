@@ -57,7 +57,6 @@ Each field has:
 - Optional **clickable links** for taxonomy-based values, taking the customer to a listing of products with the same term  
 - Optional **unit label** (e.g. `cm`, `g`, `mm`, `kg`) shown in admin and frontend  
 - Optional frontend description (shown as a **tooltip** on the product page)  
-- Optional **schema property** for SEO/structured data integrations  
 - An option to mark the field as **backend-only** (never shown on the frontend)
 
 You can also add fields used only internally (e.g. internal notes, vendor SKU, etc.).
@@ -134,13 +133,24 @@ Templates can be overridden in your theme if you need full control.
 
 ---
 
+## Block themes (FSE) – current status
+
+The plugin works on block themes (for example Twenty Twenty-Four), but the taxonomy term archives for linkable fields are currently rendered via a PHP template for maximum compatibility.
+
+Technical note: Because this archive is rendered via a custom PHP template (not a native block template), the template explicitly enqueues block/global styles and renders the theme header/footer template parts early so block themes keep expected typography and navigation layout.
+
+This means some “pixel-perfect parity” details (for example button styles and some typography that would normally be applied by native Woo/blocks) may differ.
+
+Full “pure blocks / block template” parity for these archives is planned for v1.1.
+
+---
+
 ## 🔍 SEO & Structured Data
 
 Luma Product Fields is designed to be **SEO-friendly**:
 
 - All values are stored as standard product metadata and rendered as regular HTML, so they are easily crawlable.
-- Each field can optionally declare a **schema property** (e.g. `material`, `color`, `width`) so themes or SEO plugins can map product specs into **schema.org** structured data (microdata or JSON-LD).
-- This makes it straightforward to integrate your specification fields into existing SEO setups or custom structured data implementations.
+- For schema.org mappings and structured data integrations, use the **Luma Product Fields SEO** extension.
 
 ---
 
@@ -187,7 +197,6 @@ Product Groups let you enforce consistent data structures across similar product
 - Frontend tooltips via field descriptions  
 - Backend-only fields for internal metadata  
 - **Unit labels** for numeric fields and compatible types  
-- Optional schema property on fields for SEO/structured data integrations  
 - Template override support  
 - Fully extendable through actions & filters  
 
@@ -233,7 +242,6 @@ This plugin is fully extensible. Developers can:
 - Hook into storage and save routines  
 - Extend admin interfaces and inline editors  
 - Integrate with reporting, feeds, or external systems  
-- Map fields to schema.org properties via the schema property setting on each field  
 - Use tooltips and unit settings to drive consistent UX both in admin and on the frontend
 
 Developer documentation for this plugin lives in:

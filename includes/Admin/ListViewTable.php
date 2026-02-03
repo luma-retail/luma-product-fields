@@ -10,6 +10,7 @@ namespace Luma\ProductFields\Admin;
 use WP_List_Table;
 use Luma\ProductFields\Utils\Helpers;
 use Luma\ProductFields\Registry\FieldTypeRegistry;
+use Luma\ProductFields\Taxonomy\ProductGroup;
 
 if ( ! class_exists( 'WP_List_Table' ) ) {
     require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
@@ -90,7 +91,7 @@ class ListViewTable extends WP_List_Table {
             // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
             $args['tax_query'] = [
                 [
-                    'taxonomy' => 'lpf_product_group',
+                    'taxonomy' => ProductGroup::$tax_name,
                     'operator' => 'NOT EXISTS',
                 ]
             ];
@@ -99,7 +100,7 @@ class ListViewTable extends WP_List_Table {
             // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
             $args['tax_query'] = [
                 [
-                    'taxonomy' => 'lpf_product_group',
+                    'taxonomy' => ProductGroup::$tax_name,
                     'field'    => 'slug',
                     'terms'    => $this->product_group_slug,
                 ]
@@ -232,7 +233,7 @@ public function column_default( $item, $column_name ) {
         if ( $product && $product->is_type( 'variable' ) && Helpers::get_product_group_slug( $product->get_id() ) ) {
 
             $toggle = sprintf(
-                '<button class="lpf-toggle-variations" data-product-id="%d" aria-label="Toggle variations" aria-expanded="false">
+                '<button class="lumaprfi-toggle-variations" data-product-id="%d" aria-label="Toggle variations" aria-expanded="false">
                     <span class="dashicons dashicons-arrow-right"></span>
                 </button> ',
                 $product->get_id()
@@ -321,7 +322,7 @@ public function column_default( $item, $column_name ) {
                 foreach ( $fields as $field ) :
                     $is_numeric = FieldTypeRegistry::field_type_is_numeric( $field['type'] );
                     ?>
-                    <td class="column-<?php echo esc_attr( 'lpftbl_' . $field['slug'] ); ?><?php echo $is_numeric ? ' lpf-is-numeric' : ''; ?>">
+                    <td class="column-<?php echo esc_attr( 'lpftbl_' . $field['slug'] ); ?><?php echo $is_numeric ? ' lumaprfi-is-numeric' : ''; ?>">
                         <?php
                         if ( ! empty( $field['variation'] ) ) {
                             $updated_html = ListViewTable::render_field_cell( $variation_id, $field );
@@ -362,10 +363,10 @@ public function column_default( $item, $column_name ) {
         $html_value = self::render_field_cell_inner( $product_id, $field );
         
         $is_numeric = FieldTypeRegistry::field_type_is_numeric( $field['type'] ?? 'text' );
-        $classes    = [ 'lpf-editable' ];
+        $classes    = [ 'lumaprfi-editable' ];
 
         if ( $is_numeric ) {
-            $classes[] = 'lpf-is-numeric';
+            $classes[] = 'lumaprfi-is-numeric';
         }
 
         return sprintf(
@@ -374,7 +375,7 @@ public function column_default( $item, $column_name ) {
                 data-field-slug="%s" 
                 data-field-type="%s"
                 data-original-value="%s"
-                id="lpf-%d-%s">%s</div>',
+                id="lumaprfi-%d-%s">%s</div>',
             esc_attr( implode( ' ', $classes ) ),
             $product_id,
             esc_attr( $field['slug'] ),

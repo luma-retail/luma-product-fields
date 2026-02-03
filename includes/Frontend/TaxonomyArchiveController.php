@@ -17,6 +17,7 @@ defined( 'ABSPATH' ) || exit;
 
 use Luma\ProductFields\Registry\FieldTypeRegistry;
 use Luma\ProductFields\Utils\Helpers;
+use Luma\ProductFields\Taxonomy\ProductGroup;
 
 class TaxonomyArchiveController {
 
@@ -28,6 +29,43 @@ class TaxonomyArchiveController {
 	public function register(): void {
 		add_action( 'pre_get_posts', [ $this, 'maybe_adjust_tax_archive_query' ], 20 );
 		add_filter( 'template_include', [ $this, 'maybe_use_woocommerce_archive_template' ], 20 );
+		add_filter( 'body_class', [ $this, 'maybe_add_woocommerce_archive_body_classes' ] );
+	}
+
+
+	/**
+	 * Ensure WooCommerce-like body classes on LPF taxonomy archives.
+	 *
+	 * WooCommerce adds important body classes based on its conditionals
+	 * (product_cat/product_tag/pa_*). Our dynamic field taxonomies are not
+	 * recognized by those helpers, so themes like Storefront may miss
+	 * Woo-specific archive styling.
+	 *
+	 * @param string[] $classes
+	 * @return string[]
+	 */
+	public function maybe_add_woocommerce_archive_body_classes( array $classes ): array {
+		if ( is_admin() || ! function_exists( 'is_tax' ) || ! is_tax() ) {
+			return $classes;
+		}
+
+		$taxonomy = $this->get_current_taxonomy();
+		if ( '' === $taxonomy ) {
+			return $classes;
+		}
+
+		if ( ! $this->should_handle_taxonomy_archive( $taxonomy ) ) {
+			return $classes;
+		}
+
+		$classes[] = 'woocommerce';
+		$classes[] = 'woocommerce-page';
+		$classes[] = 'woocommerce-shop';
+		$classes[] = 'archive';
+		$classes[] = 'post-type-archive-product';
+		$classes[] = 'lumaprfi-taxonomy-archive';
+
+		return array_values( array_unique( $classes ) );
 	}
 
 
@@ -102,7 +140,7 @@ class TaxonomyArchiveController {
 	 */
 	protected function should_handle_taxonomy_archive( string $taxonomy ): bool {
 		// Product Groups should behave like a product archive too.
-		if ( 'lpf_product_group' === $taxonomy ) {
+		if ( ProductGroup::$tax_name === $taxonomy ) {
 			return true;
 		}
 

@@ -13,6 +13,7 @@ use Luma\ProductFields\Utils\Helpers;
 use Luma\ProductFields\Product\FieldRenderer;
 use Luma\ProductFields\Product\FieldStorage;
 use Luma\ProductFields\Registry\FieldTypeRegistry;
+use Luma\ProductFields\Taxonomy\ProductGroup;
 
 /**
  * Ajax class
@@ -123,18 +124,17 @@ class Ajax {
      * @return void
      */
     protected function update_product_group(): void {
-        // Nonce verified in handle_request() via check_ajax_referer().
-        // phpcs:disable WordPress.Security.NonceVerification.Missing
-        // phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        check_ajax_referer( self::NONCE_ACTION, 'nonce' );
+
 
         $post_id = isset( $_POST['post_id'] ) ? absint( wp_unslash( $_POST['post_id'] ) ) : 0;
 
-        if ( ! array_key_exists( 'product_group', $_POST ) ) {
+        $group_slug_input = filter_input( INPUT_POST, 'product_group', FILTER_DEFAULT );
+        if ( null === $group_slug_input ) {
             wp_send_json_error( [ 'error' => 'Missing product_group.' ] );
         }
 
-        $group_slug_raw = isset( $_POST['product_group'] ) ? wp_unslash( $_POST['product_group'] ) : '';
-        $group_slug_raw = is_string( $group_slug_raw ) ? $group_slug_raw : '';
+        $group_slug_raw = is_string( $group_slug_input ) ? wp_unslash( $group_slug_input ) : '';
         $group_slug     = '' !== $group_slug_raw ? sanitize_key( $group_slug_raw ) : '';
 
         if ( ! $post_id ) {
@@ -143,6 +143,13 @@ class Ajax {
 
         if ( ! current_user_can( 'edit_post', $post_id ) ) {
             wp_send_json_error( [ 'error' => 'Not allowed.' ], 403 );
+        }
+
+        if ( '' !== $group_slug ) {
+            $allowed_groups = array_keys( ProductGroup::get_product_groups() );
+            if ( ! in_array( $group_slug, $allowed_groups, true ) ) {
+                wp_send_json_error( [ 'error' => 'Invalid product group.' ], 400 );
+            }
         }
 
         $product = wc_get_product( $post_id );
@@ -173,8 +180,6 @@ class Ajax {
 
         wp_send_json_success( [ 'html' => $html ] );
 
-        // phpcs:enable WordPress.Security.NonceVerification.Missing
-        // phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
     }
 
 
@@ -185,9 +190,8 @@ class Ajax {
      * @return void
      */
     public function autocomplete_search(): void {
-        // Nonce verified in handle_request() via check_ajax_referer().
-        // phpcs:disable WordPress.Security.NonceVerification.Missing
-        // phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        check_ajax_referer( self::NONCE_ACTION, 'nonce' );
+
 
         $taxonomy = isset( $_POST['taxonomy'] ) ? sanitize_key( wp_unslash( $_POST['taxonomy'] ) ) : '';
         $search   = isset( $_POST['term'] ) ? sanitize_text_field( wp_unslash( $_POST['term'] ) ) : '';
@@ -225,8 +229,6 @@ class Ajax {
 
         wp_send_json_success( [ 'results' => $results ] );
 
-        // phpcs:enable WordPress.Security.NonceVerification.Missing
-        // phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
     }
 
 
@@ -239,9 +241,8 @@ class Ajax {
      * @return void
      */
     protected function get_field_type_capabilities(): void {
-        // Nonce verified in handle_request() via check_ajax_referer().
-        // phpcs:disable WordPress.Security.NonceVerification.Missing
-        // phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        check_ajax_referer( self::NONCE_ACTION, 'nonce' );
+
 
         $type = isset( $_POST['field_type'] ) ? sanitize_key( wp_unslash( $_POST['field_type'] ) ) : '';
 
@@ -257,8 +258,6 @@ class Ajax {
             ]
         );
 
-        // phpcs:enable WordPress.Security.NonceVerification.Missing
-        // phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
     }
 
 
@@ -268,9 +267,8 @@ class Ajax {
      * @return void
      */
     public function load_variations(): void {
-        // Nonce verified in handle_request() via check_ajax_referer().
-        // phpcs:disable WordPress.Security.NonceVerification.Missing
-        // phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        check_ajax_referer( self::NONCE_ACTION, 'nonce' );
+
 
         $product_id = isset( $_POST['product_id'] ) ? absint( wp_unslash( $_POST['product_id'] ) ) : 0;
 
@@ -293,8 +291,6 @@ class Ajax {
 
         wp_send_json_success( $html );
 
-        // phpcs:enable WordPress.Security.NonceVerification.Missing
-        // phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
     }
 
     
@@ -304,9 +300,8 @@ class Ajax {
      * @return void
      */
     public function inline_edit_render(): void {
-        // Nonce verified in handle_request() via check_ajax_referer().
-        // phpcs:disable WordPress.Security.NonceVerification.Missing
-        // phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        check_ajax_referer( self::NONCE_ACTION, 'nonce' );
+
 
         $product_id = isset( $_POST['product_id'] ) ? absint( wp_unslash( $_POST['product_id'] ) ) : 0;
         $field_slug = isset( $_POST['field_slug'] ) ? sanitize_key( wp_unslash( $_POST['field_slug'] ) ) : '';
@@ -341,15 +336,15 @@ class Ajax {
 
         ob_start();
 
-        echo '<div class="lpf-floating-editor-inner" style="position:relative;top:0;left:0;">';
+        echo '<div class="lumaprfi-floating-editor-inner" style="position:relative;top:0;left:0;">';
         echo '<form>';
         echo '<h4>' . esc_html( $product_name ) . '</h4>';
 
         echo wp_kses( $form_html, wp_kses_allowed_html( 'luma_product_fields_admin_fields' ) );
 
-        echo '<div class="lpf-edit-controls">';
-        echo '<button type="button" class="lpf-edit-cancel" aria-label="' . esc_attr__( 'Cancel', 'luma-product-fields' ) . '">&#10005;</button>';
-        echo '<button type="button" class="lpf-edit-save" aria-label="' . esc_attr__( 'Save', 'luma-product-fields' ) . '">&#10003;</button>';
+        echo '<div class="lumaprfi-edit-controls">';
+        echo '<button type="button" class="lumaprfi-edit-cancel" aria-label="' . esc_attr__( 'Cancel', 'luma-product-fields' ) . '">&#10005;</button>';
+        echo '<button type="button" class="lumaprfi-edit-save" aria-label="' . esc_attr__( 'Save', 'luma-product-fields' ) . '">&#10003;</button>';
         echo '</div>';
 
         echo '</form></div>';
@@ -358,8 +353,6 @@ class Ajax {
 
         wp_send_json_success( [ 'html' => $html ] );
 
-        // phpcs:enable WordPress.Security.NonceVerification.Missing
-        // phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
     }
 
 
@@ -370,14 +363,10 @@ class Ajax {
      * @return void
      */
     public function inline_save_field(): void {
-        // Nonce verified in handle_request() via check_ajax_referer().
-        // phpcs:disable WordPress.Security.NonceVerification.Missing
-        // phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        check_ajax_referer( self::NONCE_ACTION, 'nonce' );
 
         $product_id = isset( $_POST['product_id'] ) ? absint( wp_unslash( $_POST['product_id'] ) ) : 0;
         $field_slug = isset( $_POST['field_slug'] ) ? sanitize_key( wp_unslash( $_POST['field_slug'] ) ) : '';
-        $value      = isset( $_POST['value'] ) ? wp_unslash( $_POST['value'] ) : '';
-
         if ( ! $product_id || ! $field_slug || ! current_user_can( 'edit_post', $product_id ) ) {
             wp_send_json_error( 'Permission denied or invalid data.' );
         }
@@ -396,10 +385,56 @@ class Ajax {
              *
              * @param int    $product_id
              * @param string $field_slug
-             * @param mixed  $value
              */
-            do_action( 'luma_product_fields_inline_save_field', $product_id, $field_slug, $value );
+            do_action( 'luma_product_fields_inline_save_field', $product_id, $field_slug );
             wp_send_json_error( 'Unknown field.' );
+        }
+
+        $type       = (string) ( $field['type'] ?? 'text' );
+        $definition = FieldTypeRegistry::get( $type ) ?? [];
+        $datatype   = (string) ( $definition['datatype'] ?? 'text' );
+        $validation = (string) ( $definition['validation'] ?? '' );
+
+        // Read raw input from generic `value` payload only.
+        if ( ! isset( $_POST['value'] ) ) {
+            wp_send_json_error( 'Missing value.' );
+        }
+
+        $is_range   = ( $validation === 'range' ) || ( $type === 'minmax' );
+        $is_integer = ( $validation === 'integer' ) || ( $type === 'integer' );
+        $is_numeric = ( $datatype === 'number' );
+
+        if ( FieldTypeRegistry::supports( $type, 'multiple_values' ) ) {
+            $value = array_filter(
+                array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['value'] ) ),
+                static fn( $item ) => $item !== ''
+            );
+        } elseif ( $is_range ) {
+            if ( ! is_array( $_POST['value'] ) ) {
+                wp_send_json_error( 'Invalid range value.' );
+            }
+
+            $min = isset( $_POST['value']['min'] )
+                ? sanitize_text_field( wp_unslash( (string) $_POST['value']['min'] ) )
+                : '';
+            $max = isset( $_POST['value']['max'] )
+                ? sanitize_text_field( wp_unslash( (string) $_POST['value']['max'] ) )
+                : '';
+
+            $value = [
+                'min' => $min,
+                'max' => $max,
+            ];
+        } elseif ( $is_integer ) {
+            $value = sanitize_text_field( wp_unslash( (string) $_POST['value'] ) );
+        } elseif ( $is_numeric ) {
+            $value = sanitize_text_field( wp_unslash( (string) $_POST['value'] ) );
+        } else {
+            if ( is_array( $_POST['value'] ) ) {
+                $value = array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['value'] ) );
+            } else {
+                $value = sanitize_text_field( wp_unslash( (string) $_POST['value'] ) );
+            }
         }
 
         $ok = FieldStorage::save_field( $product_id, $field_slug, $value );
@@ -413,7 +448,5 @@ class Ajax {
 
         wp_send_json_success( [ 'html' => $safe_html ] );
 
-        // phpcs:enable WordPress.Security.NonceVerification.Missing
-        // phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
     }
 }
