@@ -50,6 +50,16 @@ defined( 'ABSPATH' ) || exit;
  */
 class FieldEditor {
 
+    /**
+     * Field editor page slug (admin.php?page=...).
+     */
+    public const PAGE_SLUG = 'luma-product-fields-edit';
+
+    /**
+     * Field editor screen ID for get_current_screen().
+     */
+    public const SCREEN_ID = 'product_page_luma-product-fields-edit';
+
     public function __construct()
     {
         add_action('admin_menu', [$this, 'register_editor_page']);
@@ -71,7 +81,7 @@ class FieldEditor {
      */
     public function register_editor_page(): void {
         $parent_slug = 'edit.php?post_type=product';
-        $menu_slug   =  'luma-product-fields-edit';
+        $menu_slug   =  self::PAGE_SLUG;
 
         add_submenu_page(
             $parent_slug,
@@ -268,7 +278,7 @@ class FieldEditor {
 
         wp_enqueue_script(
             'luma-product-fields-editor-menu',
-            LUMA_PRODUCT_FIELDS_PLUGIN_URL . 'js/field-editor-menu.js',
+            LUMA_PRODUCT_FIELDS_PLUGIN_URL . 'js/admin/field-editor-menu.js',
             [],
             LUMA_PRODUCT_FIELDS_PLUGIN_VER,
             true
@@ -326,7 +336,7 @@ class FieldEditor {
         $page = is_string( $page_input ) ? sanitize_key( wp_unslash( $page_input ) ) : '';
         $post_type = is_string( $post_type_input ) ? sanitize_key( wp_unslash( $post_type_input ) ) : '';
 
-        if ( $page !== 'luma-product-fields-edit' ) {
+        if ( $page !== self::PAGE_SLUG ) {
             return false;
         }
 

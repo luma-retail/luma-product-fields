@@ -210,7 +210,8 @@ class FrontendController {
         do_action( 'luma_product_fields_product_meta_start', $product );
 
         
-        $transient_key = 'luma_product_fields_meta_fields_' . $product_id;
+        $cache_version = (int) get_option( 'luma_product_fields_meta_cache_version', 1 );
+        $transient_key = 'luma_product_fields_meta_fields_' . $cache_version . '_' . $product_id;
         $output        = get_transient( $transient_key );
                 
         if ( false === $output ) {

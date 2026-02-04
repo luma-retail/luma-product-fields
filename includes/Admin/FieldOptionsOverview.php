@@ -26,6 +26,16 @@ defined( 'ABSPATH' ) || exit;
 class FieldOptionsOverview {
 
     /**
+     * Field manager page slug (admin.php?page=...).
+     */
+    public const PAGE_SLUG = 'luma-product-fields';
+
+    /**
+     * Field manager screen ID for get_current_screen().
+     */
+    public const SCREEN_ID = 'product_page_luma-product-fields';
+
+    /**
      * Constructor.
      *
      * Registers menu and field deletion handler.
@@ -46,7 +56,7 @@ class FieldOptionsOverview {
             __( 'Product fields', 'luma-product-fields' ),
             __( 'Product fields', 'luma-product-fields' ),
             'manage_woocommerce',
-            'luma-product-fields',
+            self::PAGE_SLUG,
             [ $this, 'render_panel' ],
             4
         );
