@@ -1,6 +1,6 @@
 === Luma Product Fields ===
 Contributors: lumaretail
-Tags: woocommerce, product fields, custom fields, product specifications, product data
+Tags: woocommerce, product fields, custom fields, product specifications, fields
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 8.0
