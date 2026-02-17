@@ -10,7 +10,7 @@ Even if the plugin works without touching code or modifying templates, it is als
 
 ---
 
-## 🧩 What this plugin does
+## What this plugin does
 
 Luma Product Fields lets you define and display custom product specification fields such as:
 
@@ -145,7 +145,7 @@ Full “pure blocks / block template” parity for these archives is planned for
 
 ---
 
-## 🔍 SEO & Structured Data
+## SEO & Structured Data
 
 Luma Product Fields is designed to be **SEO-friendly**:
 
@@ -154,7 +154,7 @@ Luma Product Fields is designed to be **SEO-friendly**:
 
 ---
 
-## ⭐ Why choose this plugin?
+## Why choose this plugin?
 
 Luma Product Fields is built for shops that need **structured product specifications** without the complexity of heavy field frameworks.
 
@@ -202,7 +202,7 @@ Product Groups let you enforce consistent data structures across similar product
 
 ---
 
-## 🧠 Who is it for?
+## Who is it for?
 
 - Shops with many detailed product types  
 - Stores needing clean, consistent product specifications  
@@ -212,7 +212,7 @@ Product Groups let you enforce consistent data structures across similar product
 
 ---
 
-## 📦 Installation
+## Installation
 
 1. Upload the plugin folder to `/wp-content/plugins/`  
 2. Activate the plugin  
@@ -232,7 +232,7 @@ Product Groups let you enforce consistent data structures across similar product
 
 ---
 
-## 🔧 Developer Notes
+## Developer Notes
 
 This plugin is fully extensible. Developers can:
 
@@ -251,7 +251,7 @@ Developer documentation for this plugin lives in:
 
 ---
 
-## 🏷️ Frequently Asked Questions
+## Frequently Asked Questions
 
 ### Does this replace WooCommerce attributes?
 
@@ -312,6 +312,6 @@ GPL-2.0 or later
 
 ---
 
-## 👤 Author
+## Author
 
 **Luma Retail**
