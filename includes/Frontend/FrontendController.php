@@ -200,7 +200,12 @@ class FrontendController {
         }
 
         $product_id    = $product->get_id();
-         echo '<div id="luma-product-fields-list">';
+        $wrapper_classes = $this->get_frontend_wrapper_classes();
+
+        echo sprintf(
+            '<div id="luma-product-fields-list" class="%s">',
+            esc_attr( implode( ' ', $wrapper_classes ) )
+        );
         
         /**
          * Hook: luma_product_fields_product_meta_start
@@ -229,6 +234,39 @@ class FrontendController {
         do_action( 'luma_product_fields_product_meta_end', $product );
 
         echo '</div>';
+    }
+
+
+    /**
+     * Get wrapper classes for frontend row and layout styling.
+     *
+     * @return array
+     */
+    protected function get_frontend_wrapper_classes(): array {
+        $row_style = (string) get_option( Settings::PREFIX . 'frontend_row_style', 'plain' );
+        if ( ! in_array( $row_style, [ 'plain', 'divider', 'striped' ], true ) ) {
+            $row_style = 'plain';
+        }
+
+        $layout_style = (string) get_option( Settings::PREFIX . 'frontend_layout_style', 'auto' );
+        if ( ! in_array( $layout_style, [ 'auto', 'grid' ], true ) ) {
+            $layout_style = 'auto';
+        }
+
+        $labels_bold = get_option( Settings::PREFIX . 'frontend_labels_bold', 'yes' ) === 'yes'
+            ? 'bold'
+            : 'normal';
+
+        $values_bold = get_option( Settings::PREFIX . 'frontend_values_bold', 'no' ) === 'yes'
+            ? 'bold'
+            : 'normal';
+
+        return [
+            'lumaprfi-row-' . $row_style,
+            'lumaprfi-layout-' . $layout_style,
+            'lumaprfi-labels-' . $labels_bold,
+            'lumaprfi-values-' . $values_bold,
+        ];
     }
 
     /**

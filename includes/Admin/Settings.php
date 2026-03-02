@@ -75,6 +75,11 @@ class Settings {
 				'id'    => self::PREFIX . 'settings_title',
 			],
 			[
+				'title' => __( 'General', 'luma-product-fields' ),
+				'type'  => 'title',
+				'id'    => self::PREFIX . 'general_settings_title',
+			],
+			[
 				'title'    => __( 'Front End title', 'luma-product-fields' ),
 				'desc'     => __( 'Title on the product fields tab.', 'luma-product-fields' ),
 				'id'       => self::PREFIX . 'front_end_title',
@@ -122,6 +127,65 @@ class Settings {
 				'default'  => 'no',
 				'desc_tip' => true,
 			],
+			[
+				'type' => 'sectionend',
+				'id'   => self::PREFIX . 'general_settings_end',
+			],
+			[
+				'title' => __( 'Style', 'luma-product-fields' ),
+				'type'  => 'title',
+				'id'    => self::PREFIX . 'style_settings_title',
+			],
+			[
+				'title'    => __( 'Field row style', 'luma-product-fields' ),
+				'desc'     => __( 'Choose how each field row is visually separated.', 'luma-product-fields' ),
+				'id'       => self::PREFIX . 'frontend_row_style',
+				'type'     => 'select',
+				'options'  => [
+					'plain'   => __( 'Plain', 'luma-product-fields' ),
+					'divider' => __( 'Small divider between rows', 'luma-product-fields' ),
+					'striped' => __( 'Striped rows', 'luma-product-fields' ),
+				],
+				'default'  => 'plain',
+				'desc_tip' => true,
+			],
+			[
+				'title'    => __( 'Field layout', 'luma-product-fields' ),
+				'desc'     => __( 'Choose automatic label width or fixed-width grid layout.', 'luma-product-fields' ),
+				'id'       => self::PREFIX . 'frontend_layout_style',
+				'type'     => 'select',
+				'options'  => [
+					'auto' => __( 'Auto label width', 'luma-product-fields' ),
+					'grid' => __( 'Grid (same label width)', 'luma-product-fields' ),
+				],
+				'default'  => 'auto',
+				'desc_tip' => true,
+			],
+			[
+				'title'    => __( 'Labels bold', 'luma-product-fields' ),
+				'desc'     => __( 'Enable to render field labels in bold.', 'luma-product-fields' ),
+				'id'       => self::PREFIX . 'frontend_labels_bold',
+				'type'     => 'checkbox',
+				'default'  => 'yes',
+				'desc_tip' => true,
+			],
+			[
+				'title'    => __( 'Values bold', 'luma-product-fields' ),
+				'desc'     => __( 'Enable to render field values in bold.', 'luma-product-fields' ),
+				'id'       => self::PREFIX . 'frontend_values_bold',
+				'type'     => 'checkbox',
+				'default'  => 'no',
+				'desc_tip' => true,
+			],
+			[
+				'type' => 'sectionend',
+				'id'   => self::PREFIX . 'style_settings_end',
+			],
+            [
+				'title' => __( 'Tools', 'luma-product-fields' ),
+				'type'  => 'title',
+				'id'    => self::PREFIX . 'tools_settings_title',
+			],
             [
 				'title'    => __( 'Enable migration tool', 'luma-product-fields' ),
 				'desc'     => __( 'Add tool to migrate existing metadata to Product Fields.', 'luma-product-fields' ),
@@ -133,7 +197,7 @@ class Settings {
             
 			[
 				'type' => 'sectionend',
-				'id'   => self::PREFIX . 'settings_end',
+				'id'   => self::PREFIX . 'tools_settings_end',
 			],
 		];
 
