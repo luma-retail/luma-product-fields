@@ -102,8 +102,25 @@ p.form-field.lumaprfi-fieldtype-minmax input {
     margin-right:.5em;
 }
 
-.lumaprfi-variation-fields .form-row .woocommerce-help-tip {
+.luma-product-fields-variation-fields .form-row .woocommerce-help-tip {
     float:none;
+}
+
+.woocommerce_variations .luma-product-fields-variation-fields {
+    clear: both;
+    width: 100%;
+}
+
+.woocommerce_variations .lumaprfi-variation-section {
+    clear: both;
+    width: 100%;
+    margin: 0 0 8px;
+    padding-top: 8px;
+    border-top: 1px solid #dcdcde;
+}
+
+.woocommerce_variations .lumaprfi-variation-section strong {
+    font-weight: 600;
 }
 
 .lumaprfi-field-editor-field {

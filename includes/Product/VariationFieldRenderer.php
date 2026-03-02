@@ -38,8 +38,7 @@ class VariationFieldRenderer {
 
         $group_slug = Helpers::get_product_group_slug( $product_id );
 
-        echo '<fieldset class="luma-product-fields-variation-fields">';
-
+        $variation_fields = [];
         foreach ( Helpers::get_fields_for_group( $group_slug ) as $field ) {
             if ( empty( $field['variation'] ) ) {
                 continue;
@@ -49,12 +48,37 @@ class VariationFieldRenderer {
                 continue;
             }
 
+            $variation_fields[] = $field;
+        }
+
+        if ( empty( $variation_fields ) ) {
+            return;
+        }
+
+        echo '<fieldset class="luma-product-fields-variation-fields">';
+
+        echo wp_kses( $this->render_section_marker(), wp_kses_allowed_html( 'luma_product_fields_admin_fields' ) );
+
+        foreach ( $variation_fields as $field ) {
             $html = $this->render_field_by_type( $field, (int) $loop, (int) $post->ID );
             echo wp_kses( $html, wp_kses_allowed_html( 'luma_product_fields_admin_fields' ) );
 
         }
 
         echo '</fieldset>';
+    }
+
+
+    /**
+     * Render a section marker to keep variation fields grouped and full-width.
+     *
+     * @return string
+     */
+    protected function render_section_marker(): string {
+        return sprintf(
+            '<p class="form-row form-row-full lumaprfi-variation-section"><strong>%s</strong></p>',
+            esc_html__( 'Product fields', 'luma-product-fields' )
+        );
     }
 
 
