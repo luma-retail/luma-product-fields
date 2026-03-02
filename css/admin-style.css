@@ -258,6 +258,35 @@ input[inputmode=decimal] {
 }
 
 
+.woocommerce_options_panel p.form-field.lumaprfi-frontend-hidden,
+.woocommerce_variations .form-row.lumaprfi-frontend-hidden {
+    border-left: 2px solid #d2a11a;
+    padding-left: 8px;
+    background: rgba( 219, 166, 23, 0.12 );
+}
+
+.woocommerce_options_panel p.form-field.lumaprfi-frontend-hidden label::after,
+.woocommerce_variations .form-row.lumaprfi-frontend-hidden label::after,
+#luma-product-fields-fields-overview td.lumaprfi-frontend-hidden .lumaprfi-editable::after {
+    content: "👁";
+    font-family: inherit;
+    font-size: 12px;
+    line-height: 1;
+    display: inline-block;
+    margin-left: 6px;
+    color: #7a5b00;
+    vertical-align: middle;
+}
+
+#luma-product-fields-fields-overview td.lumaprfi-frontend-hidden .lumaprfi-editable {
+    box-shadow: inset 2px 0 0 #d2a11a;
+    background-image: linear-gradient(
+        rgba( 219, 166, 23, 0.10 ),
+        rgba( 219, 166, 23, 0.10 )
+    );
+}
+
+
 .widefat td.column-name,
 #lumaprfi-overview .widefat td.column-sku {
     padding: .5em 1em;        

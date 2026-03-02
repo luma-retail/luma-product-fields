@@ -213,6 +213,77 @@ public function column_default( $item, $column_name ) {
 }
 
 
+    /**
+     * Check whether a table column represents a frontend-hidden field.
+     *
+     * @param string $column_name Column key.
+     * @param array  $item        Row item.
+     * @return bool
+     */
+    protected function is_frontend_hidden_column( string $column_name, array $item ): bool {
+        if ( empty( $item[ $column_name ]['field'] ) || ! is_array( $item[ $column_name ]['field'] ) ) {
+            return false;
+        }
+
+        return ! empty( $item[ $column_name ]['field']['hide_in_frontend'] );
+    }
+
+
+    /**
+     * Render row columns with extra class for frontend-hidden fields.
+     *
+     * @param array $item Row item.
+     * @return void
+     */
+    protected function single_row_columns( $item ) {
+        list( $columns, $hidden, $sortable, $primary ) = $this->get_column_info();
+
+        foreach ( $columns as $column_name => $column_display_name ) {
+            $classes = "$column_name column-$column_name";
+
+            if ( in_array( $column_name, $hidden, true ) ) {
+                $classes .= ' hidden';
+            }
+
+            if ( $primary === $column_name ) {
+                $classes .= ' has-row-actions column-primary';
+            }
+
+            if ( $this->is_frontend_hidden_column( $column_name, $item ) ) {
+                $classes .= ' lumaprfi-frontend-hidden';
+            }
+
+            $data = 'data-colname="' . esc_attr( wp_strip_all_tags( $column_display_name ) ) . '"';
+
+            $attributes = 'class="' . esc_attr( $classes ) . '" ' . $data;
+
+            if ( $this->is_frontend_hidden_column( $column_name, $item ) ) {
+                $attributes .= ' title="' . esc_attr__( 'Not shown in front end', 'luma-product-fields' ) . '"';
+            }
+
+            if ( 'cb' === $column_name ) {
+                echo '<th scope="row" class="check-column">';
+                echo $this->column_cb( $item );
+                echo '</th>';
+            } elseif ( method_exists( $this, '_column_' . $column_name ) ) {
+                echo "<td $attributes>";
+                echo call_user_func( [ $this, '_column_' . $column_name ], $item, $classes, $data, $primary );
+                echo '</td>';
+            } elseif ( method_exists( $this, 'column_' . $column_name ) ) {
+                echo "<td $attributes>";
+                echo call_user_func( [ $this, 'column_' . $column_name ], $item );
+                echo $this->handle_row_actions( $item, $column_name, $primary );
+                echo '</td>';
+            } else {
+                echo "<td $attributes>";
+                echo $this->column_default( $item, $column_name );
+                echo $this->handle_row_actions( $item, $column_name, $primary );
+                echo '</td>';
+            }
+        }
+    }
+
+
 
     /**
      * Render the name column with edit link.
@@ -321,8 +392,12 @@ public function column_default( $item, $column_name ) {
                 <?php 
                 foreach ( $fields as $field ) :
                     $is_numeric = FieldTypeRegistry::field_type_is_numeric( $field['type'] );
+                    $frontend_hidden_class = ! empty( $field['hide_in_frontend'] ) ? ' lumaprfi-frontend-hidden' : '';
+                    $frontend_hidden_title = ! empty( $field['hide_in_frontend'] )
+                        ? ' title="' . esc_attr__( 'Not shown in front end', 'luma-product-fields' ) . '"'
+                        : '';
                     ?>
-                    <td class="column-<?php echo esc_attr( 'lpftbl_' . $field['slug'] ); ?><?php echo $is_numeric ? ' lumaprfi-is-numeric' : ''; ?>">
+                    <td class="column-<?php echo esc_attr( 'lpftbl_' . $field['slug'] ); ?><?php echo $is_numeric ? ' lumaprfi-is-numeric' : ''; ?><?php echo esc_attr( $frontend_hidden_class ); ?>"<?php echo $frontend_hidden_title; ?>>
                         <?php
                         if ( ! empty( $field['variation'] ) ) {
                             $updated_html = ListViewTable::render_field_cell( $variation_id, $field );
@@ -369,13 +444,21 @@ public function column_default( $item, $column_name ) {
             $classes[] = 'lumaprfi-is-numeric';
         }
 
+        if ( ! empty( $field['hide_in_frontend'] ) ) {
+            $classes[] = 'lumaprfi-frontend-hidden';
+        }
+
+        $hidden_title = ! empty( $field['hide_in_frontend'] )
+            ? ' title="' . esc_attr__( 'Not shown in front end', 'luma-product-fields' ) . '"'
+            : '';
+
         return sprintf(
             '<div class="%s" 
                 data-product-id="%d" 
                 data-field-slug="%s" 
                 data-field-type="%s"
                 data-original-value="%s"
-                id="lumaprfi-%d-%s">%s</div>',
+                id="lumaprfi-%d-%s"%s>%s</div>',
             esc_attr( implode( ' ', $classes ) ),
             $product_id,
             esc_attr( $field['slug'] ),
@@ -383,6 +466,7 @@ public function column_default( $item, $column_name ) {
             esc_attr( is_scalar( $raw_value ) ? $raw_value : '' ),
             $product_id,
             esc_attr( $field['slug'] ),
+            $hidden_title,
             $html_value
         );
     }
