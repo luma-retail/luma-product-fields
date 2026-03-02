@@ -51,6 +51,11 @@ defined( 'ABSPATH' ) || exit;
 class FieldEditor {
 
     /**
+     * User meta key for one-time field editor draft persistence across redirects.
+     */
+    protected const DRAFT_META_KEY = 'luma_product_fields_field_editor_draft';
+
+    /**
      * Field editor page slug (admin.php?page=...).
      */
     public const PAGE_SLUG = 'luma-product-fields-edit';
@@ -124,23 +129,51 @@ class FieldEditor {
 
         $field = wp_parse_args( $field, $field_defaults );
 
+        $draft = $this->consume_editor_draft( $slug );
+        if ( ! empty( $draft ) ) {
+            $field = wp_parse_args( $draft, $field );
+        }
+
         $types              = FieldTypeRegistry::get_all();
-        $current_type       = $field['type'] ?? null;
+        $type_slugs         = array_keys( $types );
+        $default_type       = $type_slugs[0] ?? '';
+        $current_type       = (string) ( $field['type'] ?? $default_type );
         $supports_unit      = $current_type ? FieldTypeRegistry::supports( $current_type, 'unit' ) : false;
         $supports_links     = $current_type ? FieldTypeRegistry::supports( $current_type, 'link' ) : false;
         $supports_variation = $current_type ? FieldTypeRegistry::supports( $current_type, 'variations' ) : false;
+        $supports_initial_terms = $current_type ? $this->is_initial_terms_eligible_type( (string) $current_type ) : false;
+        $is_new_field = '' === $slug;
+        $initial_terms_values = $this->normalize_initial_terms_for_render( $field['initial_terms'] ?? [] );
 
         $unit_row_class       = 'field-unit-row' . ( $supports_unit ? '' : ' hidden' );
         $links_row_class      = 'field-show-tax-links-row' . ( $supports_links ? '' : ' hidden' );
         $variations_row_class = 'field-variations-row' . ( $supports_variation ? '' : ' hidden' );
+        $initial_terms_row_class = 'field-initial-terms-row' . ( $is_new_field ? '' : ' hidden' );
+
+        $existing_terms_count = 0;
+        if ( ! $is_new_field ) {
+            $existing_terms_count = wp_count_terms(
+                [
+                    'taxonomy'   => $slug,
+                    'hide_empty' => false,
+                ]
+            );
+
+            if ( is_wp_error( $existing_terms_count ) ) {
+                $existing_terms_count = 0;
+            }
+        }
 
         $types_desc = '<ul class="luma-product-fields-types-desc">';
         foreach ( $types as $type_slug => $type ) {
+            $choice_id = 'luma-product-fields-type-choice-' . $type_slug;
             $types_desc .= sprintf(
-                '<li id="luma-product-fields-type-%1$s" data-type="%1$s"><strong>%2$s:</strong> %3$s</li>',
+                '<li id="luma-product-fields-type-%1$s" data-type="%1$s"><label for="%4$s" class="lumaprfi-type-choice"><input type="radio" id="%4$s" name="lrpf_type" value="%1$s" %5$s /> <span><strong>%2$s:</strong> %3$s</span></label></li>',
                 esc_attr( $type_slug ),
                 esc_html( $type['label'] ),
-                esc_html( $type['description'] )
+                esc_html( $type['description'] ),
+                esc_attr( $choice_id ),
+                checked( $current_type, $type_slug, false )
             );
         }
         $types_desc .= '</ul>';
@@ -168,13 +201,7 @@ class FieldEditor {
         // Type.
         echo '<tr><th><label>' . esc_html__( 'Type', 'luma-product-fields' ) . '</label></th>';
         echo '<td><div class="field-types">';
-        echo '<select name="lrpf_type" id="luma_product_fields_fields_type_selector">';
-        foreach ( $types as $type_slug => $info ) {
-            echo '<option value="' . esc_attr( $type_slug ) . '"' . selected( $field['type'] ?? '', $type_slug, false ) . '>' . esc_html( $info['label'] ) . '</option>';
-        }
-        echo '</select>';
-
-        echo wp_kses_post( $types_desc );
+        echo wp_kses( $types_desc, wp_kses_allowed_html( 'luma_product_fields_admin_fields' ) );
         echo '</div></td></tr>';
 
         // Label.
@@ -244,6 +271,36 @@ class FieldEditor {
         echo '<td><label><input type="checkbox" name="lrpf_show_links" value="1"' . checked( $field['show_links'] ?? false, true, false ) . ' /> ';
         echo esc_html__( 'Link to products with same value in front end', 'luma-product-fields' ) . '</label></td></tr>';
 
+        // Initial terms.
+        echo '<tr class="' . esc_attr( $initial_terms_row_class ) . '" data-lumaprfi-eligible-types="' . esc_attr( implode( ',', self::get_initial_terms_eligible_types() ) ) . '"><th><label>' . esc_html__( 'Initial values', 'luma-product-fields' ) . '</label></th>';
+        echo '<td>';
+
+        if ( $is_new_field ) {
+            echo '<div id="luma-product-fields-initial-terms" class="lumaprfi-initial-terms">';
+            echo '<div class="lumaprfi-initial-terms-list">';
+            foreach ( $initial_terms_values as $index => $initial_value ) {
+                echo '<div class="lumaprfi-initial-term-row">';
+                echo '<input type="text" name="lrpf_initial_terms[]" class="regular-text" value="' . esc_attr( $initial_value ) . '" />';
+                $remove_class = ( 0 === $index && 1 === count( $initial_terms_values ) ) ? ' hidden' : '';
+                echo '<button type="button" class="button-link-delete lumaprfi-remove-initial-term' . esc_attr( $remove_class ) . '">' . esc_html__( 'Remove', 'luma-product-fields' ) . '</button>';
+                echo '</div>';
+            }
+            echo '</div>';
+            echo '<p><button type="button" class="button lumaprfi-add-initial-term">' . esc_html__( 'Add value', 'luma-product-fields' ) . '</button></p>';
+            echo '<p>' . esc_html__( 'You can add and remove these terms later in the term editor.', 'luma-product-fields' ) . '</p>';
+            echo '</div>';
+        } elseif ( $this->is_initial_terms_eligible_type( (string) ( $field['type'] ?? '' ) ) && $existing_terms_count > 0 ) {
+            $manage_terms_url = admin_url( 'edit-tags.php?post_type=product&taxonomy=' . urlencode( (string) $slug ) );
+            printf(
+                '<p>%1$s <a href="%2$s">%3$s</a>.</p>',
+                esc_html__( 'You can add and remove these terms later in the term editor.', 'luma-product-fields' ),
+                esc_url( $manage_terms_url ),
+                esc_html__( 'Open term editor', 'luma-product-fields' )
+            );
+        }
+
+        echo '</td></tr>';
+
         do_action( 'luma_product_fields_field_editor_form_bottom', $field );
 
         echo '</table>';
@@ -277,12 +334,13 @@ class FieldEditor {
         }
 
         wp_enqueue_script(
-            'luma-product-fields-editor-menu',
-            LUMA_PRODUCT_FIELDS_PLUGIN_URL . 'js/admin/field-editor-menu.js',
-            [],
+            'luma-product-fields-field-editor-js',
+            LUMA_PRODUCT_FIELDS_PLUGIN_URL . 'js/admin/field-editor.js',
+            [ 'jquery', 'luma-product-fields-admin-js' ],
             LUMA_PRODUCT_FIELDS_PLUGIN_VER,
             true
         );
+
     }
 
 
@@ -345,6 +403,29 @@ class FieldEditor {
     }
 
 
+    /**
+     * Field types that can receive initial terms during first-time creation.
+     *
+     * @return string[]
+     */
+    protected static function get_initial_terms_eligible_types(): array
+    {
+        return [ 'single', 'multiple', 'autocomplete' ];
+    }
+
+
+    /**
+     * Check whether the provided field type can seed initial terms.
+     *
+     * @param string $type Field type slug.
+     * @return bool
+     */
+    protected function is_initial_terms_eligible_type( string $type ): bool
+    {
+        return in_array( $type, self::get_initial_terms_eligible_types(), true );
+    }
+
+
 /**
  * Handles saving the field definition.
  *
@@ -358,6 +439,12 @@ public function handle_save(): void {
 
     check_admin_referer( 'luma_product_fields_save_field_editor', 'luma_product_fields_nonce' );
 
+    $original_slug = isset( $_POST['lrpf_original_slug'] )
+        ? sanitize_key( wp_unslash( $_POST['lrpf_original_slug'] ) )
+        : '';
+
+    $form_draft = $this->build_editor_draft_from_request( $original_slug );
+
     $label = ( isset( $_POST['lrpf_label'] ) && is_scalar( $_POST['lrpf_label'] ) )
         ? sanitize_text_field( wp_unslash( (string) $_POST['lrpf_label'] ) )
         : '';
@@ -366,27 +453,25 @@ public function handle_save(): void {
         : '';
 
     if ( '' === $label || '' === $type ) {
-        $this->redirect_with_notice( __( 'You must enter both label and type.', 'luma-product-fields' ), 'error' );
+        $this->redirect_with_notice( __( 'You must enter both label and type.', 'luma-product-fields' ), 'error', null, $form_draft );
     }
 
     if ( ! FieldTypeRegistry::get( $type ) ) {
-        $this->redirect_with_notice( __( 'Invalid field type.', 'luma-product-fields' ), 'error' );
+        $this->redirect_with_notice( __( 'Invalid field type.', 'luma-product-fields' ), 'error', null, $form_draft );
     }
-
-    $original_slug = isset( $_POST['lrpf_original_slug'] )
-        ? sanitize_key( wp_unslash( $_POST['lrpf_original_slug'] ) )
-        : '';
 
     $slug = $original_slug ?: sanitize_title( $label );
 
     if ( '' === $slug ) {
-        $this->redirect_with_notice( __( 'Could not generate a valid slug from the label.', 'luma-product-fields' ), 'error' );
+        $this->redirect_with_notice( __( 'Could not generate a valid slug from the label.', 'luma-product-fields' ), 'error', null, $form_draft );
     }
 
     if ( empty( $original_slug ) && $this->slug_conflicts( $slug ) ) {
         $this->redirect_with_notice(
             __( 'A field or taxonomy with this name already exists. Please choose another name.', 'luma-product-fields' ),
-            'error'
+            'error',
+            null,
+            $form_draft
         );
     }
 
@@ -473,6 +558,14 @@ public function handle_save(): void {
 
     $action = $original_slug ? 'updated' : 'created';
 
+    $created_initial_terms = 0;
+    if ( 'created' === $action && $is_tax && $this->is_initial_terms_eligible_type( $type ) ) {
+        $initial_terms = $this->sanitize_initial_terms_from_request();
+        if ( ! empty( $initial_terms ) ) {
+            $created_initial_terms = $this->create_initial_terms_for_taxonomy_field( (string) ( $data['slug'] ?? '' ), $initial_terms );
+        }
+    }
+
     /**
      * Fires after a field definition is saved.
      *
@@ -500,6 +593,11 @@ public function handle_save(): void {
         $message = ( 'created' === $action )
             ? __( 'Field created successfully. You can now add terms via the Manage Terms button.', 'luma-product-fields' )
             : __( 'Field updated successfully. Manage Terms is available for editing values.', 'luma-product-fields' );
+
+        if ( 'created' === $action && $created_initial_terms > 0 ) {
+            /* translators: %d: number of terms created. */
+            $message = sprintf( __( 'Field created successfully. %d terms were added.', 'luma-product-fields' ), $created_initial_terms );
+        }
     } else {
         $message = ( 'created' === $action )
             ? __( 'Field created successfully.', 'luma-product-fields' )
@@ -553,6 +651,216 @@ public function handle_save(): void {
         return in_array($slug, $plugin_tax_slugs, true)
             || in_array($slug, $plugin_meta_slugs, true)
             || in_array($slug, $wp_tax_slugs, true);
+    }
+
+
+    /**
+     * Read and sanitize initial terms from the field editor form.
+     *
+     * @return string[]
+     */
+    protected function sanitize_initial_terms_from_request(): array
+    {
+        if ( ! isset( $_POST['lrpf_initial_terms'] ) || ! is_array( $_POST['lrpf_initial_terms'] ) ) {
+            return [];
+        }
+
+        $terms = array_map(
+            static function ( $value ): string {
+                return is_scalar( $value ) ? sanitize_text_field( wp_unslash( (string) $value ) ) : '';
+            },
+            $_POST['lrpf_initial_terms']
+        );
+
+        $terms = array_values( array_filter( $terms ) );
+
+        return array_values( array_unique( $terms ) );
+    }
+
+
+    /**
+     * Normalize initial terms for rendering as repeater rows.
+     *
+     * @param mixed $terms Candidate initial terms.
+     * @return string[]
+     */
+    protected function normalize_initial_terms_for_render( $terms ): array
+    {
+        if ( ! is_array( $terms ) ) {
+            return [ '' ];
+        }
+
+        $normalized = array_map(
+            static function ( $value ): string {
+                return is_scalar( $value ) ? (string) $value : '';
+            },
+            $terms
+        );
+
+        $normalized = array_values( array_filter( $normalized, static fn( string $value ): bool => '' !== trim( $value ) ) );
+
+        return empty( $normalized ) ? [ '' ] : $normalized;
+    }
+
+
+    /**
+     * Build an editor form draft from current request input.
+     *
+     * @param string $editor_slug Current editor slug context.
+     * @return array<string,mixed>
+     */
+    protected function build_editor_draft_from_request( string $editor_slug ): array
+    {
+        $label = ( isset( $_POST['lrpf_label'] ) && is_scalar( $_POST['lrpf_label'] ) )
+            ? sanitize_text_field( wp_unslash( (string) $_POST['lrpf_label'] ) )
+            : '';
+
+        $type = ( isset( $_POST['lrpf_type'] ) && is_scalar( $_POST['lrpf_type'] ) )
+            ? sanitize_key( wp_unslash( (string) $_POST['lrpf_type'] ) )
+            : '';
+
+        $description = ( isset( $_POST['lrpf_description'] ) && is_scalar( $_POST['lrpf_description'] ) )
+            ? sanitize_textarea_field( wp_unslash( (string) $_POST['lrpf_description'] ) )
+            : '';
+
+        $frontend_desc = ( isset( $_POST['luma_product_fields_fields_frontend_desc'] ) && is_scalar( $_POST['luma_product_fields_fields_frontend_desc'] ) )
+            ? wp_kses_post( wp_unslash( (string) $_POST['luma_product_fields_fields_frontend_desc'] ) )
+            : '';
+
+        $unit = ( isset( $_POST['lrpf_unit'] ) && is_scalar( $_POST['lrpf_unit'] ) )
+            ? sanitize_key( wp_unslash( (string) $_POST['lrpf_unit'] ) )
+            : '';
+
+        $allowed_units = array_keys( FieldTypeRegistry::get_units() );
+        if ( '' !== $unit && ! in_array( $unit, $allowed_units, true ) ) {
+            $unit = '';
+        }
+
+        $groups = [];
+        if ( isset( $_POST['lrpf_groups'] ) && is_array( $_POST['lrpf_groups'] ) ) {
+            $submitted = array_values(
+                array_filter(
+                    array_map( 'sanitize_key', wp_unslash( $_POST['lrpf_groups'] ) )
+                )
+            );
+
+            if ( ! empty( $submitted ) ) {
+                $allowed = array_keys( ProductGroup::get_product_groups() );
+                $groups = array_values( array_intersect( $submitted, $allowed ) );
+            }
+        }
+
+        return [
+            '__editor_slug'     => $editor_slug,
+            'label'             => $label,
+            'type'              => $type,
+            'description'       => $description,
+            'frontend_desc'     => $frontend_desc,
+            'unit'              => $unit,
+            'groups'            => $groups,
+            'hide_in_frontend'  => ! empty( $_POST['lrpf_hide_in_frontend'] ),
+            'variation'         => ! empty( $_POST['lrpf_variation'] ),
+            'show_links'        => ! empty( $_POST['lrpf_show_links'] ),
+            'initial_terms'     => $this->sanitize_initial_terms_from_request(),
+        ];
+    }
+
+
+    /**
+     * Persist a one-time field editor draft for the current user.
+     *
+     * @param array<string,mixed> $draft Draft payload.
+     * @return void
+     */
+    protected function save_editor_draft( array $draft ): void
+    {
+        $user_id = get_current_user_id();
+        if ( ! $user_id ) {
+            return;
+        }
+
+        update_user_meta( $user_id, self::DRAFT_META_KEY, $draft );
+    }
+
+
+    /**
+     * Consume and clear one-time field editor draft for this screen.
+     *
+     * @param string $current_slug Current editor slug context.
+     * @return array<string,mixed>
+     */
+    protected function consume_editor_draft( string $current_slug ): array
+    {
+        $user_id = get_current_user_id();
+        if ( ! $user_id ) {
+            return [];
+        }
+
+        $draft = get_user_meta( $user_id, self::DRAFT_META_KEY, true );
+        delete_user_meta( $user_id, self::DRAFT_META_KEY );
+
+        if ( ! is_array( $draft ) ) {
+            return [];
+        }
+
+        $draft_slug = isset( $draft['__editor_slug'] ) && is_string( $draft['__editor_slug'] )
+            ? sanitize_key( $draft['__editor_slug'] )
+            : '';
+
+        if ( $draft_slug !== $current_slug ) {
+            return [];
+        }
+
+        unset( $draft['__editor_slug'] );
+
+        return $draft;
+    }
+
+
+    /**
+     * Create initial terms for a newly created taxonomy-backed field.
+     *
+     * @param string   $taxonomy Taxonomy slug.
+     * @param string[] $terms    Terms to create.
+     * @return int Number of terms successfully created.
+     */
+    protected function create_initial_terms_for_taxonomy_field( string $taxonomy, array $terms ): int
+    {
+        if ( '' === $taxonomy || empty( $terms ) ) {
+            return 0;
+        }
+
+        if ( ! taxonomy_exists( $taxonomy ) ) {
+            register_taxonomy(
+                $taxonomy,
+                'product',
+                [
+                    'public'            => false,
+                    'show_ui'           => false,
+                    'show_in_menu'      => false,
+                    'show_admin_column' => false,
+                    'show_in_rest'      => false,
+                    'rewrite'           => false,
+                    'query_var'         => false,
+                ]
+            );
+        }
+
+        $created_count = 0;
+
+        foreach ( $terms as $term_name ) {
+            $existing_term = get_term_by( 'name', $term_name, $taxonomy );
+            if ( $existing_term ) {
+                continue;
+            }
+
+            $result = wp_insert_term( $term_name, $taxonomy );
+            if ( ! is_wp_error( $result ) ) {
+                $created_count++;
+            }
+        }
+
+        return $created_count;
     }
 
 
@@ -652,7 +960,8 @@ public function handle_save(): void {
     protected function redirect_with_notice(
         string $message,
         string $type = 'info',
-        ?string $redirect = null
+        ?string $redirect = null,
+        ?array $draft = null
     ): void {
 
         NotificationManager::add_notice(
@@ -662,6 +971,10 @@ public function handle_save(): void {
                 'context' => 'field_editor',
             ]
         );
+
+        if ( is_array( $draft ) && ! empty( $draft ) ) {
+            $this->save_editor_draft( $draft );
+        }
 
         if ( ! $redirect ) {
             $redirect = wp_get_referer();

@@ -60,6 +60,15 @@ class Kses {
 	 */
 	private function get_allowed_admin_fields_html(): array {
 		return [
+			'ul' => [
+				'id'    => true,
+				'class' => true,
+			],
+			'li' => [
+				'id'        => true,
+				'class'     => true,
+				'data-type' => true,
+			],
 			'div' => [
 				'id'                  => true,
 				'class'               => true,

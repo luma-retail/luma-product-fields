@@ -209,36 +209,6 @@ jQuery(function($) {
     });
 
 
-        
-    // In field editor: Toggle unit and show taxonomy links based on selected field type
-    const $typeSelect = $('#luma_product_fields_fields_type_selector');
-    const $unitRow = $('.field-unit-row');
-    const $showLinksRow = $('.field-show-tax-links-row');
-    const $variationsRow = $('.field-variations-row');
-    
-    function updateFieldVisibility() {
-        const selectedType = $typeSelect.val();
-
-        $.post(luma_product_fields_admin_ajaxdata.ajaxurl, {
-            action: luma_product_fields_admin_ajaxdata.action,
-            nonce: luma_product_fields_admin_ajaxdata.nonce,
-            luma_product_fields_action: 'get_field_type_capabilities',
-            field_type: selectedType
-        }, function(response) {
-            if (response.success) {
-                $unitRow.toggle(response.data.supports_unit);
-                $showLinksRow.toggle(response.data.supports_links);
-                $variationsRow.toggle(response.data.supports_variations);
-            }
-        });
-    }
-
-    if ($typeSelect.length) {
-        $typeSelect.on('change', updateFieldVisibility);
-        updateFieldVisibility(); // Run once on page load
-    }
-        
-
 
     // Toggle and load variation table in ListViewTable
     $('.lumaprfi-toggle-variations').on('click', function () {
@@ -564,46 +534,5 @@ jQuery(document).on('click', 'a.lumaprfi-toggle-featured', function (e) {
     .fail(function (xhr) {
         $icon.removeClass('is-busy');
         alert('Request failed: ' + (xhr && xhr.status ? xhr.status : ''));
-    });
-});
-
-
-// Field editor field type click / highlight
-jQuery(function($) {
-    var $select = $('#luma_product_fields_fields_type_selector');
-    var $items  = $('.luma-product-fields-types-desc li');
-
-    function highlightType(typeSlug) {
-        $items.removeClass('is-active');
-
-        if (!typeSlug) {
-            return;
-        }
-
-        var $target = $('#luma-product-fields-type-' + typeSlug);
-        if ($target.length) {
-            $target.addClass('is-active');
-        }
-    }
-
-    // Initial highlight on load
-    highlightType($select.val());
-
-    // When the select changes (user or code), update highlight
-    $select.on('change', function() {
-        highlightType($(this).val());
-    });
-
-    // When a description row is clicked, update the select
-    $items.on('click', function(e) {
-        e.preventDefault();
-
-        var typeSlug = $(this).data('type');
-        if (!typeSlug) {
-            return;
-        }
-
-        // Update select and trigger change so highlight stays in sync
-        $select.val(typeSlug).trigger('change');
     });
 });
