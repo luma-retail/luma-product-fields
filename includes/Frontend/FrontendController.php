@@ -287,7 +287,18 @@ class FrontendController {
         $show_tags = get_option( Settings::PREFIX . 'display_tags', 'no' ) === 'yes';
         $show_cats = get_option( Settings::PREFIX . 'display_categories', 'no' ) === 'yes';
         $show_group = get_option( Settings::PREFIX . 'display_group', 'no' ) === 'yes'; 
-        $show_global_unique_id = get_option( Settings::PREFIX . 'display_global_unique_id', 'no' ) === 'yes';        
+        $show_global_unique_id = get_option( Settings::PREFIX . 'display_global_unique_id', 'no' ) === 'yes';
+        $show_builtin_tooltips = get_option( Settings::PREFIX . 'enable_builtin_field_tooltips', 'no' ) === 'yes';
+
+        $weight_tooltip_text = (string) get_option(
+            Settings::PREFIX . 'weight_tooltip_text',
+            __( 'The weight of the product including packaging.', 'luma-product-fields' )
+        );
+
+        $dimensions_tooltip_text = (string) get_option(
+            Settings::PREFIX . 'dimensions_tooltip_text',
+            __( 'The size of the product including packaging.', 'luma-product-fields' )
+        );
         
         foreach ($fields as $field) {
             if (!empty($field['hide_in_frontend'])) {
@@ -314,23 +325,33 @@ class FrontendController {
 
         // Weight
         if ( !empty( $product->get_weight() ) ) {
-            $output .= FieldRenderer::wrap_field([
+            $weight_field = [
                 'label'         => __( 'Package weight', 'luma-product-fields' ),
                 'slug'          => 'weight',
                 'unit'          => get_option( 'woocommerce_weight_unit' ),
-                'frontend_desc' => __( 'The weight of the product including packaging.', 'luma-product-fields' ),
-            ], esc_html( $product->get_weight() ) );
+            ];
+
+            if ( $show_builtin_tooltips && '' !== trim( $weight_tooltip_text ) ) {
+                $weight_field['frontend_desc'] = $weight_tooltip_text;
+            }
+
+            $output .= FieldRenderer::wrap_field( $weight_field, esc_html( $product->get_weight() ) );
         }
 
         // Dimensions
         $dimensions = array_filter( $product->get_dimensions( false ) );
         if ( ! empty( $dimensions ) ) {
-            $output .= FieldRenderer::wrap_field([
+            $dimensions_field = [
                 'label'         => __( 'Package size', 'luma-product-fields' ),
                 'slug'          => 'dimensions',
                 'unit'          => get_option( 'woocommerce_dimension_unit' ),
-                'frontend_desc' => __( 'The size of the product including packaging.', 'luma-product-fields' ),
-            ], trim( implode( ' × ', $dimensions ) ) );
+            ];
+
+            if ( $show_builtin_tooltips && '' !== trim( $dimensions_tooltip_text ) ) {
+                $dimensions_field['frontend_desc'] = $dimensions_tooltip_text;
+            }
+
+            $output .= FieldRenderer::wrap_field( $dimensions_field, trim( implode( ' × ', $dimensions ) ) );
         }
 
     
