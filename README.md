@@ -56,6 +56,7 @@ Each field has:
 - Multi-value support (on relevant field types)  
 - Optional **clickable links** for taxonomy-based values, taking the customer to a listing of products with the same term  
 - Optional **unit label** (e.g. `cm`, `g`, `mm`, `kg`) shown in admin and frontend  
+- Units are managed in **WooCommerce → Settings → Products → Luma Product Fields**  
 - Optional frontend description (shown as a **tooltip** on the product page)  
 - An option to mark the field as **backend-only** (never shown on the frontend)
 
@@ -197,6 +198,8 @@ Product Groups let you enforce consistent data structures across similar product
 - Frontend tooltips via field descriptions  
 - Backend-only fields for internal metadata  
 - **Unit labels** for numeric fields and compatible types  
+- Settings-based unit editor (add/remove unit slugs and labels)  
+- Optional helper words for units, so migration can recognize old text formats more accurately  
 - Template override support  
 - Fully extendable through actions & filters  
 

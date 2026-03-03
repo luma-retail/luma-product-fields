@@ -39,7 +39,7 @@ Main areas:
 Key classes (non-exhaustive):
 
 - `Admin\Admin` – bootstraps admin features and menus  
-- `Admin\Settings` – settings UI  
+- `Admin\Settings` – settings UI (including units + migration unit aliases)  
 - `Admin\FieldOptionsOverview` – global field overview table  
 - `Admin\FieldEditor` – field editor screen  
 - `Admin\ListView` – product list integration  
@@ -66,7 +66,7 @@ Developers register new types via the `luma_product_fields_field_types` filter.
 
 Each field type is defined as an associative array. **Core types** are provided by the plugin, and **custom types** can be added by extensions/themes.
 
-> **Security note (important):** Render callbacks may return HTML. The plugin sanitizes output **at render output time** using `wp_kses()` with plugin-specific KSES contexts (admin + frontend). If your field type needs additional HTML tags/attributes, extend the allowlist via the filters documented in section **2.3 Allowed HTML (KSES contexts)**.
+> **Security note (important):** Render callbacks may return HTML. The plugin sanitizes output **at render output time** using `wp_kses()` with plugin-specific KSES contexts (admin + frontend). If your field type needs additional HTML tags/attributes, extend the allowlist via the filters documented in section **2.4 Allowed HTML (KSES contexts)**.
 
 
 ---
@@ -101,9 +101,37 @@ A field type definition typically includes:
 
 Only meta-based field types support variations.
 
+## 2.2 Units and migration aliases
+
+Units are now resolved from settings first, then finalized through the existing filter hooks.
+
+Resolution flow for available units:
+
+1. Built-in defaults from `FieldTypeRegistry::get_default_units()`
+2. Optional saved settings override (`luma_product_fields_units` option)
+3. Runtime currency unit injection
+4. Final filter: `luma_product_fields_allowed_units`
+
+Resolution flow for legacy migration aliases:
+
+1. Built-in alias defaults in `LegacyMetaMigrator`
+2. If present, saved aliases in settings replace defaults (`luma_product_fields_unit_aliases` option)
+3. Final filter: `luma_product_fields_unit_aliases`
+
+The field editor and migration tool therefore share the same canonical unit slugs.
+
+### Settings format (repeaters)
+
+In WooCommerce → Settings → Products → Luma Product Fields:
+
+- **Units editor**: repeater rows with `Slug` and `Label`
+- **Unit aliases for migration**: repeater rows with `Unit slug` and comma-separated aliases
+
+Slug normalization allows existing legacy unit characters used by this plugin (for example `%`, `.`, and `"`).
+
 ---
 
-## 2.2 FULL EXAMPLE: Adding a Custom Field Type
+## 2.3 FULL EXAMPLE: Adding a Custom Field Type
 
 ### Step 1: Register the field type
 
@@ -172,7 +200,7 @@ class My_Color_Badge_Field {
 
 ---
 
-## 2.3 Allowed HTML (KSES contexts)
+## 2.4 Allowed HTML (KSES contexts)
 
 The plugin sanitizes all generated markup **at output time** using `wp_kses()` and plugin-specific KSES contexts.
 

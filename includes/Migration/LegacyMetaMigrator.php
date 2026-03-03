@@ -318,7 +318,7 @@ public function run(array $mapping, bool $dry_run = true): array
             return null;
         }
 
-        $aliases = self::get_unit_aliases()[$unit] ?? [$unit];
+        $aliases = $this->get_unit_aliases()[$unit] ?? [$unit];
         $normalized = str_replace(',', '.', $value);
 
         foreach ($aliases as $alias) {
@@ -403,7 +403,66 @@ public function run(array $mapping, bool $dry_run = true): array
      */
     protected function get_unit_aliases(): array
     {
-        $aliases = [
+        $stored_aliases = get_option( FieldTypeRegistry::OPTION_UNIT_ALIASES, null );
+
+        if ( is_array( $stored_aliases ) ) {
+            $aliases = [];
+
+            foreach ( $stored_aliases as $unit_slug => $unit_aliases ) {
+                if ( ! is_scalar( $unit_slug ) || ! is_array( $unit_aliases ) ) {
+                    continue;
+                }
+
+                $normalized_slug = FieldTypeRegistry::normalize_unit_slug( (string) $unit_slug );
+                if ( '' === $normalized_slug ) {
+                    continue;
+                }
+
+                $normalized_aliases = [];
+                foreach ( $unit_aliases as $alias ) {
+                    if ( ! is_scalar( $alias ) ) {
+                        continue;
+                    }
+
+                    $normalized_alias = sanitize_text_field( (string) $alias );
+                    if ( '' === $normalized_alias ) {
+                        continue;
+                    }
+
+                    $normalized_aliases[] = $normalized_alias;
+                }
+
+                if ( empty( $normalized_aliases ) ) {
+                    continue;
+                }
+
+                $aliases[ $normalized_slug ] = array_values( array_unique( $normalized_aliases ) );
+            }
+        } else {
+            $aliases = self::get_default_unit_aliases();
+        }
+
+
+        /**
+         * @hook luma_product_fields_unit_aliases
+         * Filters the default unit alias map.
+         *
+         * @param array<string, string[]> $aliases Default unit aliases.
+         *
+         * @since 1.0.0
+         */
+        return apply_filters( 'luma_product_fields_unit_aliases', $aliases);
+    }
+
+
+    /**
+     * Get built-in default unit aliases.
+     *
+     * @return array<string, string[]>
+     */
+    public static function get_default_unit_aliases(): array
+    {
+        return [
             'cm' => [
                 __('cm', 'luma-product-fields'),
                 __('centimeter', 'luma-product-fields'),
@@ -438,33 +497,19 @@ public function run(array $mapping, bool $dry_run = true): array
             'pcs' => [
                 __('pcs', 'luma-product-fields'),
                 __('pieces', 'luma-product-fields'),
-                __('stk', 'luma-product-fields'),
-                'st.', 'enheter',
+                'st.',
             ],
             'years' => [
                 __('year', 'luma-product-fields'),
                 __('years', 'luma-product-fields'),
-                'yr', 'yrs', 'år', 'år.', 'årer',
+                'yr', 'yrs',
             ],
             '%' => [
                 '%',
                 __('percent', 'luma-product-fields'),
                 __('percents', 'luma-product-fields'),
-                __('prosent', 'luma-product-fields'),
-                __('prosenter', 'luma-product-fields'),
             ],
         ];
-
-    
-        /**
-         * @hook luma_product_fields_unit_aliases
-         * Filters the default unit alias map.
-         *
-         * @param array<string, string[]> $aliases Default unit aliases.
-         *
-         * @since 1.0.0
-         */
-        return apply_filters( 'luma_product_fields_unit_aliases', $aliases);
     }
 
 

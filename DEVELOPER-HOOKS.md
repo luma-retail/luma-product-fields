@@ -425,13 +425,18 @@ Return an array including your custom types or modified core types.
 **Type:** `apply_filters`  
 **Location:** `includes/Registry/FieldTypeRegistry.php`  
 
-Filters the list of allowed unit keys.
+Filters the final list of available units after defaults/settings/currency resolution.
 
 **Parameters:**
 
-- `array $units` – Array of unit keys (e.g. `kg`, `g`, `cm`).
+- `array $units` – Associative array of `unit_slug => unit_label` (e.g. `kg => kg`, `cm => cm`).
 
 Return a modified array to add or remove units for unit-aware fields.
+
+Notes:
+
+- Units can also be managed by admins in WooCommerce settings.
+- This hook remains the final override layer for developers.
 
 ---
 
@@ -466,12 +471,17 @@ Return `true` after handling persistence yourself to mark the save as successful
 **Type:** `apply_filters`  
 **Location:** `includes/Migration/LegacyMetaMigrator.php`  
 
-Filters the map of legacy unit aliases to canonical unit codes during migration.
+Filters the final map of legacy unit aliases to canonical unit codes during migration.
 
 **Parameters:**
 
 - `array<string,string[]> $aliases` – Map from canonical unit (key) to an array of alias strings.
 
 Return a modified `$aliases` array to normalize your own legacy unit notations.
+
+Notes:
+
+- If aliases are saved in WooCommerce settings, they replace the built-in defaults before this filter runs.
+- Use this hook for environment-specific or integration-specific alias additions.
 
 ---

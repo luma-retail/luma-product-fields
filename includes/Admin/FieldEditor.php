@@ -246,7 +246,9 @@ class FieldEditor {
         foreach ( FieldTypeRegistry::get_units() as $value => $label ) {
             echo '<option value="' . esc_attr( $value ) . '"' . selected( $field['unit'] ?? '', $value, false ) . '>' . esc_html( $label ) . '</option>';
         }
-        echo '</select></td></tr>';
+        echo '</select>';
+        echo '<p>' . esc_html__( 'Need to add or rename units? You can manage units in WooCommerce settings.', 'luma-product-fields' ) . '</p>';
+        echo '</td></tr>';
 
         // Product groups.
         echo '<tr><th><label>' . esc_html__( 'Product Groups', 'luma-product-fields' ) . '</label></th>';
@@ -503,7 +505,7 @@ public function handle_save(): void {
 
     // Unit (optional, allowlisted).
     $unit = ( isset( $_POST['lrpf_unit'] ) && is_scalar( $_POST['lrpf_unit'] ) )
-        ? sanitize_key( wp_unslash( (string) $_POST['lrpf_unit'] ) )
+        ? FieldTypeRegistry::normalize_unit_slug( wp_unslash( (string) $_POST['lrpf_unit'] ) )
         : '';
 
     $allowed_units = array_keys( FieldTypeRegistry::get_units() );
@@ -728,7 +730,7 @@ public function handle_save(): void {
             : '';
 
         $unit = ( isset( $_POST['lrpf_unit'] ) && is_scalar( $_POST['lrpf_unit'] ) )
-            ? sanitize_key( wp_unslash( (string) $_POST['lrpf_unit'] ) )
+            ? FieldTypeRegistry::normalize_unit_slug( wp_unslash( (string) $_POST['lrpf_unit'] ) )
             : '';
 
         $allowed_units = array_keys( FieldTypeRegistry::get_units() );

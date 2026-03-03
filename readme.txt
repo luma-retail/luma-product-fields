@@ -61,6 +61,7 @@ You can start with a single shared field set for all products, or use **Product 
    - Variation support
    - Multi-value support (on relevant field types)
    - Optional unit label (for example `cm`, `g`, `mm`, `kg`) shown in admin and frontend
+    - Units can be managed in WooCommerce → Settings → Products → Luma Product Fields
    - Optional frontend description (shown as a tooltip on the product page)
    - Optional clickable links for taxonomy-based values, taking the customer to a listing of products with the same term
    - An option to mark the field as backend-only (never shown on the frontend)
@@ -163,6 +164,8 @@ Luma Product Fields is designed to be **SEO-friendly**:
 - Frontend tooltips via field descriptions
 - Backend-only fields for internal metadata
 - Unit labels for numeric fields and compatible types
+- Settings-based unit editor (add/remove unit slugs and labels)
+- Optional helper words for units, so migration can recognize old text formats more accurately
 - Template override support
 - Fully extendable through actions & filters
 
