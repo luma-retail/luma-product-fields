@@ -257,12 +257,15 @@ class FieldEditor {
         echo '</td></tr>';
 
         // Product groups.
-        echo '<tr><th><label>' . esc_html__( 'Product Groups', 'luma-product-fields' ) . '</label></th>';
-        echo '<td>';
-        $html = ( new Admin() )->get_product_group_checkboxes( 'lrpf_groups', $field['groups'] ?? [ 'general' ] );
-        echo wp_kses( $html, wp_kses_allowed_html( 'luma_product_fields_admin_fields' ) );
-        echo '<p>' . esc_html__( 'Leave empty to show across all products', 'luma-product-fields' ) . '</p>';
-        echo '</td></tr>';
+        $groups = ProductGroup::get_product_groups();
+        if ( ! empty( $groups ) ) {
+            echo '<tr><th><label>' . esc_html__( 'Product Groups', 'luma-product-fields' ) . '</label></th>';
+            echo '<td>';
+            $html = ( new Admin() )->get_product_group_checkboxes( 'lrpf_groups', $field['groups'] ?? [ 'general' ] );
+            echo wp_kses( $html, wp_kses_allowed_html( 'luma_product_fields_admin_fields' ) );
+            echo '<p>' . esc_html__( 'Leave empty to show across all products', 'luma-product-fields' ) . '</p>';
+            echo '</td></tr>';
+        }
 
         // Frontend visibility.
         echo '<tr><th><label>' . esc_html__( 'Frontend Visibility', 'luma-product-fields' ) . '</label></th>';

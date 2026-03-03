@@ -36,6 +36,11 @@ class FieldOptionsOverview {
     public const SCREEN_ID = 'product_page_luma-product-fields';
 
     /**
+     * Number of fields where grouping into separate spec tables is recommended.
+     */
+    public const GROUPING_RECOMMENDATION_THRESHOLD = 10;
+
+    /**
      * Constructor.
      *
      * Registers menu and field deletion handler.
@@ -69,28 +74,65 @@ class FieldOptionsOverview {
      */
     public function render_panel(): void {
         $selected_group = isset( $_GET['group'] ) ? sanitize_text_field( wp_unslash( $_GET['group'] ) ) : 'all'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $available_groups = ProductGroup::get_product_groups();
+        $all_fields_count = count( Helpers::get_all_fields( null ) );
+        $threshold_reached = $all_fields_count > self::GROUPING_RECOMMENDATION_THRESHOLD;
+        $group_count = count( $available_groups );
+        $show_grouping_warning = $threshold_reached && 0 === $group_count;
         ?>
         <div class="luma-product-fields-admin-panel">
             <h2><?php esc_html_e( 'Product Field Manager', 'luma-product-fields' ); ?></h2>
             <?php NotificationManager::render( 'field_editor' ); ?>
-            <div class="luma-product-fields-filters">
-                <form method="get">
-                    <input type="hidden" name="post_type" value="product" />
-                    <input type="hidden" name="page" value="luma-product-fields" />
-                    <label for="group"><?php esc_html_e( 'Filter product group', 'luma-product-fields' ); ?></label>
-                    <?php
-                    $args = array(
-                        'include_all'     => true,
-                        'include_general' => true,
-                        'general_label'   => __( 'No groups', 'luma-product-fields' ),
-                    );
+            <?php if ( ! empty( $available_groups ) ) : ?>
+                <div class="luma-product-fields-filters">
+                    <form method="get">
+                        <input type="hidden" name="post_type" value="product" />
+                        <input type="hidden" name="page" value="luma-product-fields" />
+                        <label for="group"><?php esc_html_e( 'Filter product group', 'luma-product-fields' ); ?></label>
+                        <?php
+                        $args = array(
+                            'include_all'     => true,
+                            'include_general' => true,
+                            'general_label'   => __( 'No groups', 'luma-product-fields' ),
+                        );
 
-                    $select_html = ( new Admin() )->get_product_group_select( 'group', $selected_group, null, $args );
-                    echo wp_kses( $select_html, wp_kses_allowed_html( 'luma_product_fields_admin_fields' ) );
-                    ?>
-                    <input type="submit" value="<?php echo esc_attr__( 'Filter', 'luma-product-fields' ); ?>" />
-                </form>
-            </div>
+                        $select_html = ( new Admin() )->get_product_group_select( 'group', $selected_group, null, $args );
+                        echo wp_kses( $select_html, wp_kses_allowed_html( 'luma_product_fields_admin_fields' ) );
+                        ?>
+                        <input type="submit" value="<?php echo esc_attr__( 'Filter', 'luma-product-fields' ); ?>" />
+                    </form>
+                </div>
+            <?php else : ?>
+                <?php if ( ! $threshold_reached ) : ?>
+                    <p class="description">
+                        <?php
+                        printf(
+                            /* translators: %s: opening and closing anchor tags around "Create product groups". */
+                            wp_kses(
+                                __( 'No Product groups exist yet. %s to organize fields into separate spec tables.', 'luma-product-fields' ),
+                                wp_kses_allowed_html( 'post' )
+                            ),
+                            '<a href="' . esc_url( admin_url( 'edit-tags.php?taxonomy=' . ProductGroup::$tax_name ) ) . '">' . esc_html__( 'Create product groups', 'luma-product-fields' ) . '</a>'
+                        );
+                        ?>
+                    </p>
+                <?php endif; ?>
+            <?php endif; ?>
+
+            <?php if ( $show_grouping_warning ) : ?>
+                <div class="notice notice-warning inline">
+                    <h2><?php esc_html_e( 'Time to consider product groups', 'luma-product-fields' ); ?></h2>
+                    <p>
+                        <?php
+                        printf(
+                            /* translators: %s: opening and closing anchor tags around "Edit product groups now". */
+                            __( 'You now have many fields, so consider using Product groups to keep specs manageable. %s.', 'luma-product-fields' ),
+                            '<a href="' . esc_url( admin_url( 'edit-tags.php?taxonomy=' . ProductGroup::$tax_name ) ) . '"><strong>' . esc_html__( 'Edit product groups now', 'luma-product-fields' ) . '</strong></a>'
+                        );
+                        ?>
+                    </p>
+                </div>
+            <?php endif; ?>
 
             <?php $this->render_table(); ?>
 
@@ -99,7 +141,17 @@ class FieldOptionsOverview {
                     <span class="dashicons dashicons-plus-alt"></span><?php esc_html_e( 'Add New Field', 'luma-product-fields' ); ?>
                 </a>
 
-                <a href="<?php echo esc_url( admin_url( 'edit-tags.php?taxonomy=' . ProductGroup::$tax_name ) ); ?>" class="button button-large" style="margin-left: 1em;">
+                <?php
+                $highlight_groups_cta = isset( $_GET['lumaprfi_highlight_groups'] )
+                    && '1' === sanitize_key( wp_unslash( (string) $_GET['lumaprfi_highlight_groups'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+                if ( $show_grouping_warning ) {
+                    $highlight_groups_cta = true;
+                }
+
+                $groups_button_classes = 'button button-large' . ( $highlight_groups_cta ? ' button-primary' : '' );
+                ?>
+                <a href="<?php echo esc_url( admin_url( 'edit-tags.php?taxonomy=' . ProductGroup::$tax_name ) ); ?>" class="<?php echo esc_attr( $groups_button_classes ); ?>" style="margin-left: 1em;">
                     <?php esc_html_e( 'Edit product groups', 'luma-product-fields' ); ?>
                 </a>
 
@@ -116,6 +168,7 @@ class FieldOptionsOverview {
      */
     public function render_table(): void {
         $selected_group = isset( $_GET['group'] ) ? sanitize_text_field( wp_unslash( $_GET['group'] ) ) : 'all'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $available_groups = ProductGroup::get_product_groups();
 
         if ( 'all' === $selected_group ) {
             $fields = Helpers::get_all_fields( null ); // Show everything.
@@ -164,7 +217,24 @@ class FieldOptionsOverview {
             echo '<td class="' . esc_attr( $label_classes ) . '"' . ( $hide_in_frontend ? ' title="' . esc_attr__( 'Not shown in front end', 'luma-product-fields' ) . '"' : '' ) . '><span class="lumaprfi-field-label-text">' . esc_html( $label ) . '</span></td>';
             echo '<td>' . esc_html( \Luma\ProductFields\Registry\FieldTypeRegistry::get_field_type_label( $field['type'] ?? '' ) ) . '</td>';
 
-            echo '<td>' . implode( ', ', array_map( 'esc_html', $groups ) ) . '</td>';
+            $group_labels = array_map(
+                static function ( $group_slug ) use ( $available_groups ) {
+                    $group_slug = sanitize_key( (string) $group_slug );
+
+                    if ( isset( $available_groups[ $group_slug ] ) ) {
+                        return (string) $available_groups[ $group_slug ];
+                    }
+
+                    if ( 'general' === $group_slug ) {
+                        return __( 'No group', 'luma-product-fields' );
+                    }
+
+                    return (string) $group_slug;
+                },
+                is_array( $groups ) ? $groups : [ $groups ]
+            );
+
+            echo '<td>' . implode( ', ', array_map( 'esc_html', $group_labels ) ) . '</td>';
             echo '<td>' . ( $variation ? esc_html__( 'Yes', 'luma-product-fields' ) : esc_html__( 'No', 'luma-product-fields' ) ) . '</td>';
 
             echo '<td>';

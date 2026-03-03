@@ -101,27 +101,59 @@ class ListView {
             }
         }
 
+        $available_groups = ProductGroup::get_product_groups();
+        $all_fields_count = count( Helpers::get_all_fields( null ) );
+        $threshold_reached = $all_fields_count > FieldOptionsOverview::GROUPING_RECOMMENDATION_THRESHOLD;
+        $show_group_selector = ! empty( $available_groups ) || $threshold_reached;
+
+        if ( empty( $available_groups ) && ( null === $this->selected_group || '' === $this->selected_group ) ) {
+            $this->selected_group = 'general';
+        }
+
         echo '<div id="luma-product-fields-fields-overview" class="wrap">';
         echo '<h1>' . esc_html($this->page_title) . '</h1>';
 
-        echo '<form method="get">';
-        echo '<input type="hidden" name="post_type" value="product" />';
-        echo '<input type="hidden" name="page" value="luma-product-fields-overview" />';
+        if ( $show_group_selector ) {
+            echo '<form method="get">';
+            echo '<input type="hidden" name="post_type" value="product" />';
+            echo '<input type="hidden" name="page" value="luma-product-fields-overview" />';
 
-        wp_nonce_field( 'luma_product_fields_overview_filter', 'luma_product_fields_overview_nonce', false );
-        
-        $args = array(
-            'include_all'     => false,
-            'include_general' => true,
-        );
-        $select_html = (new Admin)->get_product_group_select( 'luma-product-fields-product-group', $this->selected_group, null, $args );
-        echo wp_kses( $select_html, wp_kses_allowed_html( 'luma_product_fields_admin_fields' ) );
+            wp_nonce_field( 'luma_product_fields_overview_filter', 'luma_product_fields_overview_nonce', false );
 
-        echo '<input type="submit" class="button" value="' .
-            esc_attr__('Choose product group', 'luma-product-fields') .
-            '" />';
+            $args = array(
+                'include_all'     => false,
+                'include_general' => true,
+            );
+            $select_html = (new Admin)->get_product_group_select( 'luma-product-fields-product-group', $this->selected_group, null, $args );
+            echo wp_kses( $select_html, wp_kses_allowed_html( 'luma_product_fields_admin_fields' ) );
 
-        echo '</form>';
+            echo '<input type="submit" class="button" value="' .
+                esc_attr__('Choose product group', 'luma-product-fields') .
+                '" />';
+
+            echo '</form>';
+        }
+
+        if ( empty( $available_groups ) ) {
+            if ( $threshold_reached ) {
+                echo '<div class="notice notice-warning inline">';
+                echo '<p><strong>' . esc_html__( 'Time to consider product groups.', 'luma-product-fields' ) . '</strong> ';
+                printf(
+                    /* translators: %s: opening and closing anchor tags around "Edit product groups now". */
+                    __( 'You now have many fields, so consider using Product groups to keep specs manageable. %s.', 'luma-product-fields' ),
+                    '<a href="' . esc_url( admin_url( 'edit-tags.php?taxonomy=' . ProductGroup::$tax_name ) ) . '">' . esc_html__( 'Edit product groups now', 'luma-product-fields' ) . '</a>'
+                );
+                echo '</p></div>';
+            } else {
+                echo '<p class="description">';
+                printf(
+                    /* translators: %s: opening and closing anchor tags around "Create product groups". */
+                    __( 'No Product groups exist yet. %s to organize fields into separate spec tables.', 'luma-product-fields' ),
+                    '<a href="' . esc_url( admin_url( 'edit-tags.php?taxonomy=' . ProductGroup::$tax_name ) ) . '">' . esc_html__( 'Create product groups', 'luma-product-fields' ) . '</a>'
+                );
+                echo '</p>';
+            }
+        }
 
         if ($this->selected_group === null || $this->selected_group === '') {
             echo '<p>' . esc_html__( 'Please select a product group.', 'luma-product-fields' ) . '</p>';
