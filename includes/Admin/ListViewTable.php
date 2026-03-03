@@ -237,6 +237,7 @@ public function column_default( $item, $column_name ) {
      */
     protected function single_row_columns( $item ) {
         list( $columns, $hidden, $sortable, $primary ) = $this->get_column_info();
+        $allowed_html = wp_kses_allowed_html( 'luma_product_fields_admin_fields' );
 
         foreach ( $columns as $column_name => $column_display_name ) {
             $classes = "$column_name column-$column_name";
@@ -253,31 +254,38 @@ public function column_default( $item, $column_name ) {
                 $classes .= ' lumaprfi-frontend-hidden';
             }
 
-            $data = 'data-colname="' . esc_attr( wp_strip_all_tags( $column_display_name ) ) . '"';
-
-            $attributes = 'class="' . esc_attr( $classes ) . '" ' . $data;
-
-            if ( $this->is_frontend_hidden_column( $column_name, $item ) ) {
-                $attributes .= ' title="' . esc_attr__( 'Not shown in front end', 'luma-product-fields' ) . '"';
-            }
+            $is_frontend_hidden = $this->is_frontend_hidden_column( $column_name, $item );
+            $data_colname       = wp_strip_all_tags( (string) $column_display_name );
 
             if ( 'cb' === $column_name ) {
                 echo '<th scope="row" class="check-column">';
-                echo $this->column_cb( $item );
+                echo wp_kses( (string) $this->column_cb( $item ), $allowed_html );
                 echo '</th>';
             } elseif ( method_exists( $this, '_column_' . $column_name ) ) {
-                echo "<td $attributes>";
-                echo call_user_func( [ $this, '_column_' . $column_name ], $item, $classes, $data, $primary );
+                echo '<td class="' . esc_attr( $classes ) . '" data-colname="' . esc_attr( $data_colname ) . '"';
+                if ( $is_frontend_hidden ) {
+                    echo ' title="' . esc_attr__( 'Not shown in front end', 'luma-product-fields' ) . '"';
+                }
+                echo '>';
+                echo wp_kses( (string) call_user_func( [ $this, '_column_' . $column_name ], $item, $classes, 'data-colname="' . esc_attr( $data_colname ) . '"', $primary ), $allowed_html );
                 echo '</td>';
             } elseif ( method_exists( $this, 'column_' . $column_name ) ) {
-                echo "<td $attributes>";
-                echo call_user_func( [ $this, 'column_' . $column_name ], $item );
-                echo $this->handle_row_actions( $item, $column_name, $primary );
+                echo '<td class="' . esc_attr( $classes ) . '" data-colname="' . esc_attr( $data_colname ) . '"';
+                if ( $is_frontend_hidden ) {
+                    echo ' title="' . esc_attr__( 'Not shown in front end', 'luma-product-fields' ) . '"';
+                }
+                echo '>';
+                echo wp_kses( (string) call_user_func( [ $this, 'column_' . $column_name ], $item ), $allowed_html );
+                echo wp_kses( (string) $this->handle_row_actions( $item, $column_name, $primary ), $allowed_html );
                 echo '</td>';
             } else {
-                echo "<td $attributes>";
-                echo $this->column_default( $item, $column_name );
-                echo $this->handle_row_actions( $item, $column_name, $primary );
+                echo '<td class="' . esc_attr( $classes ) . '" data-colname="' . esc_attr( $data_colname ) . '"';
+                if ( $is_frontend_hidden ) {
+                    echo ' title="' . esc_attr__( 'Not shown in front end', 'luma-product-fields' ) . '"';
+                }
+                echo '>';
+                echo wp_kses( (string) $this->column_default( $item, $column_name ), $allowed_html );
+                echo wp_kses( (string) $this->handle_row_actions( $item, $column_name, $primary ), $allowed_html );
                 echo '</td>';
             }
         }
@@ -393,11 +401,8 @@ public function column_default( $item, $column_name ) {
                 foreach ( $fields as $field ) :
                     $is_numeric = FieldTypeRegistry::field_type_is_numeric( $field['type'] );
                     $frontend_hidden_class = ! empty( $field['hide_in_frontend'] ) ? ' lumaprfi-frontend-hidden' : '';
-                    $frontend_hidden_title = ! empty( $field['hide_in_frontend'] )
-                        ? ' title="' . esc_attr__( 'Not shown in front end', 'luma-product-fields' ) . '"'
-                        : '';
                     ?>
-                    <td class="column-<?php echo esc_attr( 'lpftbl_' . $field['slug'] ); ?><?php echo $is_numeric ? ' lumaprfi-is-numeric' : ''; ?><?php echo esc_attr( $frontend_hidden_class ); ?>"<?php echo $frontend_hidden_title; ?>>
+                    <td class="column-<?php echo esc_attr( 'lpftbl_' . $field['slug'] ); ?><?php echo $is_numeric ? ' lumaprfi-is-numeric' : ''; ?><?php echo esc_attr( $frontend_hidden_class ); ?>"<?php echo ! empty( $field['hide_in_frontend'] ) ? ' title="' . esc_attr__( 'Not shown in front end', 'luma-product-fields' ) . '"' : ''; ?>>
                         <?php
                         if ( ! empty( $field['variation'] ) ) {
                             $updated_html = ListViewTable::render_field_cell( $variation_id, $field );

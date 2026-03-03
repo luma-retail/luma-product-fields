@@ -152,11 +152,11 @@ class VariationFieldRenderer {
         $description = $field['description'] ?? '';
         $tip_html    = $description ? wc_help_tip( $description ) : '';
         $extra_class = $this->get_frontend_hidden_class( $field );
-        $title_attr  = $this->get_frontend_hidden_title_attr( $field );
+        $is_frontend_hidden = ! empty( $field['hide_in_frontend'] );
 
         ob_start();
         ?>
-        <p class="form-row lumaprfi-fieldtype-text<?php echo esc_attr( $extra_class ); ?>"<?php echo $title_attr; ?>>
+        <p class="form-row lumaprfi-fieldtype-text<?php echo esc_attr( $extra_class ); ?>"<?php if ( $is_frontend_hidden ) : ?> title="<?php echo esc_attr__( 'Not shown in front end', 'luma-product-fields' ); ?>"<?php endif; ?>>
             <label>
                 <?php echo esc_html( $label ); ?>
                 <?php echo $tip_html ? wp_kses_post( $tip_html ) : ''; ?>
@@ -190,11 +190,11 @@ class VariationFieldRenderer {
         $description = $field['description'] ?? '';
         $tip_html    = $description ? wc_help_tip( $description ) : '';
         $extra_class = $this->get_frontend_hidden_class( $field );
-        $title_attr  = $this->get_frontend_hidden_title_attr( $field );
+        $is_frontend_hidden = ! empty( $field['hide_in_frontend'] );
 
         ob_start();
         ?>
-        <p class="form-row lumaprfi-fieldtype-number<?php echo esc_attr( $extra_class ); ?>"<?php echo $title_attr; ?>>
+        <p class="form-row lumaprfi-fieldtype-number<?php echo esc_attr( $extra_class ); ?>"<?php if ( $is_frontend_hidden ) : ?> title="<?php echo esc_attr__( 'Not shown in front end', 'luma-product-fields' ); ?>"<?php endif; ?>>
             <label>
                 <?php echo esc_html( $label ); ?>
                 <?php echo $tip_html ? wp_kses_post( $tip_html ) : ''; ?>
@@ -230,11 +230,11 @@ class VariationFieldRenderer {
         $description = $field['description'] ?? '';
         $tip_html    = $description ? wc_help_tip( $description ) : '';
         $extra_class = $this->get_frontend_hidden_class( $field );
-        $title_attr  = $this->get_frontend_hidden_title_attr( $field );
+        $is_frontend_hidden = ! empty( $field['hide_in_frontend'] );
 
         ob_start();
         ?>
-        <p class="form-row lumaprfi-fieldtype-integer<?php echo esc_attr( $extra_class ); ?>"<?php echo $title_attr; ?>>
+        <p class="form-row lumaprfi-fieldtype-integer<?php echo esc_attr( $extra_class ); ?>"<?php if ( $is_frontend_hidden ) : ?> title="<?php echo esc_attr__( 'Not shown in front end', 'luma-product-fields' ); ?>"<?php endif; ?>>
             <label>
                 <?php echo esc_html( $label ); ?>
                 <?php echo $tip_html ? wp_kses_post( $tip_html ) : ''; ?>
@@ -271,13 +271,13 @@ class VariationFieldRenderer {
         $description = $field['description'] ?? '';
         $tip_html    = $description ? wc_help_tip( $description ) : '';
         $extra_class = $this->get_frontend_hidden_class( $field );
-        $title_attr  = $this->get_frontend_hidden_title_attr( $field );
+        $is_frontend_hidden = ! empty( $field['hide_in_frontend'] );
 
         $base_name = 'variable_' . $field['slug'] . '[' . $loop . ']';
 
         ob_start();
         ?>
-        <p class="form-row lumaprfi-fieldtype-minmax<?php echo esc_attr( $extra_class ); ?>"<?php echo $title_attr; ?>>
+        <p class="form-row lumaprfi-fieldtype-minmax<?php echo esc_attr( $extra_class ); ?>"<?php if ( $is_frontend_hidden ) : ?> title="<?php echo esc_attr__( 'Not shown in front end', 'luma-product-fields' ); ?>"<?php endif; ?>>
             <label>
                 <?php echo esc_html( $label ); ?>
                 <?php echo $tip_html ? wp_kses_post( $tip_html ) : ''; ?>

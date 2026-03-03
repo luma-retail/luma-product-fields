@@ -161,11 +161,6 @@ class Settings {
 				'desc_tip' => true,
 			],
 			[
-				'title' => __( 'Built-in field tooltips', 'luma-product-fields' ),
-				'type'  => 'title',
-				'id'    => self::PREFIX . 'builtin_tooltips_title',
-			],
-			[
 				'title'    => __( 'Enable built-in tooltips', 'luma-product-fields' ),
 				'desc'     => __( 'Enable tooltips for package weight and package size.', 'luma-product-fields' ),
 				'id'       => self::PREFIX . 'enable_builtin_field_tooltips',
@@ -188,10 +183,6 @@ class Settings {
 				'type'     => 'textarea',
 				'default'  => __( 'The size of the product including packaging.', 'luma-product-fields' ),
 				'css'      => 'min-width: 320px; min-height: 80px;',
-			],
-			[
-				'type' => 'sectionend',
-				'id'   => self::PREFIX . 'builtin_tooltips_end',
 			],
 			[
 				'type' => 'sectionend',
@@ -305,14 +296,16 @@ class Settings {
 			] );
 		}
 
-        /**
+		/**
 		 * Filter: Modify or extend Luma Product Fields settings.
 		 *
 		 * @since 1.0.0
 		 *
-		 * @param array $settings Settings array.
+		 * @param array<string,mixed>        $settings    Settings array for current rendered tab.
+		 * @param string                     $current_tab Current settings tab slug.
+		 * @param array<string,string>       $tabs        Available settings tabs (slug => label).
 		 */
-		return apply_filters( 'luma_product_fields_settings_array', $settings );
+		return apply_filters( 'luma_product_fields_settings_array', $settings, $current_tab, $tabs );
 	}
 
 
@@ -342,12 +335,21 @@ class Settings {
 	 * @return array<string,string>
 	 */
 	protected function get_settings_tabs(): array {
-		return [
+		$tabs = [
 			'general' => __( 'General', 'luma-product-fields' ),
 			'style'   => __( 'Style', 'luma-product-fields' ),
 			'units'   => __( 'Units', 'luma-product-fields' ),
 			'tools'   => __( 'Tools', 'luma-product-fields' ),
 		];
+
+		/**
+		 * Filter the in-page tabs shown for Luma Product Fields settings.
+		 *
+		 * @param array<string,string> $tabs Tab map (slug => label).
+		 */
+		$filtered_tabs = apply_filters( 'luma_product_fields_settings_tabs', $tabs );
+
+		return is_array( $filtered_tabs ) ? $filtered_tabs : $tabs;
 	}
 
 
@@ -359,10 +361,13 @@ class Settings {
 	protected function get_current_settings_tab(): string {
 		$tab = 'general';
 
-		if ( isset( $_POST['luma_settings_tab'] ) && is_scalar( $_POST['luma_settings_tab'] ) ) {
-			$tab = sanitize_key( wp_unslash( (string) $_POST['luma_settings_tab'] ) );
-		} elseif ( isset( $_GET['luma_settings_tab'] ) && is_scalar( $_GET['luma_settings_tab'] ) ) {
-			$tab = sanitize_key( wp_unslash( (string) $_GET['luma_settings_tab'] ) );
+		$post_tab_input = filter_input( INPUT_POST, 'luma_settings_tab', FILTER_DEFAULT );
+		$get_tab_input  = filter_input( INPUT_GET, 'luma_settings_tab', FILTER_DEFAULT );
+
+		if ( is_string( $post_tab_input ) ) {
+			$tab = sanitize_key( wp_unslash( $post_tab_input ) );
+		} elseif ( is_string( $get_tab_input ) ) {
+			$tab = sanitize_key( wp_unslash( $get_tab_input ) );
 		}
 
 		$tabs = $this->get_settings_tabs();
@@ -647,8 +652,10 @@ class Settings {
 	 */
 	protected function parse_units_repeater_from_request(): array {
 		$units = [];
-		$raw_slugs  = $_POST['luma_product_fields_units_slug'] ?? [];
-		$raw_labels = $_POST['luma_product_fields_units_label'] ?? [];
+		$raw_slugs_input  = filter_input( INPUT_POST, 'luma_product_fields_units_slug', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY );
+		$raw_labels_input = filter_input( INPUT_POST, 'luma_product_fields_units_label', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY );
+		$raw_slugs  = is_array( $raw_slugs_input ) ? wp_unslash( $raw_slugs_input ) : [];
+		$raw_labels = is_array( $raw_labels_input ) ? wp_unslash( $raw_labels_input ) : [];
 
 		if ( ! is_array( $raw_slugs ) || ! is_array( $raw_labels ) ) {
 			return $units;
@@ -656,8 +663,8 @@ class Settings {
 
 		$total = max( count( $raw_slugs ), count( $raw_labels ) );
 		for ( $index = 0; $index < $total; $index++ ) {
-			$slug_raw  = isset( $raw_slugs[ $index ] ) && is_scalar( $raw_slugs[ $index ] ) ? wp_unslash( (string) $raw_slugs[ $index ] ) : '';
-			$label_raw = isset( $raw_labels[ $index ] ) && is_scalar( $raw_labels[ $index ] ) ? wp_unslash( (string) $raw_labels[ $index ] ) : '';
+			$slug_raw  = isset( $raw_slugs[ $index ] ) && is_scalar( $raw_slugs[ $index ] ) ? (string) $raw_slugs[ $index ] : '';
+			$label_raw = isset( $raw_labels[ $index ] ) && is_scalar( $raw_labels[ $index ] ) ? (string) $raw_labels[ $index ] : '';
 
 			if ( '' === trim( $slug_raw ) && '' === trim( $label_raw ) ) {
 				continue;
@@ -684,8 +691,10 @@ class Settings {
 	 */
 	protected function parse_aliases_repeater_from_request(): array {
 		$aliases = [];
-		$raw_units   = $_POST['luma_product_fields_alias_unit'] ?? [];
-		$raw_aliases = $_POST['luma_product_fields_aliases'] ?? [];
+		$raw_units_input   = filter_input( INPUT_POST, 'luma_product_fields_alias_unit', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY );
+		$raw_aliases_input = filter_input( INPUT_POST, 'luma_product_fields_aliases', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY );
+		$raw_units   = is_array( $raw_units_input ) ? wp_unslash( $raw_units_input ) : [];
+		$raw_aliases = is_array( $raw_aliases_input ) ? wp_unslash( $raw_aliases_input ) : [];
 
 		if ( ! is_array( $raw_units ) || ! is_array( $raw_aliases ) ) {
 			return $aliases;
@@ -693,8 +702,8 @@ class Settings {
 
 		$total = max( count( $raw_units ), count( $raw_aliases ) );
 		for ( $index = 0; $index < $total; $index++ ) {
-			$slug_raw    = isset( $raw_units[ $index ] ) && is_scalar( $raw_units[ $index ] ) ? wp_unslash( (string) $raw_units[ $index ] ) : '';
-			$aliases_raw = isset( $raw_aliases[ $index ] ) && is_scalar( $raw_aliases[ $index ] ) ? wp_unslash( (string) $raw_aliases[ $index ] ) : '';
+			$slug_raw    = isset( $raw_units[ $index ] ) && is_scalar( $raw_units[ $index ] ) ? (string) $raw_units[ $index ] : '';
+			$aliases_raw = isset( $raw_aliases[ $index ] ) && is_scalar( $raw_aliases[ $index ] ) ? (string) $raw_aliases[ $index ] : '';
 
 			if ( '' === trim( $slug_raw ) && '' === trim( $aliases_raw ) ) {
 				continue;
@@ -739,12 +748,15 @@ class Settings {
 			return;
 		}
 
-		$tab = isset( $_GET['tab'] ) && is_scalar( $_GET['tab'] )
-			? sanitize_key( wp_unslash( (string) $_GET['tab'] ) )
+		$tab_input = filter_input( INPUT_GET, 'tab', FILTER_DEFAULT );
+		$section_input = filter_input( INPUT_GET, 'section', FILTER_DEFAULT );
+
+		$tab = is_string( $tab_input )
+			? sanitize_key( wp_unslash( $tab_input ) )
 			: '';
 
-		$section = isset( $_GET['section'] ) && is_scalar( $_GET['section'] )
-			? sanitize_key( wp_unslash( (string) $_GET['section'] ) )
+		$section = is_string( $section_input )
+			? sanitize_key( wp_unslash( $section_input ) )
 			: '';
 
 		if ( 'products' !== $tab || 'luma_product_fields' !== $section ) {

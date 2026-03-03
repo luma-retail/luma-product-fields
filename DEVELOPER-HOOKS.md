@@ -310,7 +310,9 @@ Filters the settings array before it is registered in the WooCommerce settings U
 
 **Parameters:**
 
-- `array $settings` – Structured settings definition.
+- `array $settings` – Structured settings definition for the current in-page tab.
+- `string $current_tab` – Active tab slug (`general`, `style`, `units`, `tools`).
+- `array $tabs` – Available tabs (`slug => label`).
 
 Return a modified `$settings` array to add custom options under Luma Product Fields.
 

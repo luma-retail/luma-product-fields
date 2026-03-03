@@ -440,9 +440,10 @@ public function handle_save(): void {
     }
 
     check_admin_referer( 'luma_product_fields_save_field_editor', 'luma_product_fields_nonce' );
+    // phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce verified above.
 
-    $original_slug = isset( $_POST['lrpf_original_slug'] )
-        ? sanitize_key( wp_unslash( $_POST['lrpf_original_slug'] ) )
+    $original_slug = ( isset( $_POST['lrpf_original_slug'] ) && is_scalar( $_POST['lrpf_original_slug'] ) )
+        ? sanitize_key( wp_unslash( (string) $_POST['lrpf_original_slug'] ) )
         : '';
 
     $form_draft = $this->build_editor_draft_from_request( $original_slug );
@@ -505,7 +506,7 @@ public function handle_save(): void {
 
     // Unit (optional, allowlisted).
     $unit = ( isset( $_POST['lrpf_unit'] ) && is_scalar( $_POST['lrpf_unit'] ) )
-        ? FieldTypeRegistry::normalize_unit_slug( wp_unslash( (string) $_POST['lrpf_unit'] ) )
+        ? FieldTypeRegistry::normalize_unit_slug( sanitize_text_field( wp_unslash( (string) $_POST['lrpf_unit'] ) ) )
         : '';
 
     $allowed_units = array_keys( FieldTypeRegistry::get_units() );
@@ -631,6 +632,7 @@ public function handle_save(): void {
         'success',
         admin_url( 'edit.php?post_type=product&page=luma-product-fields' )
     );
+    // phpcs:enable WordPress.Security.NonceVerification.Missing
 }
 
     
@@ -663,15 +665,21 @@ public function handle_save(): void {
      */
     protected function sanitize_initial_terms_from_request(): array
     {
-        if ( ! isset( $_POST['lrpf_initial_terms'] ) || ! is_array( $_POST['lrpf_initial_terms'] ) ) {
+        $raw_terms_input = filter_input( INPUT_POST, 'lrpf_initial_terms', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY );
+        if ( ! is_array( $raw_terms_input ) ) {
+            return [];
+        }
+
+        $raw_terms = wp_unslash( $raw_terms_input );
+        if ( ! is_array( $raw_terms ) ) {
             return [];
         }
 
         $terms = array_map(
             static function ( $value ): string {
-                return is_scalar( $value ) ? sanitize_text_field( wp_unslash( (string) $value ) ) : '';
+                return is_scalar( $value ) ? sanitize_text_field( (string) $value ) : '';
             },
-            $_POST['lrpf_initial_terms']
+            $raw_terms
         );
 
         $terms = array_values( array_filter( $terms ) );
@@ -713,6 +721,7 @@ public function handle_save(): void {
      */
     protected function build_editor_draft_from_request( string $editor_slug ): array
     {
+        // phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce is verified in handle_save().
         $label = ( isset( $_POST['lrpf_label'] ) && is_scalar( $_POST['lrpf_label'] ) )
             ? sanitize_text_field( wp_unslash( (string) $_POST['lrpf_label'] ) )
             : '';
@@ -730,7 +739,7 @@ public function handle_save(): void {
             : '';
 
         $unit = ( isset( $_POST['lrpf_unit'] ) && is_scalar( $_POST['lrpf_unit'] ) )
-            ? FieldTypeRegistry::normalize_unit_slug( wp_unslash( (string) $_POST['lrpf_unit'] ) )
+            ? FieldTypeRegistry::normalize_unit_slug( sanitize_text_field( wp_unslash( (string) $_POST['lrpf_unit'] ) ) )
             : '';
 
         $allowed_units = array_keys( FieldTypeRegistry::get_units() );
@@ -752,7 +761,7 @@ public function handle_save(): void {
             }
         }
 
-        return [
+        $draft = [
             '__editor_slug'     => $editor_slug,
             'label'             => $label,
             'type'              => $type,
@@ -765,6 +774,9 @@ public function handle_save(): void {
             'show_links'        => ! empty( $_POST['lrpf_show_links'] ),
             'initial_terms'     => $this->sanitize_initial_terms_from_request(),
         ];
+
+        // phpcs:enable WordPress.Security.NonceVerification.Missing
+        return $draft;
     }
 
 
