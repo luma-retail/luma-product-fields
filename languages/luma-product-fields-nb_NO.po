@@ -19,6 +19,12 @@ msgstr ""
 msgid "%"
 msgstr "%"
 
+#: includes/Product/FieldRenderer.php:604
+#: includes/Product/VariationFieldRenderer.php:362
+#, php-format
+msgid "%1$s: %2$s"
+msgstr "%1$s: %2$s"
+
 #. %d: number of products updated
 #: includes/Admin/Migration/MigrationPage.php:162
 msgid "%d products updated successfully."
@@ -869,6 +875,26 @@ msgstr "Meta Migrasjon"
 #: includes/Admin/ListView.php:61
 msgid "Product fields overview"
 msgstr "Produktfelt oversikt"
+
+#: includes/Product/FieldStorage.php:130
+msgid "Please enter a valid range."
+msgstr "Vennligst angi et gyldig intervall."
+
+#: includes/Product/FieldStorage.php:137
+msgid "Please enter a valid number for minimum value."
+msgstr "Vennligst angi et gyldig tall for minimumsverdi."
+
+#: includes/Product/FieldStorage.php:141
+msgid "Please enter a valid number for maximum value."
+msgstr "Vennligst angi et gyldig tall for maksimumsverdi."
+
+#: includes/Product/FieldStorage.php:156
+msgid "Please enter a valid whole number."
+msgstr "Vennligst angi et gyldig heltall."
+
+#: includes/Product/FieldStorage.php:171
+msgid "Please enter a valid number."
+msgstr "Vennligst angi et gyldig tall."
 
 #: includes/Frontend/FrontendController.php:412
 #: includes/Product/FieldRenderer.php:93 includes/Taxonomy/ProductGroup.php:309

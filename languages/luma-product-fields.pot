@@ -20,6 +20,12 @@ msgstr ""
 msgid "%"
 msgstr ""
 
+#: includes/Product/FieldRenderer.php:604
+#: includes/Product/VariationFieldRenderer.php:362
+#, php-format
+msgid "%1$s: %2$s"
+msgstr ""
+
 #. %d: number of products updated
 #: includes/Admin/Migration/MigrationPage.php:162
 msgid "%d products updated successfully."
@@ -817,6 +823,26 @@ msgstr ""
 
 #: includes/Admin/ListView.php:61
 msgid "Product fields overview"
+msgstr ""
+
+#: includes/Product/FieldStorage.php:130
+msgid "Please enter a valid range."
+msgstr ""
+
+#: includes/Product/FieldStorage.php:137
+msgid "Please enter a valid number for minimum value."
+msgstr ""
+
+#: includes/Product/FieldStorage.php:141
+msgid "Please enter a valid number for maximum value."
+msgstr ""
+
+#: includes/Product/FieldStorage.php:156
+msgid "Please enter a valid whole number."
+msgstr ""
+
+#: includes/Product/FieldStorage.php:171
+msgid "Please enter a valid number."
 msgstr ""
 
 #: includes/Frontend/FrontendController.php:412

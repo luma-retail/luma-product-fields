@@ -10,8 +10,21 @@
     margin: 1em 0;
 }
 
-.lumaprfi-field-editor textarea {
-    width:25em;
+.lumaprfi-field-editor input.regular-text,
+.lumaprfi-field-editor textarea,
+.lumaprfi-field-editor .wp-editor-wrap {
+    width: clamp(20em, 45vw, 35em);
+    max-width: 100%;
+}
+
+.lumaprfi-field-editor .wp-editor-wrap .wp-editor-tools,
+.lumaprfi-field-editor .wp-editor-wrap .wp-editor-container,
+.lumaprfi-field-editor .wp-editor-wrap .mce-tinymce,
+.lumaprfi-field-editor .wp-editor-wrap .quicktags-toolbar,
+.lumaprfi-field-editor .wp-editor-wrap textarea.wp-editor-area {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .lumaprfi-field-editor fieldset {
@@ -32,6 +45,8 @@ tr.hidden {
     flex-wrap: wrap;
     align-items: flex-start;
     gap: 1rem;
+    width: clamp(20em, 45vw, 35em);
+    max-width: 100%;
 }
 
 .lumaprfi-field-editor .luma-product-fields-types-desc {
@@ -42,6 +57,7 @@ tr.hidden {
     display: flex;
     flex-direction: column;
     gap: .4rem;
+    width: 100%;
 }
 
 .lumaprfi-field-editor .luma-product-fields-types-desc li {
@@ -57,12 +73,27 @@ tr.hidden {
 .lumaprfi-field-editor .luma-product-fields-types-desc .lumaprfi-type-choice {
     display: flex;
     gap: .5rem;
-    align-items: center;
+    align-items: flex-start;
     width: 100%;
+}
+
+.lumaprfi-field-editor .luma-product-fields-types-desc .lumaprfi-type-choice-text {
+    display: block;
+}
+
+.lumaprfi-field-editor .luma-product-fields-types-desc .lumaprfi-type-choice-title {
+    display: block;
+    font-weight: 600;
+}
+
+.lumaprfi-field-editor .luma-product-fields-types-desc .lumaprfi-type-choice-desc {
+    display: block;
+    color: #50575e;
 }
 
 .lumaprfi-field-editor .luma-product-fields-types-desc .lumaprfi-type-choice input[type="radio"] {
     margin: 0;
+    flex: 0 0 auto;
 }
     
     
@@ -80,6 +111,22 @@ tr.hidden {
 
     .lumaprfi-field-editor .luma-product-fields-types-desc {
         max-width: none;
+    }
+}
+
+@media (max-width: 782px) {
+    .lumaprfi-field-editor input.regular-text,
+    .lumaprfi-field-editor textarea,
+    .lumaprfi-field-editor .wp-editor-wrap,
+    .lumaprfi-field-editor .field-types {
+        width: 100%;
+    }
+
+    .lumaprfi-field-editor .field-types,
+    .lumaprfi-field-editor .luma-product-fields-types-desc,
+    .lumaprfi-field-editor .luma-product-fields-types-desc li {
+        max-width: 100%;
+        box-sizing: border-box;
     }
 }
 
@@ -265,7 +312,8 @@ input[inputmode=decimal] {
 
 
 .woocommerce_options_panel p.form-field.lumaprfi-frontend-hidden,
-.woocommerce_variations .form-row.lumaprfi-frontend-hidden {
+.woocommerce_variations .form-row.lumaprfi-frontend-hidden,
+.lumaprfi-fields-options-overview td.lumaprfi-field-label.lumaprfi-frontend-hidden {
     border-left: 2px solid #d2a11a;
     padding-left: 8px;
     background: rgba( 219, 166, 23, 0.12 );
@@ -273,6 +321,7 @@ input[inputmode=decimal] {
 
 .woocommerce_options_panel p.form-field.lumaprfi-frontend-hidden label::after,
 .woocommerce_variations .form-row.lumaprfi-frontend-hidden label::after,
+.lumaprfi-fields-options-overview td.lumaprfi-field-label.lumaprfi-frontend-hidden .lumaprfi-field-label-text::after,
 #luma-product-fields-fields-overview td.lumaprfi-frontend-hidden .lumaprfi-editable::after {
     content: "👁";
     font-family: inherit;
@@ -290,6 +339,19 @@ input[inputmode=decimal] {
         rgba( 219, 166, 23, 0.10 ),
         rgba( 219, 166, 23, 0.10 )
     );
+}
+
+.lumaprfi-fields-options-overview td.lumaprfi-field-label .lumaprfi-field-label-text {
+    display: inline-flex;
+    align-items: center;
+}
+
+.lumaprfi-fields-options-overview tr.lumaprfi-frontend-hidden-row td {
+    background: rgba( 219, 166, 23, 0.10 );
+}
+
+.lumaprfi-fields-options-overview tr.lumaprfi-frontend-hidden-row td:first-child {
+    border-left: 2px solid #d2a11a;
 }
 
 
@@ -460,6 +522,15 @@ input[inputmode=decimal] {
     cursor: not-allowed;
 }
 
+.lumaprfi-inline-error {
+    margin: 8px 0;
+    padding: 6px 8px;
+    border-left: 3px solid #d63638;
+    background: #fcf0f1;
+    color: #8a2424;
+    font-size: 12px;
+}
+
 
 /* Initial glow */
 .lumaprfi-save-glow {
@@ -469,6 +540,15 @@ input[inputmode=decimal] {
 
 /* Reset to transparent or your table bg */
 .lumaprfi-save-glow-reset {
+    background-color: transparent !important;
+}
+
+.lumaprfi-save-error-glow {
+    background-color: #f8d7da !important;
+    transition: background-color 2s ease;
+}
+
+.lumaprfi-save-error-glow-reset {
     background-color: transparent !important;
 }
 

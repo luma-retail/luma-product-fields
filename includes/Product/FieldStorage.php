@@ -113,6 +113,110 @@ class FieldStorage {
 	}
 
 
+	/**
+	 * Validate a field value before save.
+	 *
+	 * Returns null when the value is valid.
+	 * Returns a translated error message when invalid.
+	 *
+	 * @param array $field Field definition.
+	 * @param mixed $value Value candidate.
+	 * @return string|null
+	 */
+	public static function get_validation_error( array $field, $value ): ?string {
+		$type       = (string) ( $field['type'] ?? 'text' );
+		$definition = FieldTypeRegistry::get( $type ) ?? [];
+		$datatype   = (string) ( $definition['datatype'] ?? 'text' );
+		$validation = (string) ( $definition['validation'] ?? '' );
+
+		$is_range   = ( $validation === 'range' ) || ( $type === 'minmax' );
+		$is_integer = ( $validation === 'integer' ) || ( $type === 'integer' );
+		$is_numeric = ( $datatype === 'number' );
+
+		if ( $is_range ) {
+			if ( ! is_array( $value ) ) {
+				return __( 'Please enter a valid range.', 'luma-product-fields' );
+			}
+
+			$min = isset( $value['min'] ) ? sanitize_text_field( (string) $value['min'] ) : '';
+			$max = isset( $value['max'] ) ? sanitize_text_field( (string) $value['max'] ) : '';
+
+			if ( ! self::is_empty_value( $min ) && ! self::is_valid_float_input( $min ) ) {
+				return __( 'Please enter a valid number for minimum value.', 'luma-product-fields' );
+			}
+
+			if ( ! self::is_empty_value( $max ) && ! self::is_valid_float_input( $max ) ) {
+				return __( 'Please enter a valid number for maximum value.', 'luma-product-fields' );
+			}
+
+			return null;
+		}
+
+		if ( $is_integer ) {
+			if ( is_array( $value ) ) {
+				$value = reset( $value );
+			}
+
+			if ( self::is_empty_value( $value ) ) {
+				return null;
+			}
+
+			if ( filter_var( (string) $value, FILTER_VALIDATE_INT ) === false ) {
+				return __( 'Please enter a valid whole number.', 'luma-product-fields' );
+			}
+
+			return null;
+		}
+
+		if ( $is_numeric ) {
+			if ( is_array( $value ) ) {
+				$value = reset( $value );
+			}
+
+			if ( self::is_empty_value( $value ) ) {
+				return null;
+			}
+
+			if ( ! self::is_valid_float_input( (string) $value ) ) {
+				return __( 'Please enter a valid number.', 'luma-product-fields' );
+			}
+
+			return null;
+		}
+
+		return null;
+	}
+
+
+	/**
+	 * Check if a value should be treated as empty for validation.
+	 *
+	 * @param mixed $value Value candidate.
+	 * @return bool
+	 */
+	protected static function is_empty_value( $value ): bool {
+		if ( is_array( $value ) ) {
+			return empty( $value );
+		}
+
+		return trim( (string) $value ) === '';
+	}
+
+
+	/**
+	 * Validate locale-friendly float input.
+	 *
+	 * Accepts comma or dot as decimal separator.
+	 *
+	 * @param string $value Number input.
+	 * @return bool
+	 */
+	protected static function is_valid_float_input( string $value ): bool {
+		$normalized = str_replace( ',', '.', trim( $value ) );
+		return filter_var( $normalized, FILTER_VALIDATE_FLOAT ) !== false;
+	}
+
+
 	
 	/**
 	 * Save a text field value.
@@ -253,7 +357,8 @@ class FieldStorage {
 			return true;
 		}
 
-		return (bool) update_post_meta( $product_id, self::META_PREFIX . $field['slug'], $result );
+		update_post_meta( $product_id, self::META_PREFIX . $field['slug'], $result );
+		return true;
 	}
 
 	/**

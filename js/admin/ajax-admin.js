@@ -270,6 +270,33 @@ jQuery(function($) {
         }
     }
 
+    function showInlineEditorError($editor, $cell, message) {
+        const text = (typeof message === 'string' && message.length)
+            ? message
+            : 'Failed to save.';
+
+        $editor.find('.lumaprfi-inline-error').remove();
+
+        const $error = $('<div class="lumaprfi-inline-error" role="alert" aria-live="polite">').text(text);
+        const $controls = $editor.find('.lumaprfi-edit-controls').first();
+
+        if ($controls.length) {
+            $error.insertBefore($controls);
+        } else {
+            $editor.find('form').append($error);
+        }
+
+        $cell.removeClass('lumaprfi-save-glow lumaprfi-save-glow-reset lumaprfi-save-error-glow lumaprfi-save-error-glow-reset')
+             .addClass('lumaprfi-save-error-glow');
+
+        setTimeout(() => $cell.addClass('lumaprfi-save-error-glow-reset'), 1000);
+        setTimeout(() => $cell.removeClass('lumaprfi-save-error-glow lumaprfi-save-error-glow-reset'), 3000);
+
+        setTimeout(() => {
+            $error.fadeOut(200, function () { $(this).remove(); });
+        }, 2500);
+    }
+
     $(document).on('click', '.lumaprfi-editable', function () {
         const $cell = $(this);
         const productId = $cell.data('product-id');
@@ -450,9 +477,25 @@ jQuery(function($) {
                             setTimeout(() => $cell.addClass('lumaprfi-save-glow-reset'), 1000);
                             setTimeout(() => $cell.removeClass('lumaprfi-save-glow lumaprfi-save-glow-reset'), 3000);
                         } else {
-                            alert(res.data || 'Failed to save.');
+                            const message = (res && res.data && typeof res.data === 'object' && res.data.message)
+                                ? res.data.message
+                                : ((res && typeof res.data === 'string') ? res.data : 'Failed to save.');
+                            showInlineEditorError($editor, $cell, message);
                             $btn.prop('disabled', false);
                         }
+                    }).fail(function (xhr) {
+                        let message = 'AJAX request failed.';
+
+                        if (xhr && xhr.responseJSON && xhr.responseJSON.data) {
+                            if (typeof xhr.responseJSON.data === 'string') {
+                                message = xhr.responseJSON.data;
+                            } else if (xhr.responseJSON.data.message) {
+                                message = xhr.responseJSON.data.message;
+                            }
+                        }
+
+                        showInlineEditorError($editor, $cell, message);
+                        $btn.prop('disabled', false);
                     });
                 });
 

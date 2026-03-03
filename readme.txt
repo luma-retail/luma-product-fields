@@ -350,7 +350,7 @@ Yes. Everything is class-based, namespaced, and hookable. Field definitions, out
 = 1.1.0 =
 * Frontend table row style/layout and label/value emphasis are configurable.
 * Units and migration unit aliases are editable in WooCommerce settings.
-* Settings UI is now tabbed (General, Style, Units, Tools).
+* Settings UI is now tabbed.
 * Added settings for built-in package weight and package size tooltip text.
 * Field editor UX improvements: radio-button type selector, initial values for new taxonomy-backed fields, and better draft persistence after validation errors.
 * Improved variation field rendering.

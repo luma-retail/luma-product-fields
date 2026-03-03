@@ -123,15 +123,13 @@ class FieldOptionsOverview {
             $fields = Helpers::get_all_fields( $selected_group );
         }
 
-        echo '<table class="widefat striped">';
+        echo '<table class="widefat striped lumaprfi-fields-options-overview">';
         echo '<thead><tr>';
         // Hook name (documented) with access to the full field list.
         do_action( 'luma_product_fields_field_options_overview_table_head_start', $fields );
         echo '<th>' . esc_html__( 'Label', 'luma-product-fields' ) . '</th>';
-        echo '<th>' . esc_html__( 'Slug', 'luma-product-fields' ) . '</th>';
         echo '<th>' . esc_html__( 'Type', 'luma-product-fields' ) . '</th>';
         echo '<th>' . esc_html__( 'Product Groups', 'luma-product-fields' ) . '</th>';
-        echo '<th>' . esc_html__( 'Frontend', 'luma-product-fields' ) . '</th>';
         echo '<th>' . esc_html__( 'Variation', 'luma-product-fields' ) . '</th>';
         echo '<th>' . esc_html__( 'Actions', 'luma-product-fields' ) . '</th>';
         echo '</tr></thead><tbody>';
@@ -154,16 +152,19 @@ class FieldOptionsOverview {
                 ? admin_url( 'edit-tags.php?post_type=product&taxonomy=' . urlencode( $slug ) )
                 : '';
 
-            echo '<tr data-slug="' . esc_attr( $slug ) . '">';
+            $row_classes = $hide_in_frontend ? ' class="lumaprfi-frontend-hidden-row"' : '';
+            echo '<tr data-slug="' . esc_attr( $slug ) . '"' . $row_classes . '>';
             do_action( 'luma_product_fields_field_options_overview_table_row_start', $slug );
 
-            echo '<td>' . esc_html( $label ) . '</td>';
-            echo '<td><code>' . esc_html( $slug ) . '</code></td>';
+            $label_classes = 'lumaprfi-field-label';
+            if ( $hide_in_frontend ) {
+                $label_classes .= ' lumaprfi-frontend-hidden';
+            }
+
+            echo '<td class="' . esc_attr( $label_classes ) . '"' . ( $hide_in_frontend ? ' title="' . esc_attr__( 'Not shown in front end', 'luma-product-fields' ) . '"' : '' ) . '><span class="lumaprfi-field-label-text">' . esc_html( $label ) . '</span></td>';
             echo '<td>' . esc_html( \Luma\ProductFields\Registry\FieldTypeRegistry::get_field_type_label( $field['type'] ?? '' ) ) . '</td>';
 
             echo '<td>' . implode( ', ', array_map( 'esc_html', $groups ) ) . '</td>';
-
-            echo '<td>' . ( $hide_in_frontend ? esc_html__( 'Hidden', 'luma-product-fields' ) : esc_html__( 'Visible', 'luma-product-fields' ) ) . '</td>';
             echo '<td>' . ( $variation ? esc_html__( 'Yes', 'luma-product-fields' ) : esc_html__( 'No', 'luma-product-fields' ) ) . '</td>';
 
             echo '<td>';

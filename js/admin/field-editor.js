@@ -112,14 +112,18 @@ jQuery(function ($) {
     }
 
     $items.on('click', function (e) {
-        e.preventDefault();
+        var $row = $(this);
+        var $input = $row.find('input[name="lrpf_type"]').first();
 
-        var typeSlug = $(this).data('type');
-        if (!typeSlug) {
+        if (!$input.length) {
             return;
         }
 
-        $typeInputs.filter('[value="' + typeSlug + '"]').prop('checked', true).trigger('change');
+        if (e.target !== $input[0]) {
+            $input.prop('checked', true);
+        }
+
+        $input.trigger('change');
     });
 
     if ($initialTermsContainer.length) {

@@ -354,6 +354,22 @@ class VariationFieldRenderer {
                     );
                 }
 
+                $validation_error = FieldStorage::get_validation_error( $field, $value );
+                if ( null !== $validation_error ) {
+                    if ( class_exists( '\\WC_Admin_Meta_Boxes' ) ) {
+                        $label = isset( $field['label'] ) ? (string) $field['label'] : $slug;
+                        \WC_Admin_Meta_Boxes::add_error(
+                            sprintf(
+                                /* translators: 1: field label, 2: validation error */
+                                __( '%1$s: %2$s', 'luma-product-fields' ),
+                                wp_strip_all_tags( $label ),
+                                $validation_error
+                            )
+                        );
+                    }
+                    continue;
+                }
+
                 FieldStorage::save_field( $variation_id, $slug, $value );
             }
         }

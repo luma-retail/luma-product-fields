@@ -168,7 +168,7 @@ class FieldEditor {
         foreach ( $types as $type_slug => $type ) {
             $choice_id = 'luma-product-fields-type-choice-' . $type_slug;
             $types_desc .= sprintf(
-                '<li id="luma-product-fields-type-%1$s" data-type="%1$s"><label for="%4$s" class="lumaprfi-type-choice"><input type="radio" id="%4$s" name="lrpf_type" value="%1$s" %5$s /> <span><strong>%2$s:</strong> %3$s</span></label></li>',
+                '<li id="luma-product-fields-type-%1$s" data-type="%1$s"><label for="%4$s" class="lumaprfi-type-choice"><input type="radio" id="%4$s" name="lrpf_type" value="%1$s" %5$s /><span class="lumaprfi-type-choice-text"><span class="lumaprfi-type-choice-title">%2$s</span><span class="lumaprfi-type-choice-desc">%3$s</span></span></label></li>',
                 esc_attr( $type_slug ),
                 esc_html( $type['label'] ),
                 esc_html( $type['description'] ),
@@ -207,6 +207,12 @@ class FieldEditor {
         // Label.
         echo '<tr><th><label>' . esc_html__( 'Label', 'luma-product-fields' ) . '</label></th>';
         echo '<td><input name="lrpf_label" type="text" value="' . esc_attr( $field['label'] ?? '' ) . '" class="regular-text" /></td></tr>';
+
+        if ( $slug ) {
+            echo '<tr><th><label>' . esc_html__( 'Slug', 'luma-product-fields' ) . '</label></th>';
+            echo '<td><code>' . esc_html( $slug ) . '</code>';
+            echo '<p class="description">' . esc_html__( 'Internal key used in code and integrations. This value cannot be edited.', 'luma-product-fields' ) . '</p></td></tr>';
+        }
 
         do_action( 'luma_product_fields_field_editor_after_label', $field );
 
@@ -455,8 +461,16 @@ public function handle_save(): void {
         ? sanitize_key( wp_unslash( (string) $_POST['lrpf_type'] ) )
         : '';
 
-    if ( '' === $label || '' === $type ) {
-        $this->redirect_with_notice( __( 'You must enter both label and type.', 'luma-product-fields' ), 'error', null, $form_draft );
+    if ( '' === $label && '' === $type ) {
+        $this->redirect_with_notice( __( 'You must add a label and choose a type.', 'luma-product-fields' ), 'error', null, $form_draft );
+    }
+
+    if ( '' === $label ) {
+        $this->redirect_with_notice( __( 'You must add a label.', 'luma-product-fields' ), 'error', null, $form_draft );
+    }
+
+    if ( '' === $type ) {
+        $this->redirect_with_notice( __( 'You must choose a type.', 'luma-product-fields' ), 'error', null, $form_draft );
     }
 
     if ( ! FieldTypeRegistry::get( $type ) ) {
