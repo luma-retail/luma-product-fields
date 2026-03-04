@@ -200,7 +200,12 @@ class FrontendController {
         }
 
         $product_id    = $product->get_id();
-         echo '<div id="luma-product-fields-list">';
+        $wrapper_classes = $this->get_frontend_wrapper_classes();
+
+        echo sprintf(
+            '<div id="luma-product-fields-list" class="%s">',
+            esc_attr( implode( ' ', $wrapper_classes ) )
+        );
         
         /**
          * Hook: luma_product_fields_product_meta_start
@@ -210,7 +215,8 @@ class FrontendController {
         do_action( 'luma_product_fields_product_meta_start', $product );
 
         
-        $transient_key = 'luma_product_fields_meta_fields_' . $product_id;
+        $cache_version = (int) get_option( 'luma_product_fields_meta_cache_version', 1 );
+        $transient_key = 'luma_product_fields_meta_fields_' . $cache_version . '_' . $product_id;
         $output        = get_transient( $transient_key );
                 
         if ( false === $output ) {
@@ -228,6 +234,39 @@ class FrontendController {
         do_action( 'luma_product_fields_product_meta_end', $product );
 
         echo '</div>';
+    }
+
+
+    /**
+     * Get wrapper classes for frontend row and layout styling.
+     *
+     * @return array
+     */
+    protected function get_frontend_wrapper_classes(): array {
+        $row_style = (string) get_option( Settings::PREFIX . 'frontend_row_style', 'plain' );
+        if ( ! in_array( $row_style, [ 'plain', 'divider', 'striped' ], true ) ) {
+            $row_style = 'plain';
+        }
+
+        $layout_style = (string) get_option( Settings::PREFIX . 'frontend_layout_style', 'auto' );
+        if ( ! in_array( $layout_style, [ 'auto', 'grid' ], true ) ) {
+            $layout_style = 'auto';
+        }
+
+        $labels_bold = get_option( Settings::PREFIX . 'frontend_labels_bold', 'yes' ) === 'yes'
+            ? 'bold'
+            : 'normal';
+
+        $values_bold = get_option( Settings::PREFIX . 'frontend_values_bold', 'no' ) === 'yes'
+            ? 'bold'
+            : 'normal';
+
+        return [
+            'lumaprfi-row-' . $row_style,
+            'lumaprfi-layout-' . $layout_style,
+            'lumaprfi-labels-' . $labels_bold,
+            'lumaprfi-values-' . $values_bold,
+        ];
     }
 
     /**
@@ -248,7 +287,18 @@ class FrontendController {
         $show_tags = get_option( Settings::PREFIX . 'display_tags', 'no' ) === 'yes';
         $show_cats = get_option( Settings::PREFIX . 'display_categories', 'no' ) === 'yes';
         $show_group = get_option( Settings::PREFIX . 'display_group', 'no' ) === 'yes'; 
-        $show_global_unique_id = get_option( Settings::PREFIX . 'display_global_unique_id', 'no' ) === 'yes';        
+        $show_global_unique_id = get_option( Settings::PREFIX . 'display_global_unique_id', 'no' ) === 'yes';
+        $show_builtin_tooltips = get_option( Settings::PREFIX . 'enable_builtin_field_tooltips', 'no' ) === 'yes';
+
+        $weight_tooltip_text = (string) get_option(
+            Settings::PREFIX . 'weight_tooltip_text',
+            __( 'The weight of the product including packaging.', 'luma-product-fields' )
+        );
+
+        $dimensions_tooltip_text = (string) get_option(
+            Settings::PREFIX . 'dimensions_tooltip_text',
+            __( 'The size of the product including packaging.', 'luma-product-fields' )
+        );
         
         foreach ($fields as $field) {
             if (!empty($field['hide_in_frontend'])) {
@@ -275,23 +325,33 @@ class FrontendController {
 
         // Weight
         if ( !empty( $product->get_weight() ) ) {
-            $output .= FieldRenderer::wrap_field([
+            $weight_field = [
                 'label'         => __( 'Package weight', 'luma-product-fields' ),
                 'slug'          => 'weight',
                 'unit'          => get_option( 'woocommerce_weight_unit' ),
-                'frontend_desc' => __( 'The weight of the product including packaging.', 'luma-product-fields' ),
-            ], esc_html( $product->get_weight() ) );
+            ];
+
+            if ( $show_builtin_tooltips && '' !== trim( $weight_tooltip_text ) ) {
+                $weight_field['frontend_desc'] = $weight_tooltip_text;
+            }
+
+            $output .= FieldRenderer::wrap_field( $weight_field, esc_html( $product->get_weight() ) );
         }
 
         // Dimensions
         $dimensions = array_filter( $product->get_dimensions( false ) );
         if ( ! empty( $dimensions ) ) {
-            $output .= FieldRenderer::wrap_field([
+            $dimensions_field = [
                 'label'         => __( 'Package size', 'luma-product-fields' ),
                 'slug'          => 'dimensions',
                 'unit'          => get_option( 'woocommerce_dimension_unit' ),
-                'frontend_desc' => __( 'The size of the product including packaging.', 'luma-product-fields' ),
-            ], trim( implode( ' × ', $dimensions ) ) );
+            ];
+
+            if ( $show_builtin_tooltips && '' !== trim( $dimensions_tooltip_text ) ) {
+                $dimensions_field['frontend_desc'] = $dimensions_tooltip_text;
+            }
+
+            $output .= FieldRenderer::wrap_field( $dimensions_field, trim( implode( ' × ', $dimensions ) ) );
         }
 
     

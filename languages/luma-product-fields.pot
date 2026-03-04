@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Hello Product Fields\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-03 16:43+0000\n"
+"POT-Creation-Date: 2026-03-03 14:17+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: \n"
@@ -16,376 +16,448 @@ msgstr ""
 "X-Loco-Version: 2.6.6; wp-6.3.1\n"
 "X-Domain: luma-product-fields"
 
-#: ../../../../../../../projects/luma-product-fields/includes/Registry/FieldTypeRegistry.php:215
+#: includes/Registry/FieldTypeRegistry.php:291
 msgid "%"
 msgstr ""
 
+#: includes/Product/FieldRenderer.php:604
+#: includes/Product/VariationFieldRenderer.php:362
+#, php-format
+msgid "%1$s: %2$s"
+msgstr ""
+
 #. %d: number of products updated
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:162
+#: includes/Admin/Migration/MigrationPage.php:162
 msgid "%d products updated successfully."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:237
+#: includes/Admin/Migration/MigrationPage.php:237
 msgid "1st"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:238
+#: includes/Admin/Migration/MigrationPage.php:238
 msgid "2nd"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:378
+#: includes/Admin/FieldEditor.php:474
 msgid ""
 "A field or taxonomy with this name already exists. Please choose another "
 "name."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Registry/FieldTypeRegistry.php:133
+#: includes/Registry/FieldTypeRegistry.php:143
 msgid "A simple text input."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Registry/FieldTypeRegistry.php:148
+#: includes/Registry/FieldTypeRegistry.php:158
 msgid ""
 "A single integer value. You can use both , and . as decimal separator in "
 "admin. Presentation is based on your locale setting."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Registry/FieldTypeRegistry.php:140
+#: includes/Registry/FieldTypeRegistry.php:150
 msgid "A single numeric value."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:201
+#: includes/Admin/FieldEditor.php:238
 msgid ""
 "A tooltip for the shop manager to better understand what to do. Just leave "
 "this field empty to omit."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:193
+#: includes/Admin/FieldEditor.php:230
 msgid ""
 "A tooltip that pops up by the label on the frontend. Just leave this field "
 "empty to omit."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:81
+#: includes/Admin/Migration/MigrationPage.php:81
 msgid "Access denied"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldOptionsOverview.php:126
+#: includes/Admin/FieldOptionsOverview.php:136 includes/Admin/Settings.php:559
+#: includes/Admin/Settings.php:628
 msgid "Actions"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Product/FieldRenderer.php:104
+#: includes/Admin/Settings.php:640
+msgid "Add alias row"
+msgstr ""
+
+#: includes/Product/FieldRenderer.php:128
 msgid "Add fields here"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:144
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldOptionsOverview.php:89
+#: includes/Admin/FieldEditor.php:187
+#: includes/Admin/FieldOptionsOverview.php:99
 msgid "Add New Field"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Taxonomy/ProductGroup.php:75
+#: includes/Taxonomy/ProductGroup.php:75
 msgid "Add New Product group"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Settings.php:127
+#: includes/Admin/Settings.php:254
+msgid "Add or remove units used by unit-aware field types."
+msgstr ""
+
+#: includes/Admin/Settings.php:280
 msgid "Add tool to migrate existing metadata to Product Fields."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Settings.php:82
-#: ../../../../../../../projects/luma-product-fields/includes/Frontend/FrontendController.php:130
-#: ../../../../../../../projects/luma-product-fields/includes/Frontend/FrontendController.php:152
+#: includes/Admin/Settings.php:571
+msgid "Add unit"
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:291
+msgid "Add value"
+msgstr ""
+
+#: includes/Admin/Settings.php:120 includes/Frontend/FrontendController.php:130
+#: includes/Frontend/FrontendController.php:152
 msgid "Additional information"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Ajax.php:164
+#: includes/Admin/Ajax.php:164
 msgid ""
 "After changing the product group, please save and update the product to load "
 "the correct fields for each variation."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Admin.php:129
+#: includes/Admin/Settings.php:627
+msgid "Aliases (comma-separated)"
+msgstr ""
+
+#: includes/Admin/Admin.php:129
 msgid "All"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Taxonomy/ProductGroup.php:214
+#: includes/Taxonomy/ProductGroup.php:214
 msgid "All Product groups"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldOptionsOverview.php:168
+#: includes/Admin/Settings.php:627
+msgid "Alternative words in old text"
+msgstr ""
+
+#: includes/Admin/FieldOptionsOverview.php:178
 msgid ""
 "Are you sure you want to delete this field? All data will be deleted, and "
 "there is no going back."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Admin.php:82
+#: includes/Admin/Admin.php:82
 msgid ""
 "Are you sure you want to delete this field? Existing data will no longer be "
 "shown to the customers."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Registry/FieldTypeRegistry.php:177
+#: includes/Admin/Settings.php:218
+msgid "Auto label width"
+msgstr ""
+
+#: includes/Registry/FieldTypeRegistry.php:187
 msgid "Autocomplete"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Admin.php:255
+#: includes/Admin/Admin.php:255
 msgid "Back to Field Manager"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Taxonomy/ProductGroup.php:78
+#: includes/Taxonomy/ProductGroup.php:78
 msgid "Back to Product groups"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Frontend/FrontendController.php:271
+#: includes/Frontend/FrontendController.php:321
 msgid "Brand"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:499
+#: includes/Admin/Migration/MigrationPage.php:499
 msgid ""
 "By default, the migration runs in dry-run mode. In this mode, no data is "
 "written to the database. Disable dry-run only when you are confident in the "
 "results."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Ajax.php:346
+#: includes/Admin/Ajax.php:346
 msgid "Cancel"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Frontend/FrontendController.php:339
+#: includes/Frontend/FrontendController.php:399
 msgid "Categories"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Migration/LegacyMetaMigrator.php:409
+#: includes/Migration/LegacyMetaMigrator.php:468
 msgid "centimeter"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Migration/LegacyMetaMigrator.php:410
+#: includes/Migration/LegacyMetaMigrator.php:469
 msgid "centimeters"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Registry/FieldTypeRegistry.php:170
+#: includes/Registry/FieldTypeRegistry.php:180
 msgid "Checkboxes"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Taxonomy/ProductGroup.php:328
+#: includes/Taxonomy/ProductGroup.php:328
 msgid ""
 "Choose a single Product group to assign to all selected products, or “— "
 "Clear —” to remove it. Leave as “— No change —” to keep current groups."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/ListView.php:121
+#: includes/Admin/Settings.php:214
+msgid "Choose automatic label width or fixed-width grid layout."
+msgstr ""
+
+#: includes/Admin/Settings.php:201
+msgid "Choose how each field row is visually separated."
+msgstr ""
+
+#: includes/Admin/ListView.php:121
 msgid "Choose product group"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Migration/LegacyMetaMigrator.php:408
-#: ../../../../../../../projects/luma-product-fields/includes/Registry/FieldTypeRegistry.php:206
+#: includes/Migration/LegacyMetaMigrator.php:467
+#: includes/Registry/FieldTypeRegistry.php:282
 msgid "cm"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:543
+#: includes/Admin/Migration/MigrationPage.php:543
 msgid ""
 "Conversion is best-effort. Values that do not match the expected format of a "
 "field type may be skipped or partially converted."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:373
+#: includes/Admin/FieldEditor.php:469
 msgid "Could not generate a valid slug from the label."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Onboarding.php:117
+#: includes/Admin/Onboarding.php:117
 msgid ""
 "Define product fields per product group under Products → Product Fields, and "
 "control frontend output under WooCommerce → Settings → Products."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldOptionsOverview.php:171
+#: includes/Admin/FieldOptionsOverview.php:181
 msgid "Delete"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Onboarding.php:127
+#: includes/Admin/Onboarding.php:127
 msgid "Dismiss"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Settings.php:118
+#: includes/Admin/Settings.php:156
 msgid "Display categories"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Settings.php:102
+#: includes/Admin/Settings.php:140
 msgid "Display Global Unique Identifier"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Settings.php:86
+#: includes/Admin/Settings.php:124
 msgid "Display Product Group in Front End"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Settings.php:94
+#: includes/Admin/Settings.php:132
 msgid "Display SKU"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Settings.php:110
+#: includes/Admin/Settings.php:148
 msgid "Display tags"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Registry/FieldTypeRegistry.php:164
+#: includes/Registry/FieldTypeRegistry.php:174
 msgid "Dropdown from predefined terms."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:276
+#: includes/Admin/Migration/MigrationPage.php:276
 msgid "Dry run (no changes will be saved)"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:341
+#: includes/Admin/Migration/MigrationPage.php:341
 msgid "dry-run changes"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldOptionsOverview.php:160
+#: includes/Admin/FieldOptionsOverview.php:170
 msgid "Edit"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:78
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:79
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:143
+#: includes/Admin/FieldEditor.php:93 includes/Admin/FieldEditor.php:94
+#: includes/Admin/FieldEditor.php:186
 msgid "Edit Field"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Taxonomy/ProductGroup.php:73
+#: includes/Taxonomy/ProductGroup.php:73
 msgid "Edit Product group"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldOptionsOverview.php:93
+#: includes/Admin/FieldOptionsOverview.php:103
 msgid "Edit product groups"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Settings.php:126
+#: includes/Admin/Settings.php:164
+msgid "Enable built-in tooltips"
+msgstr ""
+
+#: includes/Admin/Settings.php:279
 msgid "Enable migration tool"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Settings.php:103
+#: includes/Admin/Settings.php:226
+msgid "Enable to render field labels in bold."
+msgstr ""
+
+#: includes/Admin/Settings.php:234
+msgid "Enable to render field values in bold."
+msgstr ""
+
+#: includes/Admin/Settings.php:141
 msgid "Enable to show GTIN/barcode (available from Woo 9.1.) in the front end."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Settings.php:119
+#: includes/Admin/Settings.php:157
 msgid "Enable to show the product categories with the fields in the front end."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Settings.php:87
+#: includes/Admin/Settings.php:125
 msgid "Enable to show the product group name on product pages."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Settings.php:95
+#: includes/Admin/Settings.php:133
 msgid "Enable to show the product SKU with the fields in the front end."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Settings.php:111
+#: includes/Admin/Settings.php:149
 msgid "Enable to show the product tags with the fields in the front end."
 msgstr ""
 
+#: includes/Admin/Settings.php:165
+msgid "Enable tooltips for package weight and package size."
+msgstr ""
+
 #. %d: minimum number of characters the user must type before search starts.
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Admin.php:85
+#: includes/Admin/Admin.php:85
 msgid "Enter at least %d characters"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:357
+#: includes/Admin/Migration/MigrationPage.php:357
 msgid "Existing"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Migration/LegacyMetaMigrator.php:217
+#: includes/Migration/LegacyMetaMigrator.php:217
 msgid "Existing value present"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Frontend/FieldRenderer.php:132
+#: includes/Frontend/FieldRenderer.php:132
 msgid "explanation"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Registry/FieldTypeRegistry.php:212
+#: includes/Registry/FieldTypeRegistry.php:288
 msgid "feet"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:190
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:354
+#: includes/Admin/Migration/MigrationPage.php:190
+#: includes/Admin/Migration/MigrationPage.php:354
 msgid "Field"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:495
+#: includes/Admin/FieldEditor.php:606
 msgid "Field created successfully."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:491
+#. %d: number of terms created.
+#: includes/Admin/FieldEditor.php:602
+msgid "Field created successfully. %d terms were added."
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:597
 msgid ""
 "Field created successfully. You can now add terms via the Manage Terms "
 "button."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldOptionsOverview.php:206
+#: includes/Admin/FieldOptionsOverview.php:216
 msgid "Field deleted successfully. All associated data has been removed."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:496
+#: includes/Admin/Settings.php:213
+msgid "Field layout"
+msgstr ""
+
+#: includes/Admin/Settings.php:200
+msgid "Field row style"
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:607
 msgid "Field updated successfully."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:492
+#: includes/Admin/FieldEditor.php:598
 msgid ""
 "Field updated successfully. Manage Terms is available for editing values."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldOptionsOverview.php:81
+#: includes/Admin/FieldOptionsOverview.php:91
 msgid "Filter"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldOptionsOverview.php:70
+#: includes/Admin/FieldOptionsOverview.php:80
 msgid "Filter product group"
 msgstr ""
 
-#. Description of the plugin
-msgid ""
-"Flexible custom product fields for WooCommerce with sortable, linkable and "
-"developer-extendable field types."
-msgstr ""
-
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:492
+#: includes/Admin/Migration/MigrationPage.php:492
 msgid ""
 "For example, a value like \"15 grams\" can be converted into a numeric value "
 "of 15 and a unit of grams when migrating into a number field with unit "
 "support."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Settings.php:78
+#: includes/Admin/Settings.php:116
 msgid "Front End title"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldOptionsOverview.php:124
+#: includes/Admin/FieldOptionsOverview.php:134
 msgid "Frontend"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:223
+#: includes/Admin/FieldEditor.php:262
 msgid "Frontend Visibility"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Migration/LegacyMetaMigrator.php:427
+#: includes/Migration/LegacyMetaMigrator.php:486
 msgid "g"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Migration/LegacyMetaMigrator.php:428
+#: includes/Admin/Settings.php:111 includes/Admin/Settings.php:339
+msgid "General"
+msgstr ""
+
+#: includes/Migration/LegacyMetaMigrator.php:487
 msgid "gram"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Migration/LegacyMetaMigrator.php:429
-#: ../../../../../../../projects/luma-product-fields/includes/Registry/FieldTypeRegistry.php:209
+#: includes/Migration/LegacyMetaMigrator.php:488
+#: includes/Registry/FieldTypeRegistry.php:285
 msgid "grams"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Frontend/FrontendController.php:315
+#: includes/Admin/Settings.php:219
+msgid "Grid (same label width)"
+msgstr ""
+
+#: includes/Frontend/FrontendController.php:375
 msgid "GTIN / EAN"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:345
+#: includes/Admin/Migration/MigrationPage.php:345
 msgid "handled by external save callback"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldOptionsOverview.php:156
+#: includes/Admin/FieldOptionsOverview.php:166
 msgid "Hidden"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:225
+#: includes/Admin/FieldEditor.php:264
 msgid "Hide in frontend"
 msgstr ""
 
@@ -397,231 +469,288 @@ msgstr ""
 msgid "https://luma-retail.com"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:523
+#: includes/Admin/Migration/MigrationPage.php:523
 msgid "Important notes"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Registry/FieldTypeRegistry.php:211
+#: includes/Registry/FieldTypeRegistry.php:287
 msgid "inches"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:227
+#: includes/Admin/Migration/MigrationPage.php:227
 msgid "Include variations"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Registry/FieldTypeRegistry.php:147
+#: includes/Admin/FieldEditor.php:277
+msgid "Initial values"
+msgstr ""
+
+#: includes/Registry/FieldTypeRegistry.php:157
 msgid "Integer"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:363
+#: includes/Admin/Settings.php:557
+msgid "Internal key"
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:463
 msgid "Invalid field type."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:550
+#: includes/Admin/Migration/MigrationPage.php:550
 msgid ""
 "It is recommended to review a subset of products after migration before "
 "relying on the migrated field data."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Admin.php:83
+#: includes/Admin/Admin.php:83
 msgid "Just start typing..."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Migration/LegacyMetaMigrator.php:433
-#: ../../../../../../../projects/luma-product-fields/includes/Registry/FieldTypeRegistry.php:210
+#: includes/Migration/LegacyMetaMigrator.php:492
+#: includes/Registry/FieldTypeRegistry.php:286
 msgid "kg"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Migration/LegacyMetaMigrator.php:434
+#: includes/Migration/LegacyMetaMigrator.php:493
 msgid "kilogram"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Migration/LegacyMetaMigrator.php:435
+#: includes/Migration/LegacyMetaMigrator.php:494
 msgid "kilograms"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:171
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldOptionsOverview.php:120
+#: includes/Admin/FieldEditor.php:208
+#: includes/Admin/FieldOptionsOverview.php:130 includes/Admin/Settings.php:558
 msgid "Label"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:239
+#: includes/Admin/Settings.php:225
+msgid "Labels bold"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:239
 msgid "Last"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:219
+#: includes/Admin/FieldEditor.php:258
 msgid "Leave empty to show across all products"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:191
+#: includes/Admin/Migration/MigrationPage.php:191
 msgid "Legacy Meta Key"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:235
+#: includes/Admin/FieldEditor.php:274
 msgid "Link to products with same value in front end"
 msgstr ""
 
 #. Name of the plugin
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Settings.php:53
+#: includes/Admin/Settings.php:71
 msgid "Luma Product Fields"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Onboarding.php:113
+#: includes/Admin/Onboarding.php:113
 msgid "Luma Product Fields is now active."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Settings.php:72
+#: includes/Admin/Settings.php:97
 msgid "Luma Product Fields Settings"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Migration/LegacyMetaMigrator.php:420
+#: includes/Migration/LegacyMetaMigrator.php:479
 msgid "m"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Taxonomy/ProductGroup.php:84
+#: includes/Taxonomy/ProductGroup.php:84
 msgid "Main product groups in the shop"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldOptionsOverview.php:164
+#: includes/Admin/FieldOptionsOverview.php:174
 msgid "Manage Terms"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Product/VariationFieldRenderer.php:238
+#: includes/Product/VariationFieldRenderer.php:294
 msgid "Max:"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Migration/LegacyMetaMigrator.php:421
+#: includes/Migration/LegacyMetaMigrator.php:480
 msgid "meter"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Migration/LegacyMetaMigrator.php:422
-#: ../../../../../../../projects/luma-product-fields/includes/Registry/FieldTypeRegistry.php:208
+#: includes/Migration/LegacyMetaMigrator.php:481
+#: includes/Registry/FieldTypeRegistry.php:284
 msgid "meters"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:53
+#: includes/Admin/Migration/MigrationPage.php:53
 msgid "Migrate Legacy Meta"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:340
+#: includes/Admin/Migration/MigrationPage.php:340
 msgid "migrated"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:201
+#: includes/Admin/Migration/MigrationPage.php:201
 msgid "Migrated on"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:334
+#: includes/Admin/Settings.php:287
+msgid "Migration page"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:334
 msgid "Migration Result (dry run)"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:337
+#: includes/Admin/Migration/MigrationPage.php:337
 msgid "Migration Summary"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:70
+#: includes/Admin/Migration/MigrationPage.php:70
 msgid "Migration tool"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Migration/LegacyMetaMigrator.php:415
+#: includes/Migration/LegacyMetaMigrator.php:474
 msgid "millimeter"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Migration/LegacyMetaMigrator.php:416
+#: includes/Migration/LegacyMetaMigrator.php:475
 msgid "millimeters"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Product/VariationFieldRenderer.php:230
+#: includes/Product/VariationFieldRenderer.php:286
 msgid "Min:"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Migration/LegacyMetaMigrator.php:414
-#: ../../../../../../../projects/luma-product-fields/includes/Registry/FieldTypeRegistry.php:207
+#: includes/Migration/LegacyMetaMigrator.php:473
+#: includes/Registry/FieldTypeRegistry.php:283
 msgid "mm"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Registry/FieldTypeRegistry.php:171
+#: includes/Registry/FieldTypeRegistry.php:181
 msgid "Multiple predefined options."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/ListViewTable.php:262
+#: includes/Admin/ListViewTable.php:341
 msgid "Name"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Taxonomy/ProductGroup.php:76
+#: includes/Admin/FieldEditor.php:250
+msgid ""
+"Need to add or rename units? You can manage units in WooCommerce settings."
+msgstr ""
+
+#: includes/Taxonomy/ProductGroup.php:76
 msgid "New Product group Name"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:358
+#: includes/Admin/Migration/MigrationPage.php:358
 msgid "New value"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldOptionsOverview.php:157
+#: includes/Admin/FieldOptionsOverview.php:167
 msgid "No"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:418
+#: includes/Admin/Migration/MigrationPage.php:418
 msgid "No changes were detected in this dry run."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Product/FieldRenderer.php:102
+#: includes/Product/FieldRenderer.php:126
 msgid "No fields defined yet."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Admin.php:130
+#: includes/Admin/Admin.php:130
 msgid "No group"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Product/FieldRenderer.php:57
+#: includes/Product/FieldRenderer.php:81
 msgid "No group set"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldOptionsOverview.php:75
+#: includes/Admin/FieldOptionsOverview.php:85
 msgid "No groups"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:211
+#: includes/Admin/Migration/MigrationPage.php:211
 msgctxt "no meta key selected"
 msgid "--"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Taxonomy/ProductGroup.php:77
+#: includes/Taxonomy/ProductGroup.php:77
 msgid "No Product groups Found"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:164
+#: includes/Admin/Migration/MigrationPage.php:164
 msgid "No products were updated."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:207
+#: includes/Admin/FieldEditor.php:244
 msgid "None"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:205
+#: includes/Admin/Migration/MigrationPage.php:205
 msgid "Not migrated"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Registry/FieldTypeRegistry.php:139
+#: includes/Admin/ListViewTable.php:267 includes/Admin/ListViewTable.php:275
+#: includes/Admin/ListViewTable.php:284 includes/Admin/ListViewTable.php:405
+#: includes/Admin/ListViewTable.php:457 includes/Product/FieldRenderer.php:46
+#: includes/Product/FieldRenderer.php:231
+#: includes/Product/FieldRenderer.php:267
+#: includes/Product/FieldRenderer.php:305
+#: includes/Product/FieldRenderer.php:345
+#: includes/Product/VariationFieldRenderer.php:42
+#: includes/Product/VariationFieldRenderer.php:159
+#: includes/Product/VariationFieldRenderer.php:197
+#: includes/Product/VariationFieldRenderer.php:237
+#: includes/Product/VariationFieldRenderer.php:280
+msgid "Not shown in front end"
+msgstr ""
+
+#: includes/Registry/FieldTypeRegistry.php:149
 msgid "Number"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Onboarding.php:121
+#: includes/Admin/Settings.php:261
+msgid ""
+"Old product text often uses different words for the same unit. Add common "
+"alternatives here so the migration tool can better find and import the right "
+"values."
+msgstr ""
+
+#: includes/Admin/Settings.php:434 includes/Admin/Settings.php:437
+msgid "Open migration tool"
+msgstr ""
+
+#: includes/Admin/Onboarding.php:121
 msgid "Open Product Fields"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Onboarding.php:124
+#: includes/Admin/Onboarding.php:124
 msgid "Open Settings"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:192
+#: includes/Admin/FieldEditor.php:300
+msgid "Open term editor"
+msgstr ""
+
+#: includes/Admin/Settings.php:435
+msgid ""
+"Open the migration page to map legacy meta keys and import values into "
+"Product Fields."
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:192
 msgid "Options"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:356
+#: includes/Admin/Migration/MigrationPage.php:356
 msgid "Original"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:535
+#: includes/Admin/Migration/MigrationPage.php:535
 msgid ""
 "Original meta values are not deleted or modified. If other plugins or custom "
 "continue to write to the \n"
@@ -629,171 +758,229 @@ msgid ""
 "Luma Product Fields."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Frontend/FrontendController.php:290
+#: includes/Frontend/FrontendController.php:345
 msgid "Package size"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Frontend/FrontendController.php:279
+#: includes/Admin/Settings.php:180
+msgid "Package size tooltip text"
+msgstr ""
+
+#: includes/Frontend/FrontendController.php:329
 msgid "Package weight"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Migration/LegacyMetaMigrator.php:439
-#: ../../../../../../../projects/luma-product-fields/includes/Registry/FieldTypeRegistry.php:213
+#: includes/Admin/Settings.php:172
+msgid "Package weight tooltip text"
+msgstr ""
+
+#: includes/Migration/LegacyMetaMigrator.php:498
+#: includes/Registry/FieldTypeRegistry.php:289
 msgid "pcs"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Migration/LegacyMetaMigrator.php:451
+#: includes/Migration/LegacyMetaMigrator.php:509
 msgid "percent"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Migration/LegacyMetaMigrator.php:452
+#: includes/Migration/LegacyMetaMigrator.php:510
 msgid "percents"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Migration/LegacyMetaMigrator.php:440
+#: includes/Migration/LegacyMetaMigrator.php:499
 msgid "pieces"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/ListView.php:127
+#: includes/Admin/Settings.php:205
+msgid "Plain"
+msgstr ""
+
+#: includes/Admin/ListView.php:127
 msgid "Please select a product group."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:353
+#: includes/Admin/Migration/MigrationPage.php:353
 msgid "Product"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldOptionsOverview.php:64
+#: includes/Admin/FieldOptionsOverview.php:74
 msgid "Product Field Manager"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Product/FieldRenderer.php:34
+#: includes/Product/FieldRenderer.php:58
 msgid "Product Fields"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldOptionsOverview.php:46
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldOptionsOverview.php:47
+#: includes/Admin/FieldOptionsOverview.php:56
+#: includes/Admin/FieldOptionsOverview.php:57
+#: includes/Product/VariationFieldRenderer.php:104
 msgid "Product fields"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:177
+#: includes/Admin/Migration/MigrationPage.php:177
 msgid "Product Fields Meta Migration"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/ListView.php:61
+#: includes/Admin/ListView.php:61
 msgid "Product fields overview"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Frontend/FrontendController.php:352
-#: ../../../../../../../projects/luma-product-fields/includes/Product/FieldRenderer.php:69
-#: ../../../../../../../projects/luma-product-fields/includes/Taxonomy/ProductGroup.php:309
-#: ../../../../../../../projects/luma-product-fields/includes/Taxonomy/ProductGroup.php:432
+#: includes/Product/FieldStorage.php:130
+msgid "Please enter a valid range."
+msgstr ""
+
+#: includes/Product/FieldStorage.php:137
+msgid "Please enter a valid number for minimum value."
+msgstr ""
+
+#: includes/Product/FieldStorage.php:141
+msgid "Please enter a valid number for maximum value."
+msgstr ""
+
+#: includes/Product/FieldStorage.php:156
+msgid "Please enter a valid whole number."
+msgstr ""
+
+#: includes/Product/FieldStorage.php:171
+msgid "Please enter a valid number."
+msgstr ""
+
+#: includes/Frontend/FrontendController.php:412
+#: includes/Product/FieldRenderer.php:93 includes/Taxonomy/ProductGroup.php:309
+#: includes/Taxonomy/ProductGroup.php:432
 msgid "Product group"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:215
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldOptionsOverview.php:123
+#: includes/Admin/FieldEditor.php:254
+#: includes/Admin/FieldOptionsOverview.php:133
 msgid "Product Groups"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Taxonomy/ProductGroup.php:72
+#: includes/Taxonomy/ProductGroup.php:72
 msgid "Product groups"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Migration/LegacyMetaMigrator.php:453
-msgid "prosent"
-msgstr ""
-
-#: ../../../../../../../projects/luma-product-fields/includes/Migration/LegacyMetaMigrator.php:454
-msgid "prosenter"
-msgstr ""
-
-#: ../../../../../../../projects/luma-product-fields/includes/Registry/FieldTypeRegistry.php:155
+#: includes/Registry/FieldTypeRegistry.php:165
 msgid "Range (Min–Max)"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:359
+#: includes/Admin/Migration/MigrationPage.php:359
 msgid "Reason / Details"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Ajax.php:163
+#: includes/Admin/Ajax.php:163
 msgid "Reminder:"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:280
+#: includes/Admin/FieldEditor.php:287 includes/Admin/Settings.php:566
+#: includes/Admin/Settings.php:635
+msgid "Remove"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:280
 msgid "Run Migration"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Ajax.php:347
+#: includes/Admin/Ajax.php:347
 msgid "Save"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:241
+#: includes/Admin/FieldEditor.php:310
 msgid "Save Field"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Admin.php:86
+#: includes/Admin/Admin.php:86
 msgid "Searching…"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Taxonomy/ProductGroup.php:311
+#: includes/Taxonomy/ProductGroup.php:311
 msgid "Set to"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:233
+#: includes/Admin/FieldEditor.php:272
 msgid "Show Taxonomy Links"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:425
+#: includes/Admin/Migration/MigrationPage.php:425
 msgid "Showing only the first 500 rows."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Registry/FieldTypeRegistry.php:163
+#: includes/Admin/Settings.php:558
+msgid "Shown to users"
+msgstr ""
+
+#: includes/Admin/Settings.php:181
+msgid "Shown when built-in tooltips are enabled."
+msgstr ""
+
+#: includes/Admin/Settings.php:173
+msgid ""
+"Shown when built-in tooltips are enabled. Package weight and package size "
+"are intended for shipping calculations and should include packaging. If you "
+"need net weight or net dimensions, you can now create fields for these."
+msgstr ""
+
+#: includes/Registry/FieldTypeRegistry.php:173
 msgid "Single select"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:272
+#: includes/Admin/Migration/MigrationPage.php:272
 msgid "Skip if field already has a value"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:342
+#: includes/Admin/Migration/MigrationPage.php:342
 msgid "skipped (existing value)"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:343
+#: includes/Admin/Migration/MigrationPage.php:343
 msgid "skipped (no valid data)"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Frontend/FrontendController.php:301
+#: includes/Frontend/FrontendController.php:361
 msgid "SKU"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldOptionsOverview.php:121
+#: includes/Admin/FieldOptionsOverview.php:131 includes/Admin/Settings.php:557
 msgid "Slug"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:193
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:355
+#: includes/Admin/Settings.php:206
+msgid "Small divider between rows"
+msgstr ""
+
+#: includes/Admin/Migration/MigrationPage.php:193
+#: includes/Admin/Migration/MigrationPage.php:355
 msgid "Status"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Migration/LegacyMetaMigrator.php:441
-msgid "stk"
+#: includes/Admin/Settings.php:207
+msgid "Striped rows"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Registry/FieldTypeRegistry.php:178
+#. Description of the plugin
+msgid ""
+"Structured, linkable WooCommerce product specifications with fast inline "
+"editing."
+msgstr ""
+
+#: includes/Admin/Settings.php:195 includes/Admin/Settings.php:340
+msgid "Style"
+msgstr ""
+
+#: includes/Registry/FieldTypeRegistry.php:188
 msgid "Suggest existing terms, allow new."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Frontend/FrontendController.php:329
+#: includes/Frontend/FrontendController.php:389
 msgid "Tags"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Taxonomy/ProductGroup.php:71
+#: includes/Taxonomy/ProductGroup.php:71
 msgctxt "taxonomy general name"
 msgid "Product group"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Taxonomy/ProductGroup.php:70
+#: includes/Taxonomy/ProductGroup.php:70
 msgctxt "taxonomy general name"
 msgid "Product groups"
 msgstr ""
@@ -802,25 +989,31 @@ msgstr ""
 msgid "Terje Johansen"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Registry/FieldTypeRegistry.php:132
+#: includes/Registry/FieldTypeRegistry.php:142
 msgid "Text field"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Frontend/FrontendController.php:293
+#: includes/Admin/Settings.php:438
+msgid ""
+"The migration tool is currently disabled above. Enable it and save settings "
+"to open the migration page."
+msgstr ""
+
+#: includes/Admin/Settings.php:184 includes/Frontend/FrontendController.php:300
 msgid "The size of the product including packaging."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Frontend/FrontendController.php:282
+#: includes/Admin/Settings.php:176 includes/Frontend/FrontendController.php:295
 msgid "The weight of the product including packaging."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Settings.php:73
+#: includes/Admin/Settings.php:98
 msgid ""
 "These are the system settings for Luma Product Fields. To add or remove "
 "fields, go to Products → Product Fields"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:484
+#: includes/Admin/Migration/MigrationPage.php:484
 msgid ""
 "This tool migrates existing product meta values into Luma Product Fields. "
 "During migration, existing\n"
@@ -828,108 +1021,140 @@ msgid ""
 "required by each field type."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:528
+#: includes/Admin/Migration/MigrationPage.php:528
 msgid ""
 "This tool performs a one-time migration only. It does not synchronize data."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Settings.php:79
+#: includes/Admin/Settings.php:117
 msgid "Title on the product fields tab."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:197
+#: includes/Admin/Settings.php:274 includes/Admin/Settings.php:342
+msgid "Tools"
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:234
 msgid "Tooltip (for admin)"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:177
+#: includes/Admin/FieldEditor.php:214
 msgid "Tooltip (front end)"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:249
+#: includes/Admin/Migration/MigrationPage.php:249
 msgid "Try to match unit"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Registry/FieldTypeRegistry.php:156
+#: includes/Registry/FieldTypeRegistry.php:166
 msgid "Two numeric inputs, e.g. 3.5 – 6."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:159
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldOptionsOverview.php:122
+#: includes/Admin/FieldEditor.php:202
+#: includes/Admin/FieldOptionsOverview.php:132
 msgid "Type"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:205
+#: includes/Admin/FieldEditor.php:242
 msgid "Unit"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Product/FieldRenderer.php:137
+#: includes/Admin/Settings.php:260
+msgid "Unit aliases for migration"
+msgstr ""
+
+#: includes/Admin/Settings.php:626
+msgid "Unit slug"
+msgstr ""
+
+#: includes/Admin/Settings.php:248 includes/Admin/Settings.php:341
+msgid "Units"
+msgstr ""
+
+#: includes/Admin/Settings.php:253
+msgid "Units editor"
+msgstr ""
+
+#: includes/Product/FieldRenderer.php:161
 msgid "Unknown field."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Product/FieldRenderer.php:180
+#: includes/Product/FieldRenderer.php:204
 msgid "Unsupported field type: "
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Product/VariationFieldRenderer.php:87
+#: includes/Product/VariationFieldRenderer.php:135
 msgid "Unsupported variation field type."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Taxonomy/ProductGroup.php:74
+#: includes/Taxonomy/ProductGroup.php:74
 msgid "Update Product group"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:228
+#: includes/Admin/FieldEditor.php:267
 msgid "Use in variations"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Product/FieldRenderer.php:380
-#: ../../../../../../../projects/luma-product-fields/includes/Product/FieldRenderer.php:388
+#: includes/Admin/Settings.php:626
+msgid "Use the slug from Units"
+msgstr ""
+
+#: includes/Product/FieldRenderer.php:418
+#: includes/Product/FieldRenderer.php:426
 msgid "Value not set"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldOptionsOverview.php:125
+#: includes/Admin/Settings.php:233
+msgid "Values bold"
+msgstr ""
+
+#: includes/Admin/FieldOptionsOverview.php:135
 msgid "Variation"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldOptionsOverview.php:156
+#: includes/Admin/FieldOptionsOverview.php:166
 msgid "Visible"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/Migration/MigrationPage.php:235
+#: includes/Admin/Migration/MigrationPage.php:235
 msgid "Which number?"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Migration/LegacyMetaMigrator.php:445
+#: includes/Migration/LegacyMetaMigrator.php:503
 msgid "year"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Migration/LegacyMetaMigrator.php:446
-#: ../../../../../../../projects/luma-product-fields/includes/Registry/FieldTypeRegistry.php:214
+#: includes/Migration/LegacyMetaMigrator.php:504
+#: includes/Registry/FieldTypeRegistry.php:290
 msgid "years"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:230
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldOptionsOverview.php:157
+#: includes/Admin/FieldEditor.php:269
+#: includes/Admin/FieldOptionsOverview.php:167
 msgid "Yes"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:346
+#: includes/Admin/FieldEditor.php:292 includes/Admin/FieldEditor.php:298
+msgid "You can add and remove these terms later in the term editor."
+msgstr ""
+
+#: includes/Admin/FieldEditor.php:439
 msgid "You do not have sufficient permissions to access this page."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Admin/FieldEditor.php:359
+#: includes/Admin/FieldEditor.php:459
 msgid "You must enter both label and type."
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Taxonomy/ProductGroup.php:315
-#: ../../../../../../../projects/luma-product-fields/includes/Taxonomy/ProductGroup.php:436
+#: includes/Taxonomy/ProductGroup.php:315
+#: includes/Taxonomy/ProductGroup.php:436
 msgid "— Clear —"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Taxonomy/ProductGroup.php:314
+#: includes/Taxonomy/ProductGroup.php:314
 msgid "— No change —"
 msgstr ""
 
-#: ../../../../../../../projects/luma-product-fields/includes/Taxonomy/ProductGroup.php:435
+#: includes/Taxonomy/ProductGroup.php:435
 msgid "— Select —"
 msgstr ""

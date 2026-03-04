@@ -39,9 +39,9 @@ Main areas:
 Key classes (non-exhaustive):
 
 - `Admin\Admin` – bootstraps admin features and menus  
-- `Admin\Settings` – settings UI  
+- `Admin\Settings` – tabbed settings UI (General/Style/Units/Tools), including units + migration unit aliases  
 - `Admin\FieldOptionsOverview` – global field overview table  
-- `Admin\FieldEditor` – field editor screen  
+- `Admin\FieldEditor` – field editor screen (radio type selector, initial values for new taxonomy fields, draft persistence on validation errors)  
 - `Admin\ListView` – product list integration  
 - `Frontend\FrontendController` – main frontend controller  
 - `Product\FieldRenderer` – admin field renderer  
@@ -66,7 +66,7 @@ Developers register new types via the `luma_product_fields_field_types` filter.
 
 Each field type is defined as an associative array. **Core types** are provided by the plugin, and **custom types** can be added by extensions/themes.
 
-> **Security note (important):** Render callbacks may return HTML. The plugin sanitizes output **at render output time** using `wp_kses()` with plugin-specific KSES contexts (admin + frontend). If your field type needs additional HTML tags/attributes, extend the allowlist via the filters documented in section **2.3 Allowed HTML (KSES contexts)**.
+> **Security note (important):** Render callbacks may return HTML. The plugin sanitizes output **at render output time** using `wp_kses()` with plugin-specific KSES contexts (admin + frontend). If your field type needs additional HTML tags/attributes, extend the allowlist via the filters documented in section **2.4 Allowed HTML (KSES contexts)**.
 
 
 ---
@@ -101,9 +101,37 @@ A field type definition typically includes:
 
 Only meta-based field types support variations.
 
+## 2.2 Units and migration aliases
+
+Units are now resolved from settings first, then finalized through the existing filter hooks.
+
+Resolution flow for available units:
+
+1. Built-in defaults from `FieldTypeRegistry::get_default_units()`
+2. Optional saved settings override (`luma_product_fields_units` option)
+3. Runtime currency unit injection
+4. Final filter: `luma_product_fields_allowed_units`
+
+Resolution flow for legacy migration aliases:
+
+1. Built-in alias defaults in `LegacyMetaMigrator`
+2. If present, saved aliases in settings replace defaults (`luma_product_fields_unit_aliases` option)
+3. Final filter: `luma_product_fields_unit_aliases`
+
+The field editor and migration tool therefore share the same canonical unit slugs.
+
+### Settings format (repeaters)
+
+In WooCommerce → Settings → Products → Luma Product Fields:
+
+- **Units editor**: repeater rows with `Slug` and `Label`
+- **Unit aliases for migration**: repeater rows with `Unit slug` and comma-separated aliases
+
+Slug normalization allows existing legacy unit characters used by this plugin (for example `%`, `.`, and `"`).
+
 ---
 
-## 2.2 FULL EXAMPLE: Adding a Custom Field Type
+## 2.3 FULL EXAMPLE: Adding a Custom Field Type
 
 ### Step 1: Register the field type
 
@@ -172,7 +200,7 @@ class My_Color_Badge_Field {
 
 ---
 
-## 2.3 Allowed HTML (KSES contexts)
+## 2.4 Allowed HTML (KSES contexts)
 
 The plugin sanitizes all generated markup **at output time** using `wp_kses()` and plugin-specific KSES contexts.
 
@@ -399,6 +427,54 @@ add_action(
 The router handles nonce and capability check ('manage_woocommerce'), but whthin your handler, always:
 - Sanitize any incoming data
 - Return a proper `wp_send_json_success()` / `wp_send_json_error()` payload
+
+## 5.4 Field Editor UX and persistence
+
+`Admin\FieldEditor` now includes several UX-focused behaviors that extensions should be aware of:
+
+- **Type chooser** is rendered as radio-button options (one item per registered field type).
+- **Initial values** input is shown for supported taxonomy-backed types when creating a new field (`lrpf_initial_terms[]` in request).
+- **Draft persistence** stores submitted field data in user meta (`luma_product_fields_field_editor_draft`) when save fails validation, then repopulates values on the next render.
+
+The editor screen script is split into a dedicated file:
+
+- `js/admin/field-editor.js`
+
+That script handles type highlighting, capability-driven row visibility (unit/variation/links), and add/remove interactions for initial values.
+
+## 5.5 Settings tabs and option groups
+
+`Admin\Settings` now uses in-page tabs inside WooCommerce Products settings:
+
+- `general`
+- `style`
+- `units`
+- `tools`
+
+Tab state is resolved from `luma_settings_tab` (GET/POST), with fallback to `general`.
+
+Notable settings groups:
+
+- **General**: frontend title, built-in rows (SKU, tags, categories, Product Group, global unique ID), built-in tooltip toggles/text
+- **Style**: `luma_product_fields_frontend_row_style`, `luma_product_fields_frontend_layout_style`, and label/value bold toggles
+- **Units**: editable unit repeater + alias repeater stored in `luma_product_fields_units` and `luma_product_fields_unit_aliases`
+- **Tools**: migration tool toggle and quick-link renderer
+
+## 5.6 Frontend-hidden indicators in admin
+
+Fields marked with `hide_in_frontend` are visually marked in admin forms and list views.
+
+Implementation details:
+
+- Product and variation field renderers append `lumaprfi-frontend-hidden` CSS class to the field wrapper.
+- They also set a title attribute (`Not shown in front end`) for quick context.
+- `Admin\ListViewTable` applies the same class/tooltip on matching columns/cells.
+
+## 5.7 Variation section marker
+
+`Product\VariationFieldRenderer` prints a dedicated full-width section marker (`lumaprfi-variation-section`) with the label **Product fields** before variation-capable custom fields.
+
+This keeps custom variation fields grouped and avoids layout blending with third-party variation controls.
 
 ---
 

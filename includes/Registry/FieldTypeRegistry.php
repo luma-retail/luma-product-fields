@@ -32,6 +32,16 @@ class FieldTypeRegistry
 {
 
     /**
+     * Option key for persisted unit definitions (slug => label).
+     */
+    public const OPTION_UNITS = 'luma_product_fields_units';
+
+    /**
+     * Option key for persisted unit alias map (unit_slug => aliases[]).
+     */
+    public const OPTION_UNIT_ALIASES = 'luma_product_fields_unit_aliases';
+
+    /**
      * Cached field type registry for the current request.
      *
      * @var array<string, array>|null
@@ -202,7 +212,73 @@ class FieldTypeRegistry
      */
     public static function get_units(): array
     {
-        $units = [
+        $stored_units = get_option( self::OPTION_UNITS, null );
+
+        if ( is_array( $stored_units ) ) {
+            $units = [];
+
+            foreach ( $stored_units as $slug => $label ) {
+                if ( ! is_scalar( $slug ) || ! is_scalar( $label ) ) {
+                    continue;
+                }
+
+                $normalized_slug  = self::normalize_unit_slug( (string) $slug );
+                $normalized_label = sanitize_text_field( (string) $label );
+
+                if ( '' === $normalized_slug || '' === $normalized_label ) {
+                    continue;
+                }
+
+                $units[ $normalized_slug ] = $normalized_label;
+            }
+
+            if ( empty( $units ) ) {
+                $units = self::get_default_units();
+            }
+        } else {
+            $units = self::get_default_units();
+        }
+
+        // add currency
+        $currency_code   = get_woocommerce_currency();
+        $currency_symbol = get_woocommerce_currency_symbol( $currency_code );
+        if ( $currency_code ) {
+            $units[ strtolower( $currency_code ) ] = esc_html( $currency_symbol );
+        }
+
+        /**
+         * @hook luma_product_fields_allowed_units
+         * Filters the array of allowed units.
+         *
+         * @param array $units Array of allowed unit keys.
+         *
+         * @since 1.0.0
+         */
+        return apply_filters( 'luma_product_fields_allowed_units', $units);
+    }
+
+
+    /**
+     * Normalize a unit slug while preserving legacy characters used by this plugin.
+     *
+     * @param string $slug Unit slug candidate.
+     * @return string
+     */
+    public static function normalize_unit_slug( string $slug ): string
+    {
+        $normalized = strtolower( trim( $slug ) );
+        return preg_replace( '/[^a-z0-9_\-\.\%\"]+/', '', $normalized ) ?? '';
+    }
+
+
+    /**
+     *  Get built-in default units for numeric fields.
+     *
+     * @return array
+     */
+    public static function get_default_units(): array
+    {
+        return [
             'cm'        => __('cm', 'luma-product-fields'),
             'mm'        => __('mm', 'luma-product-fields'),
             'm'         => __('meters', 'luma-product-fields'),
@@ -214,23 +290,6 @@ class FieldTypeRegistry
             'years'     => __('years', 'luma-product-fields'),
             '%'         => __('%', 'luma-product-fields'),        
         ];
-
-        // add currency
-        $currency_code   = get_woocommerce_currency();
-        $currency_symbol = get_woocommerce_currency_symbol( $currency_code );
-        if ( $currency_code ) {
-            $units[ strtolower( $currency_code ) ] = esc_html( $currency_symbol );                            
-        }
-        
-        /**
-         * @hook luma_product_fields_allowed_units
-         * Filters the array of allowed units.
-         *
-         * @param array $units Array of allowed unit keys.
-         *
-         * @since 1.0.0
-         */
-        return apply_filters( 'luma_product_fields_allowed_units', $units);
     }
 
 

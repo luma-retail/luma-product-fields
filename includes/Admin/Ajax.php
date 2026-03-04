@@ -437,6 +437,17 @@ class Ajax {
             }
         }
 
+        $validation_error = FieldStorage::get_validation_error( $field, $value );
+        if ( null !== $validation_error ) {
+            wp_send_json_error(
+                [
+                    'code'    => 'invalid_value',
+                    'message' => $validation_error,
+                ],
+                422
+            );
+        }
+
         $ok = FieldStorage::save_field( $product_id, $field_slug, $value );
 
         if ( ! $ok ) {

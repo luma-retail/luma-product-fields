@@ -18,6 +18,30 @@ defined( 'ABSPATH' ) || exit;
  */
 class VariationFieldRenderer {
 
+    /**
+     * Return CSS class suffix for frontend-hidden fields.
+     *
+     * @param array $field Field definition.
+     * @return string
+     */
+    protected function get_frontend_hidden_class( array $field ): string {
+        return ! empty( $field['hide_in_frontend'] ) ? ' lumaprfi-frontend-hidden' : '';
+    }
+
+    /**
+     * Return HTML title attribute for frontend-hidden fields.
+     *
+     * @param array $field Field definition.
+     * @return string
+     */
+    protected function get_frontend_hidden_title_attr( array $field ): string {
+        if ( empty( $field['hide_in_frontend'] ) ) {
+            return '';
+        }
+
+        return ' title="' . esc_attr__( 'Not shown in front end', 'luma-product-fields' ) . '"';
+    }
+
 
     /**
      * Render custom fields in each variation tab.
@@ -38,8 +62,7 @@ class VariationFieldRenderer {
 
         $group_slug = Helpers::get_product_group_slug( $product_id );
 
-        echo '<fieldset class="luma-product-fields-variation-fields">';
-
+        $variation_fields = [];
         foreach ( Helpers::get_fields_for_group( $group_slug ) as $field ) {
             if ( empty( $field['variation'] ) ) {
                 continue;
@@ -49,12 +72,37 @@ class VariationFieldRenderer {
                 continue;
             }
 
+            $variation_fields[] = $field;
+        }
+
+        if ( empty( $variation_fields ) ) {
+            return;
+        }
+
+        echo '<fieldset class="luma-product-fields-variation-fields">';
+
+        echo wp_kses( $this->render_section_marker(), wp_kses_allowed_html( 'luma_product_fields_admin_fields' ) );
+
+        foreach ( $variation_fields as $field ) {
             $html = $this->render_field_by_type( $field, (int) $loop, (int) $post->ID );
             echo wp_kses( $html, wp_kses_allowed_html( 'luma_product_fields_admin_fields' ) );
 
         }
 
         echo '</fieldset>';
+    }
+
+
+    /**
+     * Render a section marker to keep variation fields grouped and full-width.
+     *
+     * @return string
+     */
+    protected function render_section_marker(): string {
+        return sprintf(
+            '<p class="form-row form-row-full lumaprfi-variation-section"><strong>%s</strong></p>',
+            esc_html__( 'Product fields', 'luma-product-fields' )
+        );
     }
 
 
@@ -103,10 +151,12 @@ class VariationFieldRenderer {
         $label       = $field['label'] ?? '';
         $description = $field['description'] ?? '';
         $tip_html    = $description ? wc_help_tip( $description ) : '';
+        $extra_class = $this->get_frontend_hidden_class( $field );
+        $is_frontend_hidden = ! empty( $field['hide_in_frontend'] );
 
         ob_start();
         ?>
-        <p class="form-row lumaprfi-fieldtype-text">
+        <p class="form-row lumaprfi-fieldtype-text<?php echo esc_attr( $extra_class ); ?>"<?php if ( $is_frontend_hidden ) : ?> title="<?php echo esc_attr__( 'Not shown in front end', 'luma-product-fields' ); ?>"<?php endif; ?>>
             <label>
                 <?php echo esc_html( $label ); ?>
                 <?php echo $tip_html ? wp_kses_post( $tip_html ) : ''; ?>
@@ -139,10 +189,12 @@ class VariationFieldRenderer {
         $label       = $field['label'] ?? '';
         $description = $field['description'] ?? '';
         $tip_html    = $description ? wc_help_tip( $description ) : '';
+        $extra_class = $this->get_frontend_hidden_class( $field );
+        $is_frontend_hidden = ! empty( $field['hide_in_frontend'] );
 
         ob_start();
         ?>
-        <p class="form-row lumaprfi-fieldtype-number">
+        <p class="form-row lumaprfi-fieldtype-number<?php echo esc_attr( $extra_class ); ?>"<?php if ( $is_frontend_hidden ) : ?> title="<?php echo esc_attr__( 'Not shown in front end', 'luma-product-fields' ); ?>"<?php endif; ?>>
             <label>
                 <?php echo esc_html( $label ); ?>
                 <?php echo $tip_html ? wp_kses_post( $tip_html ) : ''; ?>
@@ -177,10 +229,12 @@ class VariationFieldRenderer {
         $label       = $field['label'] ?? '';
         $description = $field['description'] ?? '';
         $tip_html    = $description ? wc_help_tip( $description ) : '';
+        $extra_class = $this->get_frontend_hidden_class( $field );
+        $is_frontend_hidden = ! empty( $field['hide_in_frontend'] );
 
         ob_start();
         ?>
-        <p class="form-row lumaprfi-fieldtype-integer">
+        <p class="form-row lumaprfi-fieldtype-integer<?php echo esc_attr( $extra_class ); ?>"<?php if ( $is_frontend_hidden ) : ?> title="<?php echo esc_attr__( 'Not shown in front end', 'luma-product-fields' ); ?>"<?php endif; ?>>
             <label>
                 <?php echo esc_html( $label ); ?>
                 <?php echo $tip_html ? wp_kses_post( $tip_html ) : ''; ?>
@@ -216,12 +270,14 @@ class VariationFieldRenderer {
         $label       = $field['label'] ?? '';
         $description = $field['description'] ?? '';
         $tip_html    = $description ? wc_help_tip( $description ) : '';
+        $extra_class = $this->get_frontend_hidden_class( $field );
+        $is_frontend_hidden = ! empty( $field['hide_in_frontend'] );
 
         $base_name = 'variable_' . $field['slug'] . '[' . $loop . ']';
 
         ob_start();
         ?>
-        <p class="form-row lumaprfi-fieldtype-minmax">
+        <p class="form-row lumaprfi-fieldtype-minmax<?php echo esc_attr( $extra_class ); ?>"<?php if ( $is_frontend_hidden ) : ?> title="<?php echo esc_attr__( 'Not shown in front end', 'luma-product-fields' ); ?>"<?php endif; ?>>
             <label>
                 <?php echo esc_html( $label ); ?>
                 <?php echo $tip_html ? wp_kses_post( $tip_html ) : ''; ?>
@@ -296,6 +352,22 @@ class VariationFieldRenderer {
                     $value = sanitize_text_field(
                         wp_unslash( (string) $raw )
                     );
+                }
+
+                $validation_error = FieldStorage::get_validation_error( $field, $value );
+                if ( null !== $validation_error ) {
+                    if ( class_exists( '\\WC_Admin_Meta_Boxes' ) ) {
+                        $label = isset( $field['label'] ) ? (string) $field['label'] : $slug;
+                        \WC_Admin_Meta_Boxes::add_error(
+                            sprintf(
+                                /* translators: 1: field label, 2: validation error */
+                                __( '%1$s: %2$s', 'luma-product-fields' ),
+                                wp_strip_all_tags( $label ),
+                                $validation_error
+                            )
+                        );
+                    }
+                    continue;
                 }
 
                 FieldStorage::save_field( $variation_id, $slug, $value );

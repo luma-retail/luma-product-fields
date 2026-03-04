@@ -52,6 +52,7 @@ class ProductGroup {
     public function __construct() {
         add_action( 'init', [ $this, 'register' ] );
         add_action( 'current_screen', [ $this, 'maybe_boot_admin' ] );
+        add_action( 'current_screen', [ $this, 'maybe_boot_taxonomy_help' ] );
         add_action( 'woocommerce_product_bulk_edit_end', [ $this, 'render_bulk_edit_field' ] );
         add_action( 'woocommerce_product_bulk_edit_save', [ $this, 'handle_bulk_edit_save' ], 10, 1 );
         add_action( 'woocommerce_product_quick_edit_end', [ $this, 'render_quick_edit_field' ] );
@@ -112,6 +113,56 @@ class ProductGroup {
         add_filter( 'posts_clauses', [ $this, 'handle_sorting_clauses' ], 10, 2 );
         add_action( 'restrict_manage_posts', [ $this, 'render_taxonomy_filter' ] );
         add_action( 'pre_get_posts', [ $this, 'apply_taxonomy_filter' ] );
+    }
+
+
+    /**
+     * Boots contextual help notice on Product group taxonomy admin screens.
+     *
+     * @return void
+     */
+    public function maybe_boot_taxonomy_help(): void {
+        $screen = get_current_screen();
+
+        if ( empty( $screen ) || self::$tax_name !== ( $screen->taxonomy ?? '' ) ) {
+            return;
+        }
+
+        add_action( 'all_admin_notices', [ $this, 'render_taxonomy_help_notice' ] );
+        add_action( self::$tax_name . '_add_form', [ $this, 'render_taxonomy_assignment_help' ] );
+    }
+
+
+    /**
+     * Render an explanation notice on Product groups taxonomy pages.
+     *
+     * @return void
+     */
+    public function render_taxonomy_help_notice(): void {
+        if ( ! current_user_can( 'manage_woocommerce' ) ) {
+            return;
+        }
+
+        echo '<div class="notice notice-info">';
+        echo '<p><strong>' . esc_html__( 'What are Product groups?', 'luma-product-fields' ) . '</strong></p>';
+        echo '<p>' . esc_html__( 'Use Product groups to split fields into different spec tables for different kinds of products. For example, “Lenses” and “Memory Cards” need different fields, while some fields can be shared between groups.', 'luma-product-fields' ) . '</p>';
+        echo '</div>';
+    }
+
+
+    /**
+     * Render extra guidance below the Product group add form.
+     *
+     * @return void
+     */
+    public function render_taxonomy_assignment_help(): void {
+        if ( ! current_user_can( 'manage_woocommerce' ) ) {
+            return;
+        }
+
+        echo '<p class="description" style="margin-top:12px;max-width:700px;">';
+        echo esc_html__( 'After creating groups, choose a Product group per product in the product editor, or assign one to many products at once using Bulk Edit.', 'luma-product-fields' );
+        echo '</p>';
     }
 
 

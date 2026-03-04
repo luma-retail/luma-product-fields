@@ -209,36 +209,6 @@ jQuery(function($) {
     });
 
 
-        
-    // In field editor: Toggle unit and show taxonomy links based on selected field type
-    const $typeSelect = $('#luma_product_fields_fields_type_selector');
-    const $unitRow = $('.field-unit-row');
-    const $showLinksRow = $('.field-show-tax-links-row');
-    const $variationsRow = $('.field-variations-row');
-    
-    function updateFieldVisibility() {
-        const selectedType = $typeSelect.val();
-
-        $.post(luma_product_fields_admin_ajaxdata.ajaxurl, {
-            action: luma_product_fields_admin_ajaxdata.action,
-            nonce: luma_product_fields_admin_ajaxdata.nonce,
-            luma_product_fields_action: 'get_field_type_capabilities',
-            field_type: selectedType
-        }, function(response) {
-            if (response.success) {
-                $unitRow.toggle(response.data.supports_unit);
-                $showLinksRow.toggle(response.data.supports_links);
-                $variationsRow.toggle(response.data.supports_variations);
-            }
-        });
-    }
-
-    if ($typeSelect.length) {
-        $typeSelect.on('change', updateFieldVisibility);
-        updateFieldVisibility(); // Run once on page load
-    }
-        
-
 
     // Toggle and load variation table in ListViewTable
     $('.lumaprfi-toggle-variations').on('click', function () {
@@ -298,6 +268,33 @@ jQuery(function($) {
             $('.lumaprfi-editable').removeClass('luma-product-fields-editing');
             $('.lumaprfi-editable').closest('tr').removeClass('luma-product-fields-row-editing');
         }
+    }
+
+    function showInlineEditorError($editor, $cell, message) {
+        const text = (typeof message === 'string' && message.length)
+            ? message
+            : 'Failed to save.';
+
+        $editor.find('.lumaprfi-inline-error').remove();
+
+        const $error = $('<div class="lumaprfi-inline-error" role="alert" aria-live="polite">').text(text);
+        const $controls = $editor.find('.lumaprfi-edit-controls').first();
+
+        if ($controls.length) {
+            $error.insertBefore($controls);
+        } else {
+            $editor.find('form').append($error);
+        }
+
+        $cell.removeClass('lumaprfi-save-glow lumaprfi-save-glow-reset lumaprfi-save-error-glow lumaprfi-save-error-glow-reset')
+             .addClass('lumaprfi-save-error-glow');
+
+        setTimeout(() => $cell.addClass('lumaprfi-save-error-glow-reset'), 1000);
+        setTimeout(() => $cell.removeClass('lumaprfi-save-error-glow lumaprfi-save-error-glow-reset'), 3000);
+
+        setTimeout(() => {
+            $error.fadeOut(200, function () { $(this).remove(); });
+        }, 2500);
     }
 
     $(document).on('click', '.lumaprfi-editable', function () {
@@ -480,9 +477,25 @@ jQuery(function($) {
                             setTimeout(() => $cell.addClass('lumaprfi-save-glow-reset'), 1000);
                             setTimeout(() => $cell.removeClass('lumaprfi-save-glow lumaprfi-save-glow-reset'), 3000);
                         } else {
-                            alert(res.data || 'Failed to save.');
+                            const message = (res && res.data && typeof res.data === 'object' && res.data.message)
+                                ? res.data.message
+                                : ((res && typeof res.data === 'string') ? res.data : 'Failed to save.');
+                            showInlineEditorError($editor, $cell, message);
                             $btn.prop('disabled', false);
                         }
+                    }).fail(function (xhr) {
+                        let message = 'AJAX request failed.';
+
+                        if (xhr && xhr.responseJSON && xhr.responseJSON.data) {
+                            if (typeof xhr.responseJSON.data === 'string') {
+                                message = xhr.responseJSON.data;
+                            } else if (xhr.responseJSON.data.message) {
+                                message = xhr.responseJSON.data.message;
+                            }
+                        }
+
+                        showInlineEditorError($editor, $cell, message);
+                        $btn.prop('disabled', false);
                     });
                 });
 
@@ -564,46 +577,5 @@ jQuery(document).on('click', 'a.lumaprfi-toggle-featured', function (e) {
     .fail(function (xhr) {
         $icon.removeClass('is-busy');
         alert('Request failed: ' + (xhr && xhr.status ? xhr.status : ''));
-    });
-});
-
-
-// Field editor field type click / highlight
-jQuery(function($) {
-    var $select = $('#luma_product_fields_fields_type_selector');
-    var $items  = $('.luma-product-fields-types-desc li');
-
-    function highlightType(typeSlug) {
-        $items.removeClass('is-active');
-
-        if (!typeSlug) {
-            return;
-        }
-
-        var $target = $('#luma-product-fields-type-' + typeSlug);
-        if ($target.length) {
-            $target.addClass('is-active');
-        }
-    }
-
-    // Initial highlight on load
-    highlightType($select.val());
-
-    // When the select changes (user or code), update highlight
-    $select.on('change', function() {
-        highlightType($(this).val());
-    });
-
-    // When a description row is clicked, update the select
-    $items.on('click', function(e) {
-        e.preventDefault();
-
-        var typeSlug = $(this).data('type');
-        if (!typeSlug) {
-            return;
-        }
-
-        // Update select and trigger change so highlight stays in sync
-        $select.val(typeSlug).trigger('change');
     });
 });

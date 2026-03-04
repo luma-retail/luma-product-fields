@@ -23,6 +23,30 @@ defined( 'ABSPATH' ) || exit;
 class FieldRenderer {
 
     /**
+     * Return CSS class suffix for frontend-hidden fields.
+     *
+     * @param array $field Field definition.
+     * @return string
+     */
+    protected function get_frontend_hidden_class( array $field ): string {
+        return ! empty( $field['hide_in_frontend'] ) ? ' lumaprfi-frontend-hidden' : '';
+    }
+
+    /**
+     * Return HTML title attribute for frontend-hidden fields.
+     *
+     * @param array $field Field definition.
+     * @return string
+     */
+    protected function get_frontend_hidden_title_attr( array $field ): string {
+        if ( empty( $field['hide_in_frontend'] ) ) {
+            return '';
+        }
+
+        return ' title="' . esc_attr__( 'Not shown in front end', 'luma-product-fields' ) . '"';
+    }
+
+    /**
      * Add custom WooCommerce product data tab.
      *
      * @param array $tabs Existing product tabs.
@@ -197,10 +221,16 @@ class FieldRenderer {
         $label       = $field['label'] ?? '';
         $description = $field['description'] ?? '';
         $tip_html    = $description ? wc_help_tip( $description ) : '';
+        $extra_class = $this->get_frontend_hidden_class( $field );
+        $is_frontend_hidden = ! empty( $field['hide_in_frontend'] );
 
         ob_start();
 
-        echo "<p class='form-field lumaprfi-fieldtype-text'>";
+        echo "<p class='form-field lumaprfi-fieldtype-text" . esc_attr( $extra_class ) . "'";
+        if ( $is_frontend_hidden ) {
+            echo ' title="' . esc_attr__( 'Not shown in front end', 'luma-product-fields' ) . '"';
+        }
+        echo '>';
         echo '<label>' . esc_html( $label );
         if ( $tip_html ) {
             echo wp_kses_post( $tip_html );
@@ -229,10 +259,12 @@ class FieldRenderer {
         $unit_html   = empty( $field['unit'] ) ? '' : Helpers::get_formatted_unit_html( $field['unit'] );
         $description = $field['description'] ?? '';
         $tip_html    = $description ? wc_help_tip( $description ) : '';
+        $extra_class = $this->get_frontend_hidden_class( $field );
+        $is_frontend_hidden = ! empty( $field['hide_in_frontend'] );
 
         ob_start();
         ?>
-        <p class="form-field lumaprfi-fieldtype-number">
+        <p class="form-field lumaprfi-fieldtype-number<?php echo esc_attr( $extra_class ); ?>"<?php if ( $is_frontend_hidden ) : ?> title="<?php echo esc_attr__( 'Not shown in front end', 'luma-product-fields' ); ?>"<?php endif; ?>>
             <label>
                 <?php echo esc_html( $field['label'] ?? '' ); ?>
                 <?php echo $tip_html ? wp_kses_post( $tip_html ) : ''; ?>
@@ -265,10 +297,12 @@ class FieldRenderer {
         $unit_html   = empty( $field['unit'] ) ? '' : Helpers::get_formatted_unit_html( $field['unit'] );
         $description = $field['description'] ?? '';
         $tip_html    = $description ? wc_help_tip( $description ) : '';
+        $extra_class = $this->get_frontend_hidden_class( $field );
+        $is_frontend_hidden = ! empty( $field['hide_in_frontend'] );
 
         ob_start();
         ?>
-        <p class="form-field lumaprfi-fieldtype-integer">
+        <p class="form-field lumaprfi-fieldtype-integer<?php echo esc_attr( $extra_class ); ?>"<?php if ( $is_frontend_hidden ) : ?> title="<?php echo esc_attr__( 'Not shown in front end', 'luma-product-fields' ); ?>"<?php endif; ?>>
             <label>
                 <?php echo esc_html( $field['label'] ?? '' ); ?>
                 <?php echo $tip_html ? wp_kses_post( $tip_html ) : ''; ?>
@@ -303,10 +337,12 @@ class FieldRenderer {
         $description = $field['description'] ?? '';
         $tip_html    = $description ? wc_help_tip( $description ) : '';
         $unit_html   = empty( $field['unit'] ) ? '' : Helpers::get_formatted_unit_html( $field['unit'] );
+        $extra_class = $this->get_frontend_hidden_class( $field );
+        $is_frontend_hidden = ! empty( $field['hide_in_frontend'] );
 
         ob_start();
         ?>
-        <p class="form-field lumaprfi-fieldtype-minmax">
+        <p class="form-field lumaprfi-fieldtype-minmax<?php echo esc_attr( $extra_class ); ?>"<?php if ( $is_frontend_hidden ) : ?> title="<?php echo esc_attr__( 'Not shown in front end', 'luma-product-fields' ); ?>"<?php endif; ?>>
             <label>
                 <?php echo esc_html( $field['label'] ?? '' ); ?>
                 <?php echo $tip_html ? wp_kses_post( $tip_html ) : ''; ?>
@@ -355,6 +391,8 @@ class FieldRenderer {
         );
         $description = $field['description'] ?? '';
         $tip_html    = $description ? wc_help_tip( $description ) : '';
+        $extra_class = $this->get_frontend_hidden_class( $field );
+        $title_attr  = $this->get_frontend_hidden_title_attr( $field );
 
         if ( is_wp_error( $terms ) ) {
             $terms = [];
@@ -391,7 +429,9 @@ class FieldRenderer {
         }
 
         return sprintf(
-            "<p class='form-field lumaprfi-fieldtype-single'><label>%s%s</label><select name='luma-product-fields-%s'>%s</select></p>",
+            "<p class='form-field lumaprfi-fieldtype-single%s'%s><label>%s%s</label><select name='luma-product-fields-%s'>%s</select></p>",
+            esc_attr( $extra_class ),
+            $title_attr,
             esc_html( $field['label'] ?? '' ),
             $tip_html ? wp_kses_post( $tip_html ) : '',
             esc_attr( $field['slug'] ),
@@ -418,6 +458,8 @@ class FieldRenderer {
         );
         $description = $field['description'] ?? '';
         $tip_html    = $description ? wc_help_tip( $description ) : '';
+        $extra_class = $this->get_frontend_hidden_class( $field );
+        $title_attr  = $this->get_frontend_hidden_title_attr( $field );
 
         if ( is_wp_error( $terms ) ) {
             $terms = [];
@@ -437,7 +479,9 @@ class FieldRenderer {
         );
 
         return sprintf(
-            "<p class='form-field lumaprfi-fieldtype-multiple'><label>%s%s</label>%s</p>",
+            "<p class='form-field lumaprfi-fieldtype-multiple%s'%s><label>%s%s</label>%s</p>",
+            esc_attr( $extra_class ),
+            $title_attr,
             esc_html( $field['label'] ?? '' ),
             $tip_html ? wp_kses_post( $tip_html ) : '',
             implode( '', $options )
@@ -465,6 +509,8 @@ class FieldRenderer {
         $description  = $field['description'] ?? '';
         $tip_html     = $description ? wc_help_tip( $description ) : '';
         $options_html = '';
+        $extra_class  = $this->get_frontend_hidden_class( $field );
+        $title_attr   = $this->get_frontend_hidden_title_attr( $field );
 
         if ( ! is_wp_error( $selected ) ) {
             foreach ( $selected as $term ) {
@@ -477,7 +523,7 @@ class FieldRenderer {
         }
 
         return sprintf(
-            '<p class="form-field lumaprfi-fieldtype-%1$s">
+            '<p class="form-field lumaprfi-fieldtype-%1$s%7$s"%8$s>
                 <label>%2$s %3$s</label>
                 <select name="luma-product-fields-%4$s[]" multiple="multiple" class="luma-product-fields-autocomplete-select" data-taxonomy="%5$s" style="width: 100%%;">%6$s</select>
             </p>',
@@ -486,7 +532,9 @@ class FieldRenderer {
             $tip_html ? wp_kses_post( $tip_html ) : '',
             esc_attr( $slug ),
             esc_attr( $slug ),
-            $options_html // Already escaped above.
+            $options_html, // Already escaped above.
+            esc_attr( $extra_class ),
+            $title_attr
         );
     }
     
@@ -546,6 +594,22 @@ class FieldRenderer {
                     );
                 } else {
                     $value = sanitize_text_field( wp_unslash( (string) $_POST[ $key ] ) );
+                }
+
+                $validation_error = FieldStorage::get_validation_error( $field, $value );
+                if ( null !== $validation_error ) {
+                    if ( class_exists( '\\WC_Admin_Meta_Boxes' ) ) {
+                        $label = isset( $field['label'] ) ? (string) $field['label'] : $slug;
+                        \WC_Admin_Meta_Boxes::add_error(
+                            sprintf(
+                                /* translators: 1: field label, 2: validation error */
+                                __( '%1$s: %2$s', 'luma-product-fields' ),
+                                wp_strip_all_tags( $label ),
+                                $validation_error
+                            )
+                        );
+                    }
+                    continue;
                 }
 
                 FieldStorage::save_field( $post_id, $slug, $value );

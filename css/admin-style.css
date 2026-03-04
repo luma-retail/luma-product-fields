@@ -10,8 +10,21 @@
     margin: 1em 0;
 }
 
-.lumaprfi-field-editor textarea {
-    width:25em;
+.lumaprfi-field-editor input.regular-text,
+.lumaprfi-field-editor textarea,
+.lumaprfi-field-editor .wp-editor-wrap {
+    width: clamp(20em, 45vw, 35em);
+    max-width: 100%;
+}
+
+.lumaprfi-field-editor .wp-editor-wrap .wp-editor-tools,
+.lumaprfi-field-editor .wp-editor-wrap .wp-editor-container,
+.lumaprfi-field-editor .wp-editor-wrap .mce-tinymce,
+.lumaprfi-field-editor .wp-editor-wrap .quicktags-toolbar,
+.lumaprfi-field-editor .wp-editor-wrap textarea.wp-editor-area {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .lumaprfi-field-editor fieldset {
@@ -32,38 +45,62 @@ tr.hidden {
     flex-wrap: wrap;
     align-items: flex-start;
     gap: 1rem;
-}
-
-.lumaprfi-field-editor .field-types select#luma_product_fields_fields_type_selector {
-    min-width: 220px;
+    width: clamp(20em, 45vw, 35em);
+    max-width: 100%;
 }
 
 .lumaprfi-field-editor .luma-product-fields-types-desc {
     margin: 0;
-    padding: 0.75rem 1rem;
+    padding: 0;
     list-style: none;
-    border: 1px solid #dcdcde;
-    border-radius: 4px;
-    background: #f6f7f7;
     font-size:.9em;
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+    width: 100%;
 }
 
 .lumaprfi-field-editor .luma-product-fields-types-desc li {
-    cursor: pointer;    
-}
-    
-    
-.lumaprfi-field-editor .luma-product-fields-types-desc li + li {
-    margin-top: 0.35rem;
+    display: block;
+    width: 100%;
+    cursor: pointer;
+    padding: .5rem .6rem;
+    border-radius: 4px;
+    border: 1px solid #dcdcde;
+    background: #fff;
 }
 
+.lumaprfi-field-editor .luma-product-fields-types-desc .lumaprfi-type-choice {
+    display: flex;
+    gap: .5rem;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.lumaprfi-field-editor .luma-product-fields-types-desc .lumaprfi-type-choice-text {
+    display: block;
+}
+
+.lumaprfi-field-editor .luma-product-fields-types-desc .lumaprfi-type-choice-title {
+    display: block;
+    font-weight: 600;
+}
+
+.lumaprfi-field-editor .luma-product-fields-types-desc .lumaprfi-type-choice-desc {
+    display: block;
+    color: #50575e;
+}
+
+.lumaprfi-field-editor .luma-product-fields-types-desc .lumaprfi-type-choice input[type="radio"] {
+    margin: 0;
+    flex: 0 0 auto;
+}
+    
+    
 .lumaprfi-field-editor .luma-product-fields-types-desc li.is-active {
-    border-left: 3px solid #2271b1;
-    padding-left: 0.5rem;
-    background: #808080;
-    color:#fff;
-    padding-top:.2em;
-    padding-bottom:.2em;
+    border-color: #2271b1;
+    box-shadow: inset 3px 0 0 #2271b1;
+    background: #f0f6fc;
 }
 
 @media (max-width: 768px) {
@@ -74,6 +111,22 @@ tr.hidden {
 
     .lumaprfi-field-editor .luma-product-fields-types-desc {
         max-width: none;
+    }
+}
+
+@media (max-width: 782px) {
+    .lumaprfi-field-editor input.regular-text,
+    .lumaprfi-field-editor textarea,
+    .lumaprfi-field-editor .wp-editor-wrap,
+    .lumaprfi-field-editor .field-types {
+        width: 100%;
+    }
+
+    .lumaprfi-field-editor .field-types,
+    .lumaprfi-field-editor .luma-product-fields-types-desc,
+    .lumaprfi-field-editor .luma-product-fields-types-desc li {
+        max-width: 100%;
+        box-sizing: border-box;
     }
 }
 
@@ -102,8 +155,25 @@ p.form-field.lumaprfi-fieldtype-minmax input {
     margin-right:.5em;
 }
 
-.lumaprfi-variation-fields .form-row .woocommerce-help-tip {
+.luma-product-fields-variation-fields .form-row .woocommerce-help-tip {
     float:none;
+}
+
+.woocommerce_variations .luma-product-fields-variation-fields {
+    clear: both;
+    width: 100%;
+}
+
+.woocommerce_variations .lumaprfi-variation-section {
+    clear: both;
+    width: 100%;
+    margin: 0 0 8px;
+    padding-top: 8px;
+    border-top: 1px solid #dcdcde;
+}
+
+.woocommerce_variations .lumaprfi-variation-section strong {
+    font-weight: 600;
 }
 
 .lumaprfi-field-editor-field {
@@ -241,6 +311,50 @@ input[inputmode=decimal] {
 }
 
 
+.woocommerce_options_panel p.form-field.lumaprfi-frontend-hidden,
+.woocommerce_variations .form-row.lumaprfi-frontend-hidden,
+.lumaprfi-fields-options-overview td.lumaprfi-field-label.lumaprfi-frontend-hidden {
+    border-left: 2px solid #d2a11a;
+    padding-left: 8px;
+    background: rgba( 219, 166, 23, 0.12 );
+}
+
+.woocommerce_options_panel p.form-field.lumaprfi-frontend-hidden label::after,
+.woocommerce_variations .form-row.lumaprfi-frontend-hidden label::after,
+.lumaprfi-fields-options-overview td.lumaprfi-field-label.lumaprfi-frontend-hidden .lumaprfi-field-label-text::after,
+#luma-product-fields-fields-overview td.lumaprfi-frontend-hidden .lumaprfi-editable::after {
+    content: "👁";
+    font-family: inherit;
+    font-size: 12px;
+    line-height: 1;
+    display: inline-block;
+    margin-left: 6px;
+    color: #7a5b00;
+    vertical-align: middle;
+}
+
+#luma-product-fields-fields-overview td.lumaprfi-frontend-hidden .lumaprfi-editable {
+    box-shadow: inset 2px 0 0 #d2a11a;
+    background-image: linear-gradient(
+        rgba( 219, 166, 23, 0.10 ),
+        rgba( 219, 166, 23, 0.10 )
+    );
+}
+
+.lumaprfi-fields-options-overview td.lumaprfi-field-label .lumaprfi-field-label-text {
+    display: inline-flex;
+    align-items: center;
+}
+
+.lumaprfi-fields-options-overview tr.lumaprfi-frontend-hidden-row td {
+    background: rgba( 219, 166, 23, 0.10 );
+}
+
+.lumaprfi-fields-options-overview tr.lumaprfi-frontend-hidden-row td:first-child {
+    border-left: 2px solid #d2a11a;
+}
+
+
 .widefat td.column-name,
 #lumaprfi-overview .widefat td.column-sku {
     padding: .5em 1em;        
@@ -265,6 +379,44 @@ input[inputmode=decimal] {
     overflow-y: auto;
     width: max-content;
     max-width:90vw;
+}
+
+
+.lumaprfi-repeater {
+    width: 100%;
+    max-width: 980px;
+    border-collapse: collapse;
+    border: 1px solid #dcdcde;
+    background: #fff;
+}
+
+.lumaprfi-repeater thead th {
+    text-align: left;
+    font-weight: 600;
+    padding: 10px 12px;
+    border-bottom: 1px solid #dcdcde;
+    background: #f6f7f7;
+}
+
+.lumaprfi-repeater thead th .description {
+    font-weight: 400;
+    color: #646970;
+    line-height: 1.3;
+}
+
+.lumaprfi-repeater tbody td {
+    padding: 10px 12px;
+    border-top: 1px solid #f0f0f1;
+    vertical-align: middle;
+}
+
+.lumaprfi-repeater input.regular-text {
+    width: 100%;
+    max-width: 360px;
+}
+
+.lumaprfi-repeater + p {
+    margin-top: 8px;
 }
 
 
@@ -370,6 +522,15 @@ input[inputmode=decimal] {
     cursor: not-allowed;
 }
 
+.lumaprfi-inline-error {
+    margin: 8px 0;
+    padding: 6px 8px;
+    border-left: 3px solid #d63638;
+    background: #fcf0f1;
+    color: #8a2424;
+    font-size: 12px;
+}
+
 
 /* Initial glow */
 .lumaprfi-save-glow {
@@ -379,6 +540,15 @@ input[inputmode=decimal] {
 
 /* Reset to transparent or your table bg */
 .lumaprfi-save-glow-reset {
+    background-color: transparent !important;
+}
+
+.lumaprfi-save-error-glow {
+    background-color: #f8d7da !important;
+    transition: background-color 2s ease;
+}
+
+.lumaprfi-save-error-glow-reset {
     background-color: transparent !important;
 }
 

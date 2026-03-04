@@ -56,6 +56,7 @@ Each field has:
 - Multi-value support (on relevant field types)  
 - Optional **clickable links** for taxonomy-based values, taking the customer to a listing of products with the same term  
 - Optional **unit label** (e.g. `cm`, `g`, `mm`, `kg`) shown in admin and frontend  
+- Units are managed in **WooCommerce → Settings → Products → Luma Product Fields**  
 - Optional frontend description (shown as a **tooltip** on the product page)  
 - An option to mark the field as **backend-only** (never shown on the frontend)
 
@@ -102,7 +103,10 @@ A dedicated panel in the product data metabox shows all fields for that product:
 - Multi-value inputs  
 - Taxonomy-based selectors  
 - Unit labels next to numeric fields  
+- A visual marker for fields that are hidden on the frontend
 - Clear tooltips from frontend descriptions (so you and your team know how a field should be used)
+
+For variable products, variation fields are rendered in a dedicated **Product fields** section to keep them grouped and easier to scan when other plugins add variation controls.
 
 #### B) Inline Editing (List View)  
 
@@ -111,6 +115,7 @@ A fast spreadsheet-style editor where:
 - You can edit values with one click  
 - Sorting and searching works instantly  
 - Numeric fields sort numerically  
+- Fields hidden from frontend are clearly marked in the table  
 - No need to open products one by one  
 
 ---
@@ -130,6 +135,17 @@ The plugin outputs a clean, structured specification section on product pages:
 - Graceful fallback if some values are missing  
 
 Templates can be overridden in your theme if you need full control.
+
+### 6. Settings (Tabbed UI)
+
+Settings are organized in tabs under **WooCommerce → Settings → Products → Luma Product Fields**:
+
+- **General**: frontend title, optional built-in rows (SKU, GTIN/EAN, tags, categories, Product Group), and built-in tooltip control
+- **Style**: row style (plain/divider/striped), layout mode (auto/grid), and bold label/value toggles
+- **Units**: editable unit slugs/labels and editable migration aliases
+- **Tools**: migration tool enable/disable and quick link
+
+Built-in package weight and package size tooltips are configurable in settings, including custom tooltip text.
 
 ---
 
@@ -197,8 +213,26 @@ Product Groups let you enforce consistent data structures across similar product
 - Frontend tooltips via field descriptions  
 - Backend-only fields for internal metadata  
 - **Unit labels** for numeric fields and compatible types  
+- Tabbed settings UI (General, Style, Units, Tools)  
+- Frontend table style/layout controls (row style, auto/grid, label/value emphasis)  
+- Built-in weight/dimensions tooltip settings with editable texts  
+- Settings-based unit editor (add/remove unit slugs and labels)  
+- Editable unit aliases for migration matching  
+- Field editor UX improvements (radio type chooser, initial taxonomy values for new fields, persisted values after validation errors)  
+- Frontend-hidden fields visibly marked in admin edit views and list view  
 - Template override support  
 - Fully extendable through actions & filters  
+
+---
+
+## Recent Updates (develop/1.1)
+
+- Units and unit aliases are now editable in settings, with a tabbed settings UI
+- Field editor now supports initial values on new taxonomy fields, radio-button type selection, and value persistence after save errors
+- Built-in package weight/package size tooltip settings were added
+- Frontend table styling and layout are configurable from settings
+- Improved display of backend-only fields in wp-admin
+- Improved variation field rendering
 
 ---
 
