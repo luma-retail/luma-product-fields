@@ -10,6 +10,14 @@
     margin: 1em 0;
 }
 
+.lumaprfi-field-order-status {
+    margin: 1em 0;
+}
+
+.lumaprfi-field-order-status.is-saving {
+    opacity: 0.9;
+}
+
 .lumaprfi-field-editor input.regular-text,
 .lumaprfi-field-editor textarea,
 .lumaprfi-field-editor .wp-editor-wrap {

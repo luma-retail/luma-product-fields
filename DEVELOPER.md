@@ -8,10 +8,11 @@ It covers:
 1. Architecture overview
 2. Field types and field schema
 3. Product Groups
-4. Helpers and storage
-5. Admin extension points (ListView, Field Options Overview, AJAX)
-6. Hooks and filters
-7. Template overrides and conventions
+4. Field ordering
+5. Helpers and storage
+6. Admin extension points (ListView, Field Options Overview, AJAX)
+7. Hooks and filters
+8. Template overrides and conventions
 
 ---
 
@@ -28,6 +29,7 @@ Main areas:
 | Namespace              | Responsibility                                                     |
 |------------------------|--------------------------------------------------------------------|
 | **Admin**              | Settings screen, Product Group editor, Field editor, List view UI  |
+| **FieldOrder**         | Built-in drag-and-drop field ordering and persistence              |
 | **Frontend**           | Product page rendering, field rendering                            |
 | **Product**            | Field rendering, variation logic, storage                          |
 | **Meta**               | Field schema management and meta persistence                       |
@@ -43,6 +45,7 @@ Key classes (non-exhaustive):
 - `Admin\FieldOptionsOverview` – global field overview table  
 - `Admin\FieldEditor` – field editor screen (radio type selector, initial values for new taxonomy fields, draft persistence on validation errors)  
 - `Admin\ListView` – product list integration  
+- `FieldOrder\FieldOrderManager` – built-in field ordering for the overview screen and field retrieval  
 - `Frontend\FrontendController` – main frontend controller  
 - `Product\FieldRenderer` – admin field renderer  
 - `Product\VariationFieldRenderer` – variation fallback logic  
@@ -307,7 +310,53 @@ Editing uses:
 
 ---
 
-# 4. Field Storage & Helpers
+# 4. Field Ordering
+
+Field ordering is now built into the core plugin and is handled by:
+
+```php
+Luma\ProductFields\FieldOrder\FieldOrderManager
+```
+
+Responsibilities:
+
+- Adds a drag-handle column to the Product Fields overview screen
+- Enqueues the sortable admin script on the field overview page
+- Saves field order via the core AJAX router
+- Reorders field lists returned by `Helpers::get_all_fields()`
+
+## 4.1 Storage
+
+Saved field order is stored in WordPress options under:
+
+- `luma_product_fields_field_order_all`
+- `luma_product_fields_field_order_general`
+- `luma_product_fields_field_order_{group}`
+
+Values are arrays of field slugs in the chosen order.
+
+Important behavior:
+
+- `null` / empty group maps to `all`
+- `general` means fields with no assigned Product Group
+- If a specific group has no saved order, the plugin falls back to the `all` order
+
+## 4.2 Scope of Ordering
+
+Ordering is intentionally applied at field retrieval level, not only in the admin table.
+
+That means reordering can affect:
+
+- the Product Fields overview screen
+- admin product field rendering
+- variation-capable field rendering
+- any extension code consuming `Helpers::get_all_fields()` or `Helpers::get_fields_for_group()`
+
+This behavior is deliberate so field order stays consistent across the plugin.
+
+---
+
+# 5. Field Storage & Helpers
 
 ## 4.1 Storage
 
@@ -345,9 +394,9 @@ This is encapsulated in `Product\VariationFieldRenderer`.
 
 ---
 
-# 5. Admin Extension Points
+# 6. Admin Extension Points
 
-## 5.1 ListView Columns
+## 6.1 ListView Columns
 
 `Admin\ListView` exposes a filter to add or modify columns in the custom product list view:
 
@@ -369,7 +418,7 @@ add_filter(
 
 Use this filter to add extra product data such as SKU, price or GTIN.
 
-## 5.2 Field Options Overview Table Hooks
+## 6.2 Field Options Overview Table Hooks
 
 `Admin\FieldOptionsOverview` exposes actions during the rendering of the field overview table, e.g.:
 
@@ -407,7 +456,9 @@ add_action(
 
 These hooks are designed so extensions can inject sortable columns, drag-handles, custom indicators, etc., without overriding the template.
 
-## 5.3 AJAX Router
+Core now uses the same overview table to provide built-in drag-and-drop field ordering. Saved order is persisted per group under option names using the `luma_product_fields_field_order_` prefix.
+
+## 6.3 AJAX Router
 
 `Admin\Ajax` exposes a generic router that forwards incoming AJAX requests to namespaced actions:
 
@@ -424,11 +475,13 @@ add_action(
 );
 ```
 
+Core also handles the built-in `save_field_order` action directly in `Admin\Ajax`.
+
 The router handles nonce and capability check ('manage_woocommerce'), but whthin your handler, always:
 - Sanitize any incoming data
 - Return a proper `wp_send_json_success()` / `wp_send_json_error()` payload
 
-## 5.4 Field Editor UX and persistence
+## 6.4 Field Editor UX and persistence
 
 `Admin\FieldEditor` now includes several UX-focused behaviors that extensions should be aware of:
 
@@ -442,7 +495,7 @@ The editor screen script is split into a dedicated file:
 
 That script handles type highlighting, capability-driven row visibility (unit/variation/links), and add/remove interactions for initial values.
 
-## 5.5 Settings tabs and option groups
+## 6.5 Settings tabs and option groups
 
 `Admin\Settings` now uses in-page tabs inside WooCommerce Products settings:
 
@@ -460,7 +513,7 @@ Notable settings groups:
 - **Units**: editable unit repeater + alias repeater stored in `luma_product_fields_units` and `luma_product_fields_unit_aliases`
 - **Tools**: migration tool toggle and quick-link renderer
 
-## 5.6 Frontend-hidden indicators in admin
+## 6.6 Frontend-hidden indicators in admin
 
 Fields marked with `hide_in_frontend` are visually marked in admin forms and list views.
 
@@ -470,7 +523,7 @@ Implementation details:
 - They also set a title attribute (`Not shown in front end`) for quick context.
 - `Admin\ListViewTable` applies the same class/tooltip on matching columns/cells.
 
-## 5.7 Variation section marker
+## 6.7 Variation section marker
 
 `Product\VariationFieldRenderer` prints a dedicated full-width section marker (`lumaprfi-variation-section`) with the label **Product fields** before variation-capable custom fields.
 
@@ -478,13 +531,13 @@ This keeps custom variation fields grouped and avoids layout blending with third
 
 ---
 
-# 6. Hooks & Filters
+# 7. Hooks & Filters
 
 See DEVELOPER-HOOKS.md
 
 ---
 
-# 7. Template Overrides
+# 8. Template Overrides
 
 Themes may override any frontend template under:
 

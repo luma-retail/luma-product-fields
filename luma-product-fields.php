@@ -3,7 +3,7 @@
  * Plugin Name:           Luma Product Fields
  * Plugin URI:            https://github.com/luma-retail/luma-product-fields
  * Description:           Structured, linkable WooCommerce product specifications with fast inline editing.
- * Version:               1.1.0
+ * Version:               1.2.0
  * Author:                Terje Johansen
  * Author URI:            https://luma-retail.com
  * Text Domain:           luma-product-fields

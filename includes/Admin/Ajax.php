@@ -9,6 +9,7 @@ namespace Luma\ProductFields\Admin;
 
 defined( 'ABSPATH' ) || exit;
 
+use Luma\ProductFields\FieldOrder\FieldOrderManager;
 use Luma\ProductFields\Utils\Helpers;
 use Luma\ProductFields\Product\FieldRenderer;
 use Luma\ProductFields\Product\FieldStorage;
@@ -459,5 +460,36 @@ class Ajax {
 
         wp_send_json_success( [ 'html' => $safe_html ] );
 
+    }
+
+
+    /**
+     * Save field order for the selected product group.
+     *
+     * @return void
+     */
+    protected function save_field_order(): void {
+        check_ajax_referer( self::NONCE_ACTION, 'nonce' );
+
+        $group_raw = isset( $_POST['group'] ) ? wp_unslash( $_POST['group'] ) : 'general'; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+        $group_raw = is_string( $group_raw ) ? $group_raw : 'general';
+        $group     = sanitize_key( $group_raw );
+
+        $order_raw = isset( $_POST['order'] ) ? wp_unslash( $_POST['order'] ) : []; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+        $order_raw = is_array( $order_raw ) ? $order_raw : [];
+        $order     = array_values( array_filter( array_map( 'sanitize_key', $order_raw ) ) );
+
+        if ( empty( $order ) ) {
+            wp_send_json_error( [ 'message' => 'Empty order array' ], 400 );
+        }
+
+        FieldOrderManager::save_order( $group, $order );
+
+        wp_send_json_success(
+            [
+                'message' => 'Order saved successfully',
+                'group'   => $group,
+            ]
+        );
     }
 }

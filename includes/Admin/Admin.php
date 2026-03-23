@@ -84,6 +84,9 @@ class Admin {
             /* translators: %d: minimum number of characters the user must type before search starts. */
             'autocomplete_min_chars'   => __( 'Enter at least %d characters', 'luma-product-fields' ),
             'autocomplete_searching'   => __( 'Searching…', 'luma-product-fields' ),
+            'field_order_saving'       => __( 'Saving field order…', 'luma-product-fields' ),
+            'field_order_saved'        => __( 'Field order saved.', 'luma-product-fields' ),
+            'field_order_save_failed'  => __( 'Could not save field order.', 'luma-product-fields' ),
             'spinner' => '<div style="text-align:center;padding:3em;"><img src="/wp-admin/images/spinner-2x.gif" /></div>',
         ];
 

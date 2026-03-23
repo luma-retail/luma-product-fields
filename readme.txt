@@ -4,7 +4,7 @@ Tags: woocommerce product fields, product fields, product specifications, produc
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 8.0
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -77,13 +77,13 @@ You can start simple with one shared field set for all products, then grow into 
    - Checkboxes – multiple predefined options (taxonomy-backed)
    - Autocomplete – suggest existing terms, allow new (taxonomy-backed)
 
-  Each field has:
+    Each field has:
 
    - A label
    - A unique slug
    - A field type
    - Data type (text/number)
-  - Variation support (where relevant)
+    - Variation support (where relevant)
    - Multi-value support (on relevant field types)
    - Optional unit label (for example `cm`, `g`, `mm`, `kg`) shown in admin and frontend
     - Units can be managed in WooCommerce → Settings → Products → Luma Product Fields
@@ -103,11 +103,11 @@ You can start simple with one shared field set for all products, then grow into 
   - Lenses: focal length, aperture, mount type
   - Yarn: needle size, fiber composition, gauge
 
-   Key points:
+  Key points:
 
    - A product can belong to **one** Product Group at a time.
    - A field can be assigned to **multiple** Product Groups.
-  - Product Groups are **not** product categories; they decide which fields appear in admin for that product.
+   - Product Groups are **not** product categories; they decide which fields appear in admin for that product.
 
    You can use the plugin without Product Groups (for example a single global field schema), but Product Groups make it easier to maintain different spec sets for different product types.
 
@@ -121,6 +121,7 @@ You can start simple with one shared field set for all products, then grow into 
   - Fields hidden from frontend are visibly marked in admin editors and list views.
   - Variation fields are grouped under a dedicated **Product fields** section title in variation edit panels.
   - A spreadsheet-style inline editor lets you edit values, sort, and search without opening products one by one.
+  - The Product Fields overview screen supports drag-and-drop ordering with automatic save feedback.
 
 5. **Automatic Frontend Display**
 
@@ -136,10 +137,10 @@ You can start simple with one shared field set for all products, then grow into 
    - Optional tooltips from the field’s frontend description can be shown
    - Graceful fallback if some values are missing
 
-  In settings, you can opt to also show values like SKU, Product Tags, weight, dimensions, categories, and WooCommerce-native GTIN in the same table.
+    In settings, you can opt to also show values like SKU, Product Tags, weight, dimensions, categories, and WooCommerce-native GTIN in the same table.
 
-  The frontend output can be customized using hooks and filters.  
-  For advanced use cases, developers can fully override or replace the rendering logic via theme or plugin code.
+    The frontend output can be customized using hooks and filters.  
+    For advanced use cases, developers can fully override or replace the rendering logic via theme or plugin code.
 
 = How do I use this plugin? (quick start) =
 
@@ -162,14 +163,14 @@ Start with a small set, then expand once you see what customers actually use.
 
 7. **Settings (Tabbed UI)**
 
-  Under WooCommerce → Settings → Products → Luma Product Fields, settings are grouped into tabs:
+    Under WooCommerce → Settings → Products → Luma Product Fields, settings are grouped into tabs:
 
-  - General: frontend title, optional built-in rows, and built-in tooltip controls
-  - Style: row separators, layout mode (auto/grid), and label/value weight
-  - Units: editable units and editable migration aliases
-  - Tools: migration tool switch and quick link
+    - General: frontend title, optional built-in rows, and built-in tooltip controls
+    - Style: row separators, layout mode (auto/grid), and label/value weight
+    - Units: editable units and editable migration aliases
+    - Tools: migration tool switch and quick link
 
-  Built-in package weight and package size tooltip texts are editable in settings.
+    Built-in package weight and package size tooltip texts are editable in settings.
 
 = Block themes (FSE) – current status =
 
@@ -218,6 +219,7 @@ Luma Product Fields is designed to be **SEO-friendly**:
 - Custom product specification fields
 - Optional Product Group–based field schemas
 - Inline editing with AJAX
+- Drag-and-drop field ordering in the Product Fields overview screen
 - Multi-value support (where relevant)
 - Variation support (some field types only)
 - Automatic frontend rendering
@@ -281,6 +283,20 @@ For deeper customization, developers can use hooks/filters or override output in
 Yes. For taxonomy-based fields, values can be shown as links on product pages.
 
 When clicked, customers see other products with the same value (for example the same material or compatibility standard).
+
+= Can I drag and drop the field order? =
+
+Yes.
+
+Go to **Products → Product Fields** and drag field rows into the order you want.
+
+The plugin saves the order automatically and supports separate saved order for:
+
+- All fields
+- No-group fields
+- Each Product Group
+
+That saved order is also reused in other places where the plugin loads fields for the same group.
 
 = I already have custom fields on my site. Can I migrate them? =
 
@@ -346,6 +362,9 @@ Yes. Everything is class-based, namespaced, and hookable. Field definitions, out
 4. Frontend specifications section rendered automatically on the product page.
 
 == Changelog ==
+
+= 1.2.0 =
+* Added drag-and-drop field ordering with visible save and error feedback in the Product Fields overview.
 
 = 1.1.0 =
 * Frontend table row style/layout and label/value emphasis are configurable.

@@ -17,6 +17,7 @@ use Luma\ProductFields\Admin\Ajax;
 use Luma\ProductFields\Admin\Settings;
 use Luma\ProductFields\Admin\Kses;
 use Luma\ProductFields\Admin\Migration\MigrationPage;
+use Luma\ProductFields\FieldOrder\FieldOrderManager;
 use Luma\ProductFields\Registry\FieldTypeRegistry;
 use Luma\ProductFields\Admin\NotificationManager;
 use Luma\ProductFields\Admin\Onboarding;
@@ -47,6 +48,7 @@ class Plugin {
     public function run(): void {
 
         new Taxonomy\ProductGroup();
+        new FieldOrderManager();
 
         $this->tax_manager = new TaxonomyManager();
         $this->tax_manager->init();

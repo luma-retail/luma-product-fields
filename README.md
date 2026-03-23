@@ -118,6 +118,15 @@ A fast spreadsheet-style editor where:
 - Fields hidden from frontend are clearly marked in the table  
 - No need to open products one by one  
 
+#### C) Field Overview Ordering
+
+The **Products → Product Fields** overview screen now supports drag-and-drop ordering:
+
+- Reorder fields visually by dragging rows
+- Save a different order per Product Group
+- Reuse the same order anywhere the plugin loads fields for that group
+- Get immediate admin feedback while the new order is being saved
+
 ---
 
 ### 5. Automatic Frontend Display
@@ -205,6 +214,7 @@ Product Groups let you enforce consistent data structures across similar product
 - Custom product specification fields  
 - Optional Product Group–based field schemas  
 - Inline editing with AJAX  
+- Drag-and-drop field ordering in the field overview screen  
 - Field sorting in admin (numbers, text, taxonomies)  
 - Multi-value support (where relevant)  
 - Variation support  
@@ -233,6 +243,20 @@ Product Groups let you enforce consistent data structures across similar product
 - Frontend table styling and layout are configurable from settings
 - Improved display of backend-only fields in wp-admin
 - Improved variation field rendering
+
+## Recent Updates (v1.2.0)
+
+- Field ordering is now built into the main plugin
+- The field overview screen supports drag-and-drop ordering per Product Group
+- Saved field order now uses core option names with the `luma_product_fields_field_order_` prefix
+
+## Release Notes
+
+### v1.2.0
+
+- Moved drag-and-drop field ordering from the separate extension into the main plugin
+- Added native AJAX saving and visible save/error feedback on the Product Fields overview screen
+- Standardized field-order option names under the `luma_product_fields_field_order_` prefix
 
 ---
 
@@ -320,6 +344,20 @@ On the frontend, all fields that:
 
 Not out of the box: Product Fields are not part of WooCommerce’s `tax_query` system.  
 However, the plugin is developer-friendly and can be extended to create filters or custom faceted navigation.
+
+---
+
+### Can I drag and drop the field order?
+
+Yes.
+
+Go to **Products → Product Fields** and drag rows in the overview table using the handle column.
+
+Important details:
+
+- Order is saved automatically
+- You can keep separate orders for **All**, **No group**, and each Product Group
+- The saved order is intentionally reused anywhere the plugin loads fields for that group
 
 ---
 
