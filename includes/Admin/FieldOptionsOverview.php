@@ -73,7 +73,7 @@ class FieldOptionsOverview {
      * @return void
      */
     public function render_panel(): void {
-        $selected_group = isset( $_GET['group'] ) ? sanitize_text_field( wp_unslash( $_GET['group'] ) ) : 'all'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $selected_group = $this->get_selected_group_filter();
         $available_groups = ProductGroup::get_product_groups();
         $all_fields_count = count( Helpers::get_all_fields( null ) );
         $threshold_reached = $all_fields_count > self::GROUPING_RECOMMENDATION_THRESHOLD;
@@ -88,6 +88,7 @@ class FieldOptionsOverview {
                     <form method="get">
                         <input type="hidden" name="post_type" value="product" />
                         <input type="hidden" name="page" value="luma-product-fields" />
+                        <?php wp_nonce_field( 'luma_product_fields_overview_filter', 'luma_product_fields_overview_nonce', false ); ?>
                         <label for="group"><?php esc_html_e( 'Filter product group', 'luma-product-fields' ); ?></label>
                         <?php
                         $args = array(
@@ -106,10 +107,11 @@ class FieldOptionsOverview {
                 <?php if ( ! $threshold_reached ) : ?>
                     <p class="description">
                         <?php
+                        /* translators: %s: opening and closing anchor tags around "Create product groups". */
+                        $create_groups_text = __( 'No Product groups exist yet. %s to organize fields into separate spec tables.', 'luma-product-fields' );
                         printf(
-                            /* translators: %s: opening and closing anchor tags around "Create product groups". */
                             wp_kses(
-                                __( 'No Product groups exist yet. %s to organize fields into separate spec tables.', 'luma-product-fields' ),
+                                $create_groups_text,
                                 wp_kses_allowed_html( 'post' )
                             ),
                             '<a href="' . esc_url( admin_url( 'edit-tags.php?taxonomy=' . ProductGroup::$tax_name ) ) . '">' . esc_html__( 'Create product groups', 'luma-product-fields' ) . '</a>'
@@ -124,9 +126,10 @@ class FieldOptionsOverview {
                     <h2><?php esc_html_e( 'Time to consider product groups', 'luma-product-fields' ); ?></h2>
                     <p>
                         <?php
+                        /* translators: %s: opening and closing anchor tags around "Edit product groups now". */
+                        $grouping_warning = __( 'You now have many fields, so consider using Product groups to keep specs manageable. %s.', 'luma-product-fields' );
                         printf(
-                            /* translators: %s: opening and closing anchor tags around "Edit product groups now". */
-                            __( 'You now have many fields, so consider using Product groups to keep specs manageable. %s.', 'luma-product-fields' ),
+                            wp_kses( $grouping_warning, wp_kses_allowed_html( 'post' ) ),
                             '<a href="' . esc_url( admin_url( 'edit-tags.php?taxonomy=' . ProductGroup::$tax_name ) ) . '"><strong>' . esc_html__( 'Edit product groups now', 'luma-product-fields' ) . '</strong></a>'
                         );
                         ?>
@@ -142,8 +145,7 @@ class FieldOptionsOverview {
                 </a>
 
                 <?php
-                $highlight_groups_cta = isset( $_GET['lumaprfi_highlight_groups'] )
-                    && '1' === sanitize_key( wp_unslash( (string) $_GET['lumaprfi_highlight_groups'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+                $highlight_groups_cta = false;
 
                 if ( $show_grouping_warning ) {
                     $highlight_groups_cta = true;
@@ -167,7 +169,7 @@ class FieldOptionsOverview {
      * @return void
      */
     public function render_table(): void {
-        $selected_group = isset( $_GET['group'] ) ? sanitize_text_field( wp_unslash( $_GET['group'] ) ) : 'all'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $selected_group = $this->get_selected_group_filter();
         $available_groups = ProductGroup::get_product_groups();
 
         if ( 'all' === $selected_group ) {
@@ -205,8 +207,8 @@ class FieldOptionsOverview {
                 ? admin_url( 'edit-tags.php?post_type=product&taxonomy=' . urlencode( $slug ) )
                 : '';
 
-            $row_classes = $hide_in_frontend ? ' class="lumaprfi-frontend-hidden-row"' : '';
-            echo '<tr data-slug="' . esc_attr( $slug ) . '"' . $row_classes . '>';
+            $row_class_name = $hide_in_frontend ? 'lumaprfi-frontend-hidden-row' : '';
+            echo '<tr data-slug="' . esc_attr( $slug ) . '"' . ( '' !== $row_class_name ? ' class="' . esc_attr( $row_class_name ) . '"' : '' ) . '>';
             do_action( 'luma_product_fields_field_options_overview_table_row_start', $slug );
 
             $label_classes = 'lumaprfi-field-label';
@@ -257,6 +259,27 @@ class FieldOptionsOverview {
         }
 
         echo '</tbody></table>';
+    }
+
+    /**
+     * Read the selected group from the overview filter form.
+     *
+     * @return string
+     */
+    private function get_selected_group_filter(): string {
+        if ( ! isset( $_GET['group'] ) ) {
+            return 'all';
+        }
+
+        $nonce = isset( $_GET['luma_product_fields_overview_nonce'] )
+            ? sanitize_text_field( wp_unslash( (string) $_GET['luma_product_fields_overview_nonce'] ) )
+            : '';
+
+        if ( '' === $nonce || ! wp_verify_nonce( $nonce, 'luma_product_fields_overview_filter' ) ) {
+            return 'all';
+        }
+
+        return sanitize_text_field( wp_unslash( (string) $_GET['group'] ) );
     }
 
     /**

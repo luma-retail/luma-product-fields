@@ -138,17 +138,19 @@ class ListView {
             if ( $threshold_reached ) {
                 echo '<div class="notice notice-warning inline">';
                 echo '<p><strong>' . esc_html__( 'Time to consider product groups.', 'luma-product-fields' ) . '</strong> ';
+                /* translators: %s: opening and closing anchor tags around "Edit product groups now". */
+                $grouping_warning = __( 'You now have many fields, so consider using Product groups to keep specs manageable. %s.', 'luma-product-fields' );
                 printf(
-                    /* translators: %s: opening and closing anchor tags around "Edit product groups now". */
-                    __( 'You now have many fields, so consider using Product groups to keep specs manageable. %s.', 'luma-product-fields' ),
+                    wp_kses( $grouping_warning, wp_kses_allowed_html( 'post' ) ),
                     '<a href="' . esc_url( admin_url( 'edit-tags.php?taxonomy=' . ProductGroup::$tax_name ) ) . '">' . esc_html__( 'Edit product groups now', 'luma-product-fields' ) . '</a>'
                 );
                 echo '</p></div>';
             } else {
                 echo '<p class="description">';
+                /* translators: %s: opening and closing anchor tags around "Create product groups". */
+                $create_groups_text = __( 'No Product groups exist yet. %s to organize fields into separate spec tables.', 'luma-product-fields' );
                 printf(
-                    /* translators: %s: opening and closing anchor tags around "Create product groups". */
-                    __( 'No Product groups exist yet. %s to organize fields into separate spec tables.', 'luma-product-fields' ),
+                    wp_kses( $create_groups_text, wp_kses_allowed_html( 'post' ) ),
                     '<a href="' . esc_url( admin_url( 'edit-tags.php?taxonomy=' . ProductGroup::$tax_name ) ) . '">' . esc_html__( 'Create product groups', 'luma-product-fields' ) . '</a>'
                 );
                 echo '</p>';
