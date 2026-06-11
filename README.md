@@ -244,7 +244,7 @@ Product Groups let you enforce consistent data structures across similar product
 - Improved display of backend-only fields in wp-admin
 - Improved variation field rendering
 
-## Recent Updates (v1.2.0)
+## Recent Updates (v1.2.1)
 
 - Field ordering is now built into the main plugin
 - The field overview screen supports drag-and-drop ordering per Product Group
@@ -252,7 +252,7 @@ Product Groups let you enforce consistent data structures across similar product
 
 ## Release Notes
 
-### Unreleased
+### v1.2.1
 
 - Added parent-level min/max aggregates for variation-enabled numeric fields, with automatic rebuilds on save/update/delete and a WooCommerce status tool for bulk rebuilds.
 - Fixed the Product Fields overview variation expander after sanitized admin output stripped the toggle button and cached admin assets could keep older overview JavaScript in place.

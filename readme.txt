@@ -4,7 +4,7 @@ Tags: woocommerce product fields, product fields, product specifications, produc
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -363,7 +363,7 @@ Yes. Everything is class-based, namespaced, and hookable. Field definitions, out
 
 == Changelog ==
 
-= Unreleased =
+= 1.2.1 =
 * Added parent-level min/max aggregates for variation-enabled numeric fields, including a WooCommerce status tool to rebuild them.
 * Fixed the Product Fields overview variation expander so the toggle button is preserved in sanitized admin output and reloads the current admin JavaScript reliably after updates.
 
