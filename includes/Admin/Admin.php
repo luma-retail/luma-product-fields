@@ -48,6 +48,11 @@ class Admin {
      * @return void
      */
     public function enqueue_scripts(): void {
+        $admin_js_path    = LUMA_PRODUCT_FIELDS_PLUGIN_DIR_PATH . 'js/admin/ajax-admin.js';
+        $admin_style_path = LUMA_PRODUCT_FIELDS_PLUGIN_DIR_PATH . 'css/admin-style.css';
+        $admin_js_ver     = file_exists( $admin_js_path ) ? (string) filemtime( $admin_js_path ) : LUMA_PRODUCT_FIELDS_PLUGIN_VER;
+        $admin_style_ver  = file_exists( $admin_style_path ) ? (string) filemtime( $admin_style_path ) : LUMA_PRODUCT_FIELDS_PLUGIN_VER;
+
         wp_enqueue_script('jquery-ui-tooltip'); // 💡 This is the missing piece
         wp_enqueue_style(
             'woocommerce_select2',
@@ -59,8 +64,8 @@ class Admin {
 
         wp_enqueue_script('select2');
         wp_enqueue_style('select2');  
-        wp_enqueue_script('luma-product-fields-admin-js', LUMA_PRODUCT_FIELDS_PLUGIN_URL . 'js/admin/ajax-admin.js', [ 'wc-admin-meta-boxes', 'jquery-ui-tooltip'  ], LUMA_PRODUCT_FIELDS_PLUGIN_VER, true);
-        wp_enqueue_style('luma-product-fields-admin-style', LUMA_PRODUCT_FIELDS_PLUGIN_URL . 'css/admin-style.css', [], LUMA_PRODUCT_FIELDS_PLUGIN_VER);
+        wp_enqueue_script('luma-product-fields-admin-js', LUMA_PRODUCT_FIELDS_PLUGIN_URL . 'js/admin/ajax-admin.js', [ 'wc-admin-meta-boxes', 'jquery-ui-tooltip'  ], $admin_js_ver, true);
+        wp_enqueue_style('luma-product-fields-admin-style', LUMA_PRODUCT_FIELDS_PLUGIN_URL . 'css/admin-style.css', [], $admin_style_ver);
         wp_localize_script('luma-product-fields-admin-js', 'luma_product_fields_admin_ajaxdata', $this->get_ajax_data());
     }
 

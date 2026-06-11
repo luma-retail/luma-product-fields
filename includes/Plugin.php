@@ -24,6 +24,7 @@ use Luma\ProductFields\Admin\Onboarding;
 use Luma\ProductFields\Frontend\FrontendController;
 use Luma\ProductFields\Frontend\Kses as FrontendKses;
 use Luma\ProductFields\Frontend\TaxonomyArchiveController;
+use Luma\ProductFields\Product\VariationNumericAggregates;
 
 defined('ABSPATH') || exit;
 
@@ -63,6 +64,8 @@ class Plugin {
         add_action( 'init', function () {
             FieldTypeRegistry::init();
         }, 20 );
+
+        VariationNumericAggregates::register_hooks();
 
         add_action( 'save_post_product', [ CacheInvalidator::class, 'invalidate_product_meta_cache' ] );
         add_action( 'save_post_product_variation', [ CacheInvalidator::class, 'invalidate_product_meta_cache' ] );

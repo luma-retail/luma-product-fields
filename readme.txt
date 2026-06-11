@@ -2,7 +2,7 @@
 Contributors: lumaretail
 Tags: woocommerce product fields, product fields, product specifications, product specs, custom product fields
 Requires at least: 6.0
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 8.0
 Stable tag: 1.2.0
 License: GPLv2 or later
@@ -362,6 +362,10 @@ Yes. Everything is class-based, namespaced, and hookable. Field definitions, out
 4. Frontend specifications section rendered automatically on the product page.
 
 == Changelog ==
+
+= Unreleased =
+* Added parent-level min/max aggregates for variation-enabled numeric fields, including a WooCommerce status tool to rebuild them.
+* Fixed the Product Fields overview variation expander so the toggle button is preserved in sanitized admin output and reloads the current admin JavaScript reliably after updates.
 
 = 1.2.0 =
 * Added drag-and-drop field ordering with visible save and error feedback in the Product Fields overview.

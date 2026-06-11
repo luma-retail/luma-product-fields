@@ -210,8 +210,9 @@ jQuery(function($) {
 
 
 
-    // Toggle and load variation table in ListViewTable
-    $('.lumaprfi-toggle-variations').on('click', function () {
+        // Toggle and load variation table in ListViewTable
+        $(document).on('click', '.lumaprfi-toggle-variations', function (event) {
+            event.preventDefault();
       const $btn = $(this);
       const $icon = $btn.find('.dashicons');
       const productId = $btn.data('product-id');

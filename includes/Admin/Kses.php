@@ -92,6 +92,14 @@ class Kses {
                 'for' => true, 
                 'class' => true 
             ],
+			'button'   => [
+				'type'           => true,
+				'class'          => true,
+				'data-product-id'=> true,
+				'aria-label'     => true,
+				'aria-expanded'  => true,
+				'disabled'       => true,
+			],
 			'input'    => [
 				'type'        => true,
 				'name'        => true,

@@ -132,6 +132,32 @@ In WooCommerce → Settings → Products → Luma Product Fields:
 
 Slug normalization allows existing legacy unit characters used by this plugin (for example `%`, `.`, and `"`).
 
+## 2.3 Variation Numeric Aggregates
+
+For variation-enabled numeric fields, the plugin maintains parent-level min/max aggregates so queries can target the parent variable product without scanning all child variations.
+
+Included field types:
+
+- `number`
+- `integer`
+- `minmax` (both child `min` and `max` are included in the aggregate envelope)
+
+Parent aggregate meta key naming:
+
+- `"_lumapf_agg_{field_slug}_min"`
+- `"_lumapf_agg_{field_slug}_max"`
+
+Example for a field slug `weight`:
+
+- `_lumapf_agg_weight_min`
+- `_lumapf_agg_weight_max`
+
+Expected query semantics for a requested filter interval `[filter_min, filter_max]`:
+
+- Include parent product when `aggregate_min <= filter_max` **and** `aggregate_max >= filter_min`
+
+This overlap rule ensures the parent product is returned when at least one variation can satisfy the numeric filter range.
+
 ---
 
 ## 2.3 FULL EXAMPLE: Adding a Custom Field Type
@@ -312,7 +338,7 @@ Editing uses:
 
 # 4. Field Ordering
 
-Field ordering is now built into the core plugin and is handled by:
+Field ordering is handled by:
 
 ```php
 Luma\ProductFields\FieldOrder\FieldOrderManager

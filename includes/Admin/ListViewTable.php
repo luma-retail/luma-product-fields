@@ -7,6 +7,8 @@
 
 namespace Luma\ProductFields\Admin;
 
+defined( 'ABSPATH' ) || exit;
+
 use WP_List_Table;
 use Luma\ProductFields\Utils\Helpers;
 use Luma\ProductFields\Registry\FieldTypeRegistry;
@@ -312,7 +314,7 @@ public function column_default( $item, $column_name ) {
         if ( $product && $product->is_type( 'variable' ) && Helpers::get_product_group_slug( $product->get_id() ) ) {
 
             $toggle = sprintf(
-                '<button class="lumaprfi-toggle-variations" data-product-id="%d" aria-label="Toggle variations" aria-expanded="false">
+                '<button type="button" class="lumaprfi-toggle-variations" data-product-id="%d" aria-label="Toggle variations" aria-expanded="false">
                     <span class="dashicons dashicons-arrow-right"></span>
                 </button> ',
                 $product->get_id()

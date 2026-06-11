@@ -252,6 +252,11 @@ Product Groups let you enforce consistent data structures across similar product
 
 ## Release Notes
 
+### Unreleased
+
+- Added parent-level min/max aggregates for variation-enabled numeric fields, with automatic rebuilds on save/update/delete and a WooCommerce status tool for bulk rebuilds.
+- Fixed the Product Fields overview variation expander after sanitized admin output stripped the toggle button and cached admin assets could keep older overview JavaScript in place.
+
 ### v1.2.0
 
 - Moved drag-and-drop field ordering from the separate extension into the main plugin

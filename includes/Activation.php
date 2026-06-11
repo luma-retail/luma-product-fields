@@ -8,6 +8,8 @@
  */
 namespace Luma\ProductFields;
 
+use Luma\ProductFields\Product\VariationNumericAggregates;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -31,6 +33,7 @@ class Activation {
 		}
 
 		self::maybe_update_prefixes();
+		VariationNumericAggregates::maybe_schedule_initial_rebuild();
 	}
 
 
