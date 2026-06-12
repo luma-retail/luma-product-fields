@@ -306,15 +306,21 @@ class FieldStorage {
 			$value = isset( $value[0] ) ? $value[0] : '';
 		}
 
-		$value = sanitize_title( (string) $value );
+		$value = sanitize_text_field( (string) $value );
 
 		// If value is now an empty string, also unset the term
 		if ( $value === '' ) {
 			return wp_set_object_terms( $product_id, null, $field['slug'] ) !== false;
 		}
 
+		$term_id = self::resolve_or_create_term_id( $value, $field['slug'] );
+
+		if ( ! $term_id ) {
+			return false;
+		}
+
 		// Set the single term
-		return wp_set_object_terms( $product_id, $value, $field['slug'] ) !== false;
+		return wp_set_object_terms( $product_id, [ $term_id ], $field['slug'] ) !== false;
 	}
 
 
@@ -327,9 +333,24 @@ class FieldStorage {
 			return false;
 		}
 
-		$terms = array_filter( array_map( 'sanitize_title', (array) $value ) );
+		$term_ids = [];
 
-		return wp_set_object_terms( $product_id, $terms, $field['slug'] ) !== false;
+		foreach ( (array) $value as $item ) {
+			$label = sanitize_text_field( (string) $item );
+
+			if ( '' === $label ) {
+				continue;
+			}
+
+			$term_id = self::resolve_or_create_term_id( $label, $field['slug'] );
+			if ( $term_id ) {
+				$term_ids[] = $term_id;
+			}
+		}
+
+		$term_ids = array_values( array_unique( array_filter( $term_ids ) ) );
+
+		return wp_set_object_terms( $product_id, $term_ids, $field['slug'] ) !== false;
 	}
 
 
@@ -384,6 +405,47 @@ class FieldStorage {
 		}
 
 		return wp_set_object_terms( $product_id, $term_slugs, $field['slug'] ) !== false;
+	}
+
+
+	/**
+	 * Resolve or create a taxonomy term by label and return term ID.
+	 *
+	 * @param string $label Raw term label.
+	 * @param string $taxonomy Taxonomy slug.
+	 * @return int|null
+	 */
+	protected static function resolve_or_create_term_id( string $label, string $taxonomy ): ?int {
+		$label = trim( sanitize_text_field( $label ) );
+
+		if ( '' === $label ) {
+			return null;
+		}
+
+		$by_name = get_term_by( 'name', $label, $taxonomy );
+		if ( $by_name && ! is_wp_error( $by_name ) ) {
+			return (int) $by_name->term_id;
+		}
+
+		$slug = sanitize_title( $label );
+		$by_slug = get_term_by( 'slug', $slug, $taxonomy );
+		if ( $by_slug && ! is_wp_error( $by_slug ) ) {
+			return (int) $by_slug->term_id;
+		}
+
+		$created = wp_insert_term(
+			$label,
+			$taxonomy,
+			[
+				'slug' => $slug,
+			]
+		);
+
+		if ( is_wp_error( $created ) ) {
+			return null;
+		}
+
+		return isset( $created['term_id'] ) ? (int) $created['term_id'] : null;
 	}
 	
 	

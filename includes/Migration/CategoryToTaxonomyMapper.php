@@ -79,12 +79,13 @@ class CategoryToTaxonomyMapper {
                     continue;
                 }
 
-                $paths = $this->get_matching_category_paths( $product_id, $selected_ids );
+                $source_paths = $this->get_matching_category_paths( $product_id, $selected_ids );
+                $target_terms = $this->get_matching_category_term_names( $product_id, $selected_ids );
 
-                if ( empty( $paths ) ) {
+                if ( empty( $target_terms ) ) {
                     $summary[ $product_id ][ $slug ] = [
                         'status'   => 'skipped',
-                        'reason'   => \__( 'No matching category paths found.', 'luma-product-fields' ),
+                        'reason'   => \__( 'No matching category terms found.', 'luma-product-fields' ),
                         'original' => '',
                     ];
                     continue;
@@ -98,21 +99,21 @@ class CategoryToTaxonomyMapper {
                 if ( $skip_existing && ! $this->is_empty_value( $existing_raw ) ) {
                     $summary[ $product_id ][ $slug ]['status']   = 'skipped';
                     $summary[ $product_id ][ $slug ]['reason']   = \__( 'Existing value present', 'luma-product-fields' );
-                    $summary[ $product_id ][ $slug ]['original'] = implode( ', ', $paths );
+                    $summary[ $product_id ][ $slug ]['original'] = implode( ', ', $source_paths );
                     $summary[ $product_id ][ $slug ]['new']      = $summary[ $product_id ][ $slug ]['existing'];
                     continue;
                 }
 
-                $value_to_save = $this->normalize_value_for_field( $field, $paths );
+                $value_to_save = $this->normalize_value_for_field( $field, $target_terms );
 
                 if ( ! $dry_run ) {
                     FieldStorage::save_field( $product_id, $slug, $value_to_save );
                 }
 
                 $summary[ $product_id ][ $slug ]['status']   = $dry_run ? 'dry-run' : 'migrated';
-                $summary[ $product_id ][ $slug ]['original'] = implode( ', ', $paths );
+                $summary[ $product_id ][ $slug ]['original'] = implode( ', ', $source_paths );
                 $summary[ $product_id ][ $slug ]['new']      = is_array( $value_to_save )
-                    ? \wp_json_encode( $value_to_save )
+                    ? implode( ', ', $value_to_save )
                     : (string) $value_to_save;
             }
 
@@ -154,6 +155,40 @@ class CategoryToTaxonomyMapper {
         sort( $paths );
 
         return $paths;
+    }
+
+    /**
+     * Get matching product category leaf term names for selected categories.
+     *
+     * @param int $product_id
+     * @param int[] $selected_ids
+     * @return string[]
+     */
+    protected function get_matching_category_term_names( int $product_id, array $selected_ids ): array {
+        $terms = \get_the_terms( $product_id, 'product_cat' );
+
+        if ( is_wp_error( $terms ) || empty( $terms ) ) {
+            return [];
+        }
+
+        $names = [];
+
+        foreach ( $terms as $term ) {
+            if ( ! $term instanceof \WP_Term ) {
+                continue;
+            }
+
+            if ( ! $this->is_term_in_scope( $term, $selected_ids ) ) {
+                continue;
+            }
+
+            $names[] = trim( (string) $term->name );
+        }
+
+        $names = array_values( array_unique( array_filter( $names ) ) );
+        natcasesort( $names );
+
+        return array_values( $names );
     }
 
     /**

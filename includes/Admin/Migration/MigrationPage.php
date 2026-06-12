@@ -514,19 +514,32 @@ class MigrationPage {
         if ( is_wp_error( $categories ) || empty( $categories ) ) {
             echo '<p class="description">' . esc_html__( 'No product categories found.', 'luma-product-fields' ) . '</p>';
         } else {
-            echo '<fieldset>';
-            echo '<legend class="screen-reader-text">' . esc_html__( 'Categories', 'luma-product-fields' ) . '</legend>';
-            echo '<div class="luma-product-fields-migration-cat-list">';
+            $sorted_category_options = [];
 
             foreach ( $categories as $cat ) {
                 if ( ! $cat instanceof \WP_Term ) {
                     continue;
                 }
 
-                $label = self::build_product_cat_path( $cat );
+                $sorted_category_options[] = [
+                    'term_id' => (int) $cat->term_id,
+                    'label'   => self::build_product_cat_path( $cat ),
+                ];
+            }
+
+            usort(
+                $sorted_category_options,
+                static fn( array $a, array $b ): int => strnatcasecmp( $a['label'], $b['label'] )
+            );
+
+            echo '<fieldset>';
+            echo '<legend class="screen-reader-text">' . esc_html__( 'Categories', 'luma-product-fields' ) . '</legend>';
+            echo '<div class="luma-product-fields-migration-cat-list">';
+
+            foreach ( $sorted_category_options as $category_option ) {
                 echo '<label style="display:block; margin-bottom:4px;">';
-                echo '<input type="checkbox" name="mapper_category_ids[]" value="' . esc_attr( (string) $cat->term_id ) . '" ' . checked( in_array( (int) $cat->term_id, $selected_categories, true ), true, false ) . '> ';
-                echo esc_html( $label );
+                echo '<input type="checkbox" name="mapper_category_ids[]" value="' . esc_attr( (string) $category_option['term_id'] ) . '" ' . checked( in_array( (int) $category_option['term_id'], $selected_categories, true ), true, false ) . '> ';
+                echo esc_html( (string) $category_option['label'] );
                 echo '</label>';
             }
 
