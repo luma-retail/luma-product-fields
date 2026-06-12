@@ -198,6 +198,19 @@ public function run(array $mapping, bool $dry_run = true): array
                     continue;
                 }
 
+                if ( ! $this->is_valid_transformed_value_for_field( $field, $transformed ) ) {
+
+                    if (!isset($summary[$product_id][$slug])) {
+                        $summary[$product_id][$slug] = [];
+                    }
+
+                    $summary[$product_id][$slug]['status']   = 'skipped';
+                    $summary[$product_id][$slug]['reason']   = __( 'Invalid transformed value for numeric field.', 'luma-product-fields' );
+                    $summary[$product_id][$slug]['original'] = $old_value;
+
+                    continue;
+                }
+
                 $current_value = \Luma\ProductFields\Utils\Helpers::get_formatted_field_value(
                     $product_id,
                     $field,
@@ -353,6 +366,46 @@ public function run(array $mapping, bool $dry_run = true): array
             }
         }
         return null;
+    }
+
+
+    /**
+     * Validate transformed values against destination field type.
+     *
+     * @param array $field Destination field definition.
+     * @param mixed $value Transformed value candidate.
+     * @return bool
+     */
+    protected function is_valid_transformed_value_for_field( array $field, $value ): bool {
+        $type = (string) ( $field['type'] ?? 'text' );
+
+        if ( 'number' === $type ) {
+            return is_int( $value ) || is_float( $value );
+        }
+
+        if ( 'integer' === $type ) {
+            return is_int( $value );
+        }
+
+        if ( 'minmax' === $type ) {
+            if ( ! is_array( $value ) ) {
+                return false;
+            }
+
+            if ( ! isset( $value['min'] ) && ! isset( $value['max'] ) ) {
+                return false;
+            }
+
+            if ( isset( $value['min'] ) && ! is_numeric( $value['min'] ) ) {
+                return false;
+            }
+
+            if ( isset( $value['max'] ) && ! is_numeric( $value['max'] ) ) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
 

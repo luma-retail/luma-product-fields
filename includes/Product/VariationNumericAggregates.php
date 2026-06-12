@@ -9,6 +9,7 @@ namespace Luma\ProductFields\Product;
 
 use Luma\ProductFields\Registry\FieldTypeRegistry;
 use Luma\ProductFields\Utils\Helpers;
+use Luma\ProductFields\Utils\CacheInvalidator;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -235,6 +236,8 @@ class VariationNumericAggregates {
 		if ( $parent_id <= 0 ) {
 			return;
 		}
+
+		CacheInvalidator::invalidate_product_meta_cache( $parent_id );
 
 		self::clear_all_parent_aggregate_meta( $parent_id );
 

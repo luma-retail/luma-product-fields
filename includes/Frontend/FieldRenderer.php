@@ -8,6 +8,7 @@ namespace Luma\ProductFields\Frontend;
 
 use Luma\ProductFields\Utils\Helpers;
 use Luma\ProductFields\Registry\FieldTypeRegistry;
+use Luma\ProductFields\Product\VariationNumericAggregates;
 use WP_Term;
 
 
@@ -57,6 +58,11 @@ class FieldRenderer
      */
     public function render_field_value(array $field, int $post_id): string {
 
+        $aggregate_value = $this->render_variation_aggregate_value( $field, $post_id );
+        if ( null !== $aggregate_value ) {
+            return $aggregate_value;
+        }
+
         $value = Helpers::get_field_value($post_id, $field['slug']);
         if ( Helpers::is_truly_empty( $value ) ) {
             return '';
@@ -78,6 +84,88 @@ class FieldRenderer
         }
 
         return esc_html($value); // fallback.
+    }
+
+
+    /**
+     * Render stored parent variation aggregates for eligible numeric fields.
+     *
+     * @param array $field   Field definition.
+     * @param int   $post_id Product ID.
+     * @return string|null Formatted range, empty string when aggregate is explicitly empty, or null when not applicable.
+     */
+    protected function render_variation_aggregate_value( array $field, int $post_id ): ?string {
+        $product = \wc_get_product( $post_id );
+        if ( ! $product || ! $product->is_type( 'variable' ) ) {
+            return null;
+        }
+
+        $type = (string) ( $field['type'] ?? '' );
+        $slug = (string) ( $field['slug'] ?? '' );
+
+        if ( '' === $slug || ! $this->supports_variation_aggregate_display( $field, $type ) ) {
+            return null;
+        }
+
+        $min = \get_post_meta( $post_id, VariationNumericAggregates::get_min_meta_key( $slug ), true );
+        $max = \get_post_meta( $post_id, VariationNumericAggregates::get_max_meta_key( $slug ), true );
+
+        if ( '' === $min && '' === $max ) {
+            return '';
+        }
+
+        if ( ! is_numeric( $min ) || ! is_numeric( $max ) ) {
+            return '';
+        }
+
+        $formatted_min = $this->format_aggregate_number( $type, $min );
+        $formatted_max = $this->format_aggregate_number( $type, $max );
+
+        if ( '' === $formatted_min && '' === $formatted_max ) {
+            return '';
+        }
+
+        if ( $formatted_min === $formatted_max ) {
+            return esc_html( $formatted_min );
+        }
+
+        return esc_html( $formatted_min . ' – ' . $formatted_max );
+    }
+
+
+    /**
+     * Check whether a field should display the stored variable-product aggregate.
+     *
+     * @param array  $field Field definition.
+     * @param string $type  Field type.
+     * @return bool
+     */
+    protected function supports_variation_aggregate_display( array $field, string $type ): bool {
+        if ( ! in_array( $type, [ 'number', 'integer', 'minmax' ], true ) ) {
+            return false;
+        }
+
+        if ( empty( $field['variation'] ) ) {
+            return false;
+        }
+
+        return FieldTypeRegistry::supports( $type, 'variations' );
+    }
+
+
+    /**
+     * Format an aggregate numeric endpoint for display.
+     *
+     * @param string     $type  Field type.
+     * @param string|int|float $value Aggregate endpoint.
+     * @return string
+     */
+    protected function format_aggregate_number( string $type, $value ): string {
+        if ( 'integer' === $type ) {
+            return (string) (int) $value;
+        }
+
+        return self::format_float( $value );
     }
 
     

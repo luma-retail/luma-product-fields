@@ -113,6 +113,13 @@ function focusFirstEditorField($root){
 
 // Main behavior on DOM ready
 jQuery(function($) {
+
+    // Let WordPress/WooCommerce handle validation server-side.
+    // Native browser validation can block submit when legacy values are malformed.
+    const $productPostForm = $('#post');
+    if ($productPostForm.length) {
+        $productPostForm.attr('novalidate', 'novalidate');
+    }
     
     function captureFieldValues($container) {
         const values = {};

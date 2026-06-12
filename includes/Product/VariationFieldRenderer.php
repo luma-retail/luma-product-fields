@@ -204,7 +204,6 @@ class VariationFieldRenderer {
                 name="<?php echo esc_attr( $name_attr ); ?>"
                 value="<?php echo esc_attr( $value ); ?>"
                 inputmode="decimal"
-                pattern="[0-9]+([.,][0-9]+)?"
             />
             <?php echo $unit ? ' ' . esc_html( $unit ) : ''; ?>
         </p>
@@ -244,7 +243,6 @@ class VariationFieldRenderer {
                 name="<?php echo esc_attr( $name_attr ); ?>"
                 value="<?php echo esc_attr( $value ); ?>"
                 inputmode="numeric"
-                pattern="\d+"
             />
             <?php echo $unit ? ' ' . esc_html( $unit ) : ''; ?>
         </p>
@@ -289,7 +287,6 @@ class VariationFieldRenderer {
                     name="<?php echo esc_attr( $base_name . '[min]' ); ?>"
                     value="<?php echo esc_attr( $min ); ?>"
                     inputmode="decimal"
-                    pattern="[0-9]+([.,][0-9]+)?"
                 />
                 <span style="margin-left:.5em;" class="label"><?php esc_html_e( 'Max:', 'luma-product-fields' ); ?></span>
                 <input
@@ -297,7 +294,6 @@ class VariationFieldRenderer {
                     name="<?php echo esc_attr( $base_name . '[max]' ); ?>"
                     value="<?php echo esc_attr( $max ); ?>"
                     inputmode="decimal"
-                    pattern="[0-9]+([.,][0-9]+)?"
                 />
                 <?php echo $unit ? ' ' . esc_html( $unit ) : ''; ?>
             </span>

@@ -26,7 +26,35 @@ class CacheInvalidator {
 	 * @param int $product_id WooCommerce product or variation ID.
 	 */
 	public static function invalidate_product_meta_cache( int $product_id ) : void {
-		delete_transient( 'luma_product_fields_meta_fields_' . $product_id );
+		global $wpdb;
+
+		$product_id = (int) $product_id;
+		if ( $product_id <= 0 ) {
+			return;
+		}
+
+		$like = $wpdb->esc_like( '_transient_luma_product_fields_meta_fields_' ) . '%';
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$transients = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT option_name FROM $wpdb->options WHERE option_name LIKE %s",
+				$like
+			)
+		);
+
+		foreach ( $transients as $transient ) {
+			if ( ! preg_match( '/_(\d+)$/', (string) $transient, $matches ) ) {
+				continue;
+			}
+
+			if ( (int) $matches[1] !== $product_id ) {
+				continue;
+			}
+
+			$key = str_replace( '_transient_', '', $transient );
+			\delete_transient( $key );
+		}
 	}
 
 	
@@ -58,7 +86,7 @@ class CacheInvalidator {
 
 		foreach ( $transients as $transient ) {
 			$key = str_replace( '_transient_', '', $transient );
-			delete_transient( $key );
+			\delete_transient( $key );
 		}
 	}
 }

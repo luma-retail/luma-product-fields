@@ -1,7 +1,31 @@
 jQuery(document).ready(function ($) {
+    const container = $("#luma-product-fields-list");
+
+    function storeOriginalHtml() {
+        if (!container.length || container.data("lumaprfiOriginalHtml") !== undefined) {
+            return;
+        }
+
+        container.data("lumaprfiOriginalHtml", container.html());
+    }
+
+    function restoreOriginalHtml() {
+        if (!container.length) {
+            return;
+        }
+
+        const originalHtml = container.data("lumaprfiOriginalHtml");
+        if (originalHtml !== undefined) {
+            container.html(originalHtml);
+        }
+    }
+
+    storeOriginalHtml();
+
     $(".single_variation_wrap").on("show_variation", function (event, variation) {
         const variationId = variation.variation_id;
-        const container = $("#luma-product-fields-list");
+
+        storeOriginalHtml();
 
         if (!variationId || !luma_product_fields_data || !luma_product_fields_data.ajax_url || !luma_product_fields_data.nonce) {
             console.warn("Missing variation ID or AJAX config.");
@@ -28,5 +52,9 @@ jQuery(document).ready(function ($) {
                 console.error("AJAX request failed:", status, error);
             }
         });
+    });
+
+    $(".variations_form").on("reset_data hide_variation", function () {
+        restoreOriginalHtml();
     });
 });

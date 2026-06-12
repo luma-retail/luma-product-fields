@@ -274,7 +274,6 @@ class FieldRenderer {
                 name="luma-product-fields-<?php echo esc_attr( $field['slug'] ); ?>"
                 value="<?php echo esc_attr( $value ); ?>"
                 inputmode="decimal"
-                pattern="[0-9]+([.,][0-9]+)?"
             />
             <?php echo $unit_html ? wp_kses_post( $unit_html ) : ''; ?>
         </p>
@@ -312,7 +311,6 @@ class FieldRenderer {
                 name="luma-product-fields-<?php echo esc_attr( $field['slug'] ); ?>"
                 value="<?php echo esc_attr( $value ); ?>"
                 inputmode="numeric"
-                pattern="\d+"
             />
             <?php echo $unit_html ? wp_kses_post( $unit_html ) : ''; ?>
         </p>
@@ -354,7 +352,6 @@ class FieldRenderer {
                     name="luma-product-fields-<?php echo esc_attr( $field['slug'] ); ?>[min]"
                     value="<?php echo esc_attr( $min ); ?>"
                     inputmode="decimal"
-                    pattern="[0-9]+([.,][0-9]+)?"
                 />
                 <span style="margin-left:.5em;" class="label">Max:</span>
                 <input
@@ -362,7 +359,6 @@ class FieldRenderer {
                     name="luma-product-fields-<?php echo esc_attr( $field['slug'] ); ?>[max]"
                     value="<?php echo esc_attr( $max ); ?>"
                     inputmode="decimal"
-                    pattern="[0-9]+([.,][0-9]+)?"
                 />
                 <?php echo $unit_html ? wp_kses_post( $unit_html ) : ''; ?>
             </span>
