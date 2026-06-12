@@ -11,6 +11,7 @@ use Luma\ProductFields\Admin\Admin;
 use Luma\ProductFields\Admin\Settings;
 use Luma\ProductFields\Migration\CategoryToTaxonomyMapper;
 use Luma\ProductFields\Migration\LegacyMetaMigrator;
+use Luma\ProductFields\Migration\NameExtractor;
 use Luma\ProductFields\Utils\Helpers;
 
 defined( 'ABSPATH' ) || exit;
@@ -89,7 +90,7 @@ class MigrationPage {
         } elseif ( 'category-mapper' === $tool ) {
             self::render_category_mapper_tool();
         } elseif ( 'name-extractor' === $tool ) {
-            self::render_name_extractor_coming_soon();
+            self::render_name_extractor_tool();
         } else {
             self::render_tools_hub();
         }
@@ -561,13 +562,176 @@ class MigrationPage {
     /**
      * Render placeholder for next tool.
      */
-    protected static function render_name_extractor_coming_soon(): void {
+    protected static function render_name_extractor_tool(): void {
         self::render_tool_header(
             __( 'Name Extractor', 'luma-product-fields' ),
             __( 'Extract numeric values from product and variation names into number fields.', 'luma-product-fields' )
         );
 
-        echo '<div class="notice notice-info"><p>' . esc_html__( 'This tool is under active development and will be available next.', 'luma-product-fields' ) . '</p></div>';
+        $all_fields = Helpers::get_all_fields();
+        $fields     = array_values(
+            array_filter(
+                $all_fields,
+                static function ( array $field ): bool {
+                    $type = (string) ( $field['type'] ?? '' );
+                    return in_array( $type, [ 'number', 'integer', 'minmax' ], true );
+                }
+            )
+        );
+
+        $selected_field_slug = isset( $_POST['extractor_field_slug'] )
+            ? sanitize_key( wp_unslash( (string) $_POST['extractor_field_slug'] ) )
+            : '';
+
+        $include_simple     = ! isset( $_POST['extractor_include_simple'] ) || ! empty( $_POST['extractor_include_simple'] );
+        $include_variations = ! empty( $_POST['extractor_include_variations'] );
+        $skip_existing      = ! empty( $_POST['skip_existing'] );
+        $is_dry_run         = true;
+        $summary            = [];
+        $notice             = '';
+
+        $request_method = isset( $_SERVER['REQUEST_METHOD'] )
+            ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) )
+            : '';
+
+        if ( 'POST' === $request_method ) {
+            $tool_action = isset( $_POST['lpf_migration_tool_action'] )
+                ? sanitize_key( wp_unslash( (string) $_POST['lpf_migration_tool_action'] ) )
+                : '';
+
+            if ( 'name-extractor' === $tool_action && check_admin_referer( 'luma_product_fields_name_extractor' ) ) {
+                $is_dry_run = isset( $_POST['dry_run'] );
+
+                $selected_field = self::find_field_by_slug( $fields, $selected_field_slug );
+                if ( ! $selected_field ) {
+                    echo '<div class="notice notice-error"><p>' . esc_html__( 'Please choose a numeric field.', 'luma-product-fields' ) . '</p></div>';
+                } elseif ( ! $include_simple && ! $include_variations ) {
+                    echo '<div class="notice notice-error"><p>' . esc_html__( 'Choose at least one source scope (simple products or variations).', 'luma-product-fields' ) . '</p></div>';
+                } else {
+                    $number_mode = isset( $_POST['extractor_number_mode'] )
+                        ? sanitize_key( wp_unslash( (string) $_POST['extractor_number_mode'] ) )
+                        : 'unit';
+
+                    $number_index = isset( $_POST['extractor_number_index'] )
+                        ? (int) sanitize_text_field( wp_unslash( (string) $_POST['extractor_number_index'] ) )
+                        : 0;
+
+                    $match_unit = ( 'unit' === $number_mode );
+
+                    $extractor = new NameExtractor();
+                    $summary   = $extractor->run(
+                        [
+                            'field'              => $selected_field,
+                            'include_simple'     => $include_simple,
+                            'include_variations' => $include_variations,
+                            'number_index'       => $number_index,
+                            'match_unit'         => $match_unit,
+                            'skip_existing'      => $skip_existing,
+                        ],
+                        $is_dry_run
+                    );
+
+                    if ( ! $is_dry_run ) {
+                        $updated_count = 0;
+                        foreach ( $summary as $field_rows ) {
+                            foreach ( $field_rows as $result ) {
+                                if ( isset( $result['status'] ) && 'migrated' === $result['status'] ) {
+                                    $updated_count++;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if ( $updated_count > 0 ) {
+                            $notice = sprintf( esc_html__( '%d products updated successfully.', 'luma-product-fields' ), $updated_count );
+                        } else {
+                            $notice = esc_html__( 'No products were updated.', 'luma-product-fields' );
+                        }
+                    }
+                }
+            }
+        }
+
+        if ( '' !== $notice ) {
+            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $notice ) . '</p></div>';
+        }
+
+        echo '<p>' . esc_html__(
+            'This tool extracts numeric values from product names. If the field has a configured unit, choose unit-based extraction first; otherwise choose number position.',
+            'luma-product-fields'
+        ) . '</p>';
+
+        $selected_number_mode = isset( $_POST['extractor_number_mode'] )
+            ? sanitize_key( wp_unslash( (string) $_POST['extractor_number_mode'] ) )
+            : 'unit';
+        $selected_number_index = isset( $_POST['extractor_number_index'] )
+            ? sanitize_text_field( wp_unslash( (string) $_POST['extractor_number_index'] ) )
+            : '0';
+
+        echo '<form method="post">';
+        wp_nonce_field( 'luma_product_fields_name_extractor' );
+        echo '<input type="hidden" name="lpf_migration_tool_action" value="name-extractor">';
+
+        echo '<table class="form-table" role="presentation"><tbody>';
+
+        echo '<tr>';
+        echo '<th scope="row"><label for="extractor_field_slug">' . esc_html__( 'Target numeric field', 'luma-product-fields' ) . '</label></th>';
+        echo '<td>';
+        echo '<select id="extractor_field_slug" name="extractor_field_slug">';
+        echo '<option value="">' . esc_html_x( '-- Select field --', 'extractor field select', 'luma-product-fields' ) . '</option>';
+        foreach ( $fields as $field ) {
+            $slug  = (string) ( $field['slug'] ?? '' );
+            $label = (string) ( $field['label'] ?? $slug );
+            echo '<option value="' . esc_attr( $slug ) . '" ' . selected( $selected_field_slug, $slug, false ) . '>' . esc_html( $label . ' (' . $slug . ')' ) . '</option>';
+        }
+        echo '</select>';
+        echo '<p class="description">' . esc_html__( 'Only number, integer, and range fields are available.', 'luma-product-fields' ) . '</p>';
+        echo '</td>';
+        echo '</tr>';
+
+        echo '<tr>';
+        echo '<th scope="row">' . esc_html__( 'Source scope', 'luma-product-fields' ) . '</th>';
+        echo '<td>';
+        echo '<label><input type="checkbox" name="extractor_include_simple" ' . checked( $include_simple, true, false ) . '> ' . esc_html__( 'Simple products', 'luma-product-fields' ) . '</label><br>';
+        echo '<label><input type="checkbox" name="extractor_include_variations" ' . checked( $include_variations, true, false ) . '> ' . esc_html__( 'Variations', 'luma-product-fields' ) . '</label>';
+        echo '</td>';
+        echo '</tr>';
+
+        echo '<tr>';
+        echo '<th scope="row">' . esc_html__( 'Extraction mode', 'luma-product-fields' ) . '</th>';
+        echo '<td>';
+        echo '<label><input type="radio" name="extractor_number_mode" value="unit" ' . checked( $selected_number_mode, 'unit', false ) . '> ' . esc_html__( 'Match configured field unit aliases', 'luma-product-fields' ) . '</label><br>';
+        echo '<label><input type="radio" name="extractor_number_mode" value="position" ' . checked( $selected_number_mode, 'position', false ) . '> ' . esc_html__( 'Use number position', 'luma-product-fields' ) . '</label>';
+        echo '<div style="margin-top:8px;">';
+        echo '<label>' . esc_html__( 'Which number?', 'luma-product-fields' ) . ' ';
+        echo '<select name="extractor_number_index">';
+        echo '<option value="0"' . selected( $selected_number_index, '0', false ) . '>' . esc_html__( '1st', 'luma-product-fields' ) . '</option>';
+        echo '<option value="1"' . selected( $selected_number_index, '1', false ) . '>' . esc_html__( '2nd', 'luma-product-fields' ) . '</option>';
+        echo '<option value="-1"' . selected( $selected_number_index, '-1', false ) . '>' . esc_html__( 'Last', 'luma-product-fields' ) . '</option>';
+        echo '</select>';
+        echo '</label>';
+        echo '</div>';
+        echo '</td>';
+        echo '</tr>';
+
+        echo '</tbody></table>';
+
+        echo '<p><label>';
+        echo '<input type="checkbox" name="skip_existing" ' . checked( $skip_existing, true, false ) . '> ';
+        echo esc_html__( 'Skip if field already has a value', 'luma-product-fields' );
+        echo '</label></p>';
+
+        echo '<p><label><input type="checkbox" name="dry_run" checked> ';
+        echo esc_html__( 'Dry run (no changes will be saved)', 'luma-product-fields' );
+        echo '</label></p>';
+
+        echo '<p><button type="submit" class="button button-primary">' . esc_html__( 'Run Name Extraction', 'luma-product-fields' ) . '</button></p>';
+
+        echo '</form>';
+
+        if ( $is_dry_run && ! empty( $summary ) ) {
+            self::render_summary_table( $summary, $all_fields );
+        }
     }
 
     /**
