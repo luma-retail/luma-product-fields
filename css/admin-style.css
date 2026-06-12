@@ -611,3 +611,22 @@ textarea.scale-with-content {
 .lumaprfi-count-orange { background:#ff9900; }
 .lumaprfi-count-gray   { background:#777; }
 .lumaprfi-count-purple { background:#9b59b6; }
+
+.luma-migration-tool-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.luma-migration-tool-card {
+    margin: 0;
+}
+
+.luma-product-fields-migration-cat-list {
+    max-height: 320px;
+    overflow: auto;
+    background: #fff;
+    border: 1px solid #dcdcde;
+    padding: 10px;
+}

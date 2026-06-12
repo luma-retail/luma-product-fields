@@ -1,27 +1,22 @@
 <?php
 /**
- * Luma Fields Migration UI 
+ * Luma Fields Migration UI
  *
  * @package Luma\ProductFields
  */
+
 namespace Luma\ProductFields\Admin\Migration;
 
-use Luma\ProductFields\Migration\LegacyMetaMigrator;
-use Luma\ProductFields\Utils\Helpers;
 use Luma\ProductFields\Admin\Admin;
 use Luma\ProductFields\Admin\Settings;
+use Luma\ProductFields\Migration\CategoryToTaxonomyMapper;
+use Luma\ProductFields\Migration\LegacyMetaMigrator;
+use Luma\ProductFields\Utils\Helpers;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Migration UI Page
- *
- * Displays a field-to-legacy-meta mapping UI, handles dry run and real migration,
- * and outputs a result table for admin feedback.
- *
- * @hook luma_product_fields_migration_field_options
- *      Allow extensions to render extra field-specific options.
- *      @param array $field Current field definition.
+ * Migration tools page.
  */
 class MigrationPage {
 
@@ -29,7 +24,6 @@ class MigrationPage {
      * Option key for migration log.
      */
     public const OPTION_MIGRATION_LOG = 'luma_product_fields_meta_migration_log';
-
 
     /**
      * Register the admin submenu page (invisible under Products).
@@ -43,14 +37,13 @@ class MigrationPage {
         add_action( 'luma_product_fields_field_manager_actions', [ static::class, 'show_migration_button' ] );
     }
 
-
     /**
-     * Add the submenu page under "Products", but without a visible menu link.
+     * Add the submenu page under "Products", but without visible menu text.
      */
     public static function add_admin_page(): void {
         add_submenu_page(
             'edit.php?post_type=product',
-            __( 'Migrate Legacy Meta', 'luma-product-fields' ),
+            __( 'Migration tools', 'luma-product-fields' ),
             '',
             'manage_options',
             'luma-product-fields-migration',
@@ -58,28 +51,146 @@ class MigrationPage {
         );
     }
 
-
     /**
-     * Render "Migration tool" button in Field Manager.
+     * Render "Migration tools" button in Field Manager.
      */
     public static function show_migration_button(): void {
         ?>
         <a href="<?php echo esc_url( admin_url( 'edit.php?post_type=product&page=luma-product-fields-migration' ) ); ?>"
            class="button button-large"
            style="margin-left: 1em;">
-            <?php esc_html_e( 'Migration tool', 'luma-product-fields' ); ?>
+            <?php esc_html_e( 'Migration tools', 'luma-product-fields' ); ?>
         </a>
         <?php
     }
 
-
     /**
-     * Render the migration UI form, handle POSTed data, and display results.
+     * Render migration tools page.
      */
     public static function render(): void {
         if ( ! current_user_can( 'manage_options' ) ) {
             wp_die( esc_html__( 'Access denied', 'luma-product-fields' ) );
         }
+
+        $tool = isset( $_GET['tool'] )
+            ? sanitize_key( wp_unslash( (string) $_GET['tool'] ) )
+            : '';
+
+        echo '<div class="wrap">';
+
+        if ( is_callable( [ '\\Luma\\ProductFields\\Admin\\Admin', 'show_back_button' ] ) ) {
+            Admin::show_back_button();
+        }
+
+        if ( '' === $tool ) {
+            self::render_tools_hub();
+        } elseif ( 'meta-extractor' === $tool ) {
+            self::render_meta_extractor_tool();
+        } elseif ( 'category-mapper' === $tool ) {
+            self::render_category_mapper_tool();
+        } elseif ( 'name-extractor' === $tool ) {
+            self::render_name_extractor_coming_soon();
+        } else {
+            self::render_tools_hub();
+        }
+
+        echo '</div>';
+    }
+
+    /**
+     * Render tool cards hub page.
+     */
+    protected static function render_tools_hub(): void {
+        echo '<h1>' . esc_html__( 'Product Fields Migration Tools', 'luma-product-fields' ) . '</h1>';
+
+        echo '<p>' . esc_html__(
+            'Choose a migration tool. Each tool is independent and supports dry-run mode before saving.',
+            'luma-product-fields'
+        ) . '</p>';
+
+        echo '<div class="luma-migration-tool-grid">';
+
+        self::render_tool_card(
+            __( 'Meta Extractor', 'luma-product-fields' ),
+            __( 'Map legacy meta keys to Product Fields and convert values to structured field data.', 'luma-product-fields' ),
+            'meta-extractor',
+            __( 'Open Meta Extractor', 'luma-product-fields' )
+        );
+
+        self::render_tool_card(
+            __( 'Category Mapper', 'luma-product-fields' ),
+            __( 'Map full product category paths to taxonomy field terms for selected products.', 'luma-product-fields' ),
+            'category-mapper',
+            __( 'Open Category Mapper', 'luma-product-fields' )
+        );
+
+        self::render_tool_card(
+            __( 'Name Extractor', 'luma-product-fields' ),
+            __( 'Extract numeric values from product and variation names and store them in number fields.', 'luma-product-fields' ),
+            'name-extractor',
+            __( 'Open Name Extractor', 'luma-product-fields' )
+        );
+
+        echo '</div>';
+    }
+
+    /**
+     * Render a tool card.
+     *
+     * @param string $title
+     * @param string $description
+     * @param string $tool_slug
+     * @param string $button_label
+     * @return void
+     */
+    protected static function render_tool_card( string $title, string $description, string $tool_slug, string $button_label ): void {
+        $url = add_query_arg(
+            [
+                'post_type' => 'product',
+                'page'      => 'luma-product-fields-migration',
+                'tool'      => $tool_slug,
+            ],
+            admin_url( 'edit.php' )
+        );
+
+        echo '<div class="postbox luma-migration-tool-card">';
+        echo '<div class="postbox-header"><h2 class="hndle">' . esc_html( $title ) . '</h2></div>';
+        echo '<div class="inside">';
+        echo '<p>' . esc_html( $description ) . '</p>';
+        echo '<p><a class="button button-primary" href="' . esc_url( $url ) . '">' . esc_html( $button_label ) . '</a></p>';
+        echo '</div>';
+        echo '</div>';
+    }
+
+    /**
+     * Render tool header with back link.
+     *
+     * @param string $title
+     * @param string $description
+     * @return void
+     */
+    protected static function render_tool_header( string $title, string $description ): void {
+        $back_url = add_query_arg(
+            [
+                'post_type' => 'product',
+                'page'      => 'luma-product-fields-migration',
+            ],
+            admin_url( 'edit.php' )
+        );
+
+        echo '<p><a href="' . esc_url( $back_url ) . '" class="button">' . esc_html__( 'Back to migration tools', 'luma-product-fields' ) . '</a></p>';
+        echo '<h1>' . esc_html( $title ) . '</h1>';
+        echo '<p>' . esc_html( $description ) . '</p>';
+    }
+
+    /**
+     * Render the current legacy meta extractor tool (renamed in UI).
+     */
+    protected static function render_meta_extractor_tool(): void {
+        self::render_tool_header(
+            __( 'Meta Extractor', 'luma-product-fields' ),
+            __( 'Map existing legacy meta keys to Product Fields and migrate values.', 'luma-product-fields' )
+        );
 
         $fields          = Helpers::get_all_fields();
         $distinct_keys   = self::get_distinct_meta_keys();
@@ -94,98 +205,94 @@ class MigrationPage {
             ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) )
             : '';
 
-        if ( 'POST' === $request_method && check_admin_referer( 'luma_product_fields_fields_migration' ) ) {
-            $is_dry_run    = isset( $_POST['dry_run'] );
-            $skip_existing = filter_input( INPUT_POST, 'skip_existing', FILTER_VALIDATE_BOOLEAN ) ?? false;
+        if ( 'POST' === $request_method ) {
+            $tool_action = isset( $_POST['lpf_migration_tool_action'] )
+                ? sanitize_key( wp_unslash( (string) $_POST['lpf_migration_tool_action'] ) )
+                : '';
 
-            foreach ( $fields as $field ) {
-                $slug      = $field['slug'];
-                $map_key   = 'map_' . $slug;
-                $index_key = 'number_index_' . $slug;
+            if ( 'meta-extractor' === $tool_action && check_admin_referer( 'luma_product_fields_fields_migration' ) ) {
+                $is_dry_run    = isset( $_POST['dry_run'] );
+                $skip_existing = filter_input( INPUT_POST, 'skip_existing', FILTER_VALIDATE_BOOLEAN ) ?? false;
 
-                $meta_key = isset( $_POST[ $map_key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $map_key ] ) ) : '';
+                foreach ( $fields as $field ) {
+                    $slug      = $field['slug'];
+                    $map_key   = 'map_' . $slug;
+                    $index_key = 'number_index_' . $slug;
 
-                $index_value   = isset( $_POST[ $index_key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $index_key ] ) ) : ''; 
+                    $meta_key = isset( $_POST[ $map_key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $map_key ] ) ) : '';
+                    $index_value = isset( $_POST[ $index_key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $index_key ] ) ) : '';
 
-                if ( '' === $meta_key ) {
-                    continue;
+                    if ( '' === $meta_key ) {
+                        continue;
+                    }
+
+                    $match_unit = filter_input(
+                        INPUT_POST,
+                        'match_unit_' . $slug,
+                        FILTER_VALIDATE_BOOLEAN
+                    ) ?? false;
+
+                    $include_variations = filter_input(
+                        INPUT_POST,
+                        'include_variations_' . $slug,
+                        FILTER_VALIDATE_BOOLEAN
+                    ) ?? false;
+
+                    $mapping[ $slug ] = [
+                        'skip_existing'      => $skip_existing,
+                        'meta_key'           => $meta_key,
+                        'field'              => $field,
+                        'number_index'       => $index_value,
+                        'match_unit'         => $match_unit,
+                        'include_variations' => $include_variations,
+                    ];
                 }
 
-                $match_unit = filter_input(
-                    INPUT_POST,
-                    'match_unit_' . $slug,
-                    FILTER_VALIDATE_BOOLEAN
-                ) ?? false;
+                if ( ! empty( $mapping ) ) {
+                    $migrator = new LegacyMetaMigrator();
+                    $summary  = $migrator->run( $mapping, $is_dry_run );
 
-                $include_variations = filter_input(
-                    INPUT_POST,
-                    'include_variations_' . $slug,
-                    FILTER_VALIDATE_BOOLEAN
-                ) ?? false;
+                    if ( $is_dry_run ) {
+                        $show_summary_ui = true;
+                    } else {
+                        $log = get_option( static::OPTION_MIGRATION_LOG, [] );
+                        foreach ( array_keys( $mapping ) as $slug ) {
+                            $log[ $slug ] = current_time( 'mysql' );
+                        }
+                        update_option( static::OPTION_MIGRATION_LOG, $log );
+                        $migration_log = $log;
 
-                $mapping[ $slug ] = [
-                    'skip_existing'      => $skip_existing,
-                    'meta_key'           => $meta_key, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-                    'field'              => $field,
-                    'number_index'       => $index_value,
-                    'match_unit'         => $match_unit,
-                    'include_variations' => $include_variations,
-                ];
-            }
-
-            if ( ! empty( $mapping ) ) {
-                $migrator = new LegacyMetaMigrator();
-                $summary  = $migrator->run( $mapping, $is_dry_run );
-
-                if ( $is_dry_run ) {
-                    $show_summary_ui = true;
-                } else {
-                    $log = get_option( static::OPTION_MIGRATION_LOG, [] );
-                    foreach ( array_keys( $mapping ) as $slug ) {
-                        $log[ $slug ] = current_time( 'mysql' );
-                    }
-                    update_option( static::OPTION_MIGRATION_LOG, $log );
-                    $migration_log = $log;
-
-                    $updated_count = 0;
-                    foreach ( $summary as $product ) {
-                        foreach ( $product as $result ) {
-                            if ( isset( $result['status'] ) && 'migrated' === $result['status'] ) {
-                                $updated_count++;
-                                break;
+                        $updated_count = 0;
+                        foreach ( $summary as $product ) {
+                            foreach ( $product as $result ) {
+                                if ( isset( $result['status'] ) && 'migrated' === $result['status'] ) {
+                                    $updated_count++;
+                                    break;
+                                }
                             }
                         }
-                    }
 
-                    if ( $updated_count > 0 ) {
-                        /* translators: %d: number of products updated */
-                        $notice = sprintf( esc_html__( '%d products updated successfully.', 'luma-product-fields' ), $updated_count );
-                    } else {
-                        $notice = esc_html__( 'No products were updated.', 'luma-product-fields' );
+                        if ( $updated_count > 0 ) {
+                            $notice = sprintf( esc_html__( '%d products updated successfully.', 'luma-product-fields' ), $updated_count );
+                        } else {
+                            $notice = esc_html__( 'No products were updated.', 'luma-product-fields' );
+                        }
                     }
                 }
             }
         }
-
-
-        echo '<div class="wrap">';
-
-        if ( is_callable( [ '\Luma\ProductFields\Admin\Admin', 'show_back_button' ] ) ) {
-            Admin::show_back_button();
-        }
-
-        echo '<h1>' . esc_html__( 'Product Fields Meta Migration', 'luma-product-fields' ) . '</h1>';
-
-        self::render_migration_intro();
 
         if ( ! empty( $notice ) ) {
             echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $notice ) . '</p></div>';
         }
 
+        self::render_meta_extractor_intro();
+
         echo '<form method="post">';
         wp_nonce_field( 'luma_product_fields_fields_migration' );
+        echo '<input type="hidden" name="lpf_migration_tool_action" value="meta-extractor">';
 
-        echo '<table class="widefat  striped">';
+        echo '<table class="widefat striped">';
         echo '<thead><tr>';
         echo '<th>' . esc_html__( 'Field', 'luma-product-fields' ) . '</th>';
         echo '<th>' . esc_html__( 'Legacy Meta Key', 'luma-product-fields' ) . '</th>';
@@ -209,12 +316,10 @@ class MigrationPage {
             echo '<td><strong>' . esc_html( $field['label'] ?? $slug ) . '</strong><br><code>' . esc_html( $slug ) . '</code></td>';
 
             echo '<td><select name="map_' . esc_attr( $slug ) . '"><option value="">' . esc_html_x( '--', 'no meta key selected', 'luma-product-fields' ) . '</option>';
-            $map_key           = 'map_' . $slug;
-            $selected_key = isset( $_POST[ $map_key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $map_key ] ) ) : ''; 
+            $map_key      = 'map_' . $slug;
+            $selected_key = isset( $_POST[ $map_key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $map_key ] ) ) : '';
             foreach ( $distinct_keys as $key ) {
                 $selected_attr = selected( $selected_key, $key, false );
-                // "selected" attribute string is safe, all dynamic pieces must be escaped above.
-                // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
                 echo '<option value="' . esc_attr( $key ) . '"' . $selected_attr . '>' . esc_html( $key ) . '</option>';
             }
             echo '</select></td>';
@@ -227,15 +332,15 @@ class MigrationPage {
                 esc_html_e( 'Include variations', 'luma-product-fields' );
                 echo '</label>';
             }
-            
+
             if ( in_array( $field['type'], [ 'number', 'integer' ], true ) ) {
-                $index_key          = 'number_index_' . $slug;
-                $selected_index = isset( $_POST[ $index_key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $index_key ] ) ) : '0'; 
+                $index_key       = 'number_index_' . $slug;
+                $selected_index  = isset( $_POST[ $index_key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $index_key ] ) ) : '0';
 
                 echo '<label>' . esc_html__( 'Which number?', 'luma-product-fields' ) . ' ';
                 echo '<select name="number_index_' . esc_attr( $slug ) . '">';
-                echo '<option value="0"'  . selected( $selected_index, '0', false )  . '>' . esc_html__( '1st',  'luma-product-fields' ) . '</option>';
-                echo '<option value="1"'  . selected( $selected_index, '1', false )  . '>' . esc_html__( '2nd',  'luma-product-fields' ) . '</option>';
+                echo '<option value="0"' . selected( $selected_index, '0', false ) . '>' . esc_html__( '1st', 'luma-product-fields' ) . '</option>';
+                echo '<option value="1"' . selected( $selected_index, '1', false ) . '>' . esc_html__( '2nd', 'luma-product-fields' ) . '</option>';
                 echo '<option value="-1"' . selected( $selected_index, '-1', false ) . '>' . esc_html__( 'Last', 'luma-product-fields' ) . '</option>';
                 echo '</select>';
                 echo '</label>';
@@ -244,23 +349,14 @@ class MigrationPage {
                 $match_unit_check = filter_input( INPUT_POST, $match_unit_key, FILTER_VALIDATE_BOOLEAN ) ?? false;
 
                 echo '<label>';
-                echo '<input type="checkbox" name="match_unit_' . esc_attr( $slug ) . '" ' .
-                     checked( $match_unit_check, true, false ) . '> ';
+                echo '<input type="checkbox" name="match_unit_' . esc_attr( $slug ) . '" ' . checked( $match_unit_check, true, false ) . '> ';
                 esc_html_e( 'Try to match unit', 'luma-product-fields' );
                 echo '</label>';
             }
 
-            /**
-             * Allow extensions to render extra field-specific options.
-             *
-             * @hook luma_product_fields_migration_field_options
-             *
-             * @param array $field Current field definition.
-             */
             do_action( 'luma_product_fields_migration_field_options', $field );
 
             echo '</td>';
-
             echo '<td>' . wp_kses_post( $status_label ) . '</td>';
             echo '</tr>';
         }
@@ -277,7 +373,7 @@ class MigrationPage {
              '</label></p>';
 
         echo '<p><button type="submit" class="button button-primary">' .
-             esc_html__( 'Run Migration', 'luma-product-fields' ) .
+             esc_html__( 'Run Meta Extraction', 'luma-product-fields' ) .
              '</button></p>';
 
         echo '</form>';
@@ -286,156 +382,237 @@ class MigrationPage {
             self::render_summary_table( $summary, $fields );
         }
 
-        self::render_migration_notes();
-
-        echo '</div>';
+        self::render_meta_extractor_notes();
     }
-
 
     /**
-     * Render migration summary as a compact table.
-     *
-     * @param array $summary Full migration summary from LegacyMetaMigrator::run().
-     * @param array $fields  Field definitions.
+     * Render category mapper tool.
      */
-    protected static function render_summary_table( array $summary, array $fields ): void {
-        $field_labels = [];
+    protected static function render_category_mapper_tool(): void {
+        self::render_tool_header(
+            __( 'Category Mapper', 'luma-product-fields' ),
+            __( 'Map full product category paths (for selected categories) into taxonomy field terms.', 'luma-product-fields' )
+        );
 
-        foreach ( $fields as $field ) {
-            $field_labels[ $field['slug'] ] = $field['label'] ?? $field['slug'];
-        }
-
-        $counts = [
-            'migrated'         => 0,
-            'dry_run'          => 0,
-            'skipped_existing' => 0,
-            'skipped_invalid'  => 0,
-            'external_save'    => 0,
-        ];
-
-        foreach ( $summary as $product_id => $field_results ) {
-            foreach ( $field_results as $slug => $row ) {
-                $status = $row['status'] ?? '';
-
-                if ( 'migrated' === $status ) {
-                    $counts['migrated']++;
-                } elseif ( 'dry-run' === $status ) {
-                    $counts['dry_run']++;
-                } elseif ( 'skipped' === $status && ( $row['reason'] ?? '' ) === 'Existing value present' ) {
-                    $counts['skipped_existing']++;
-                } elseif ( 'skipped' === $status ) {
-                    $counts['skipped_invalid']++;
-                } elseif ( strpos( $status, 'external save' ) !== false ) {
-                    $counts['external_save']++;
+        $fields = array_values(
+            array_filter(
+                Helpers::get_all_fields(),
+                static function ( array $field ): bool {
+                    return ! empty( $field['is_taxonomy'] ) || Helpers::is_taxonomy_field( (string) ( $field['slug'] ?? '' ) );
                 }
-            }
-        }
+            )
+        );
 
-        echo '<h2>' . esc_html__( 'Migration Result (dry run)', 'luma-product-fields' ) . '</h2>';
+        $selected_field_slug = isset( $_POST['mapper_field_slug'] )
+            ? sanitize_key( wp_unslash( (string) $_POST['mapper_field_slug'] ) )
+            : '';
 
-        echo '<div class="luma-product-fields-migration-counters">';
-        echo '<p><strong>' . esc_html__( 'Migration Summary', 'luma-product-fields' ) . '</strong></p>';
+        $selected_categories = isset( $_POST['mapper_category_ids'] )
+            ? array_values( array_filter( array_map( 'absint', (array) wp_unslash( $_POST['mapper_category_ids'] ) ) ) )
+            : [];
 
-        echo '<ul class="luma-product-fields-counters-list">';
-        echo '<li><span class="luma-product-fields-count lumaprfi-count-green">' . esc_html( (string) $counts['migrated'] ) . '</span> ' . esc_html__( 'migrated', 'luma-product-fields' ) . '</li>';
-        echo '<li><span class="luma-product-fields-count lumaprfi-count-blue">' . esc_html( (string) $counts['dry_run'] ) . '</span> ' . esc_html__( 'dry-run changes', 'luma-product-fields' ) . '</li>';
-        echo '<li><span class="luma-product-fields-count lumaprfi-count-orange">' . esc_html( (string) $counts['skipped_existing'] ) . '</span> ' . esc_html__( 'skipped (existing value)', 'luma-product-fields' ) . '</li>';
-        echo '<li><span class="luma-product-fields-count lumaprfi-count-gray">' . esc_html( (string) $counts['skipped_invalid'] ) . '</span> ' . esc_html__( 'skipped (no valid data)', 'luma-product-fields' ) . '</li>';
-        if ( $counts['external_save'] > 0 ) {
-            echo '<li><span class="luma-product-fields-count lumaprfi-count-purple">' . esc_html( (string) $counts['external_save'] ) . '</span> ' . esc_html__( 'handled by external save callback', 'luma-product-fields' ) . '</li>';
-        }
-        echo '</ul>';
-        echo '</div>';
+        $skip_existing = ! empty( $_POST['skip_existing'] );
+        $is_dry_run    = true;
+        $summary       = [];
+        $notice        = '';
 
-        echo '<div style="overflow:auto; max-height:600px; border:1px solid #ccc; padding:1em;">';
-        echo '<table class="widefat fixed striped">';
-        echo '<thead><tr>';
-        echo '<th>' . esc_html__( 'Product', 'luma-product-fields' ) . '</th>';
-        echo '<th>' . esc_html__( 'Field', 'luma-product-fields' ) . '</th>';
-        echo '<th>' . esc_html__( 'Status', 'luma-product-fields' ) . '</th>';
-        echo '<th>' . esc_html__( 'Original', 'luma-product-fields' ) . '</th>';
-        echo '<th>' . esc_html__( 'Existing', 'luma-product-fields' ) . '</th>';
-        echo '<th>' . esc_html__( 'New value', 'luma-product-fields' ) . '</th>';
-        echo '<th>' . esc_html__( 'Reason / Details', 'luma-product-fields' ) . '</th>';
-        echo '</tr></thead><tbody>';
+        $request_method = isset( $_SERVER['REQUEST_METHOD'] )
+            ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) )
+            : '';
 
-        $rows      = 0;
-        $max_rows  = 500;
-        $truncated = false;
+        if ( 'POST' === $request_method ) {
+            $tool_action = isset( $_POST['lpf_migration_tool_action'] )
+                ? sanitize_key( wp_unslash( (string) $_POST['lpf_migration_tool_action'] ) )
+                : '';
 
-        foreach ( $summary as $product_id => $field_results ) {
-            foreach ( $field_results as $slug => $result ) {
-                $rows++;
-                if ( $rows > $max_rows ) {
-                    $truncated = true;
-                    break 2;
-                }
+            if ( 'category-mapper' === $tool_action && check_admin_referer( 'luma_product_fields_category_mapper' ) ) {
+                $is_dry_run = isset( $_POST['dry_run'] );
 
-                $product_link = get_edit_post_link( $product_id );
-                $product_cell = $product_link
-                    ? '<a href="' . esc_url( $product_link ) . '">#' . (int) $product_id . '</a>'
-                    : '#' . (int) $product_id;
+                $selected_field = self::find_field_by_slug( $fields, $selected_field_slug );
 
-                $field_label = $field_labels[ $slug ] ?? $slug;
-
-                $status = $result['status'] ?? '';
-                $orig   = $result['original'] ?? '';
-                $new    = $result['new'] ?? '';
-                if ( is_array( $new ) ) {
-                    $new = wp_json_encode( $new );
-                }
-                $existing_val = $result['existing'] ?? '';
-                if ( is_array( $existing_val ) ) {
-                    $existing_val = wp_json_encode( $existing_val );
-                }
-                $reason = $result['reason'] ?? '';
-
-                if ( 'migrated' === $status ) {
-                    $cls = 'luma-product-fields-status-migrated';
-                } elseif ( 'dry-run' === $status ) {
-                    $cls = 'luma-product-fields-status-dry-run';
-                } elseif ( 'skipped' === $status && 'Existing value present' === $reason ) {
-                    $cls = 'luma-product-fields-status-skipped-exists';
-                } elseif ( strpos( $status, 'external save' ) !== false ) {
-                    $cls = 'luma-product-fields-status-external';
+                if ( ! $selected_field ) {
+                    echo '<div class="notice notice-error"><p>' . esc_html__( 'Please choose a taxonomy field.', 'luma-product-fields' ) . '</p></div>';
+                } elseif ( empty( $selected_categories ) ) {
+                    echo '<div class="notice notice-error"><p>' . esc_html__( 'Please select at least one product category.', 'luma-product-fields' ) . '</p></div>';
                 } else {
-                    $cls = 'luma-product-fields-status-skipped';
-                }
+                    $mapper = new CategoryToTaxonomyMapper();
+                    $summary = $mapper->run(
+                        [
+                            'field'                 => $selected_field,
+                            'selected_category_ids' => $selected_categories,
+                            'skip_existing'         => $skip_existing,
+                        ],
+                        $is_dry_run
+                    );
 
-                echo '<tr class="' . esc_attr( $cls ) . '">';
-                echo '<td>' . wp_kses_post( $product_cell ) . '</td>';
-                echo '<td><strong>' . esc_html( $field_label ) . '</strong><br><code>' . esc_html( $slug ) . '</code></td>';
-                echo '<td>' . esc_html( (string) $status ) . '</td>';
-                echo '<td>' . esc_html( (string) $orig ) . '</td>';
-                echo '<td>' . esc_html( (string) $existing_val ) . '</td>';
-                echo '<td>' . esc_html( (string) $new ) . '</td>';
-                echo '<td>' . esc_html( (string) $reason ) . '</td>';
-                echo '</tr>';
+                    if ( ! $is_dry_run ) {
+                        $updated_count = 0;
+                        foreach ( $summary as $field_rows ) {
+                            foreach ( $field_rows as $result ) {
+                                if ( isset( $result['status'] ) && 'migrated' === $result['status'] ) {
+                                    $updated_count++;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if ( $updated_count > 0 ) {
+                            $notice = sprintf( esc_html__( '%d products updated successfully.', 'luma-product-fields' ), $updated_count );
+                        } else {
+                            $notice = esc_html__( 'No products were updated.', 'luma-product-fields' );
+                        }
+                    }
+                }
             }
         }
 
-        if ( ! $rows ) {
-            echo '<tr><td colspan="6">' . esc_html__( 'No changes were detected in this dry run.', 'luma-product-fields' ) . '</td></tr>';
+        if ( '' !== $notice ) {
+            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $notice ) . '</p></div>';
         }
 
-        echo '</tbody></table>';
+        echo '<p>' . esc_html__(
+            'This tool reads product categories and uses full category paths (for example: Garnpakker / Dame) as field values.',
+            'luma-product-fields'
+        ) . '</p>';
 
-        if ( $truncated ) {
-            echo '<p><em>' .
-                 esc_html__( 'Showing only the first 500 rows.', 'luma-product-fields' ) .
-                 '</em></p>';
+        echo '<form method="post">';
+        wp_nonce_field( 'luma_product_fields_category_mapper' );
+        echo '<input type="hidden" name="lpf_migration_tool_action" value="category-mapper">';
+
+        echo '<table class="form-table" role="presentation">';
+        echo '<tbody>';
+
+        echo '<tr>';
+        echo '<th scope="row"><label for="mapper_field_slug">' . esc_html__( 'Target taxonomy field', 'luma-product-fields' ) . '</label></th>';
+        echo '<td>';
+        echo '<select id="mapper_field_slug" name="mapper_field_slug">';
+        echo '<option value="">' . esc_html_x( '-- Select field --', 'migration field select', 'luma-product-fields' ) . '</option>';
+        foreach ( $fields as $field ) {
+            $slug = (string) ( $field['slug'] ?? '' );
+            $label = (string) ( $field['label'] ?? $slug );
+            echo '<option value="' . esc_attr( $slug ) . '" ' . selected( $selected_field_slug, $slug, false ) . '>' . esc_html( $label . ' (' . $slug . ')' ) . '</option>';
+        }
+        echo '</select>';
+        echo '<p class="description">' . esc_html__( 'Only taxonomy-based fields are available here.', 'luma-product-fields' ) . '</p>';
+        echo '</td>';
+        echo '</tr>';
+
+        echo '<tr>';
+        echo '<th scope="row">' . esc_html__( 'Only include products in categories', 'luma-product-fields' ) . '</th>';
+        echo '<td>';
+
+        $categories = get_terms(
+            [
+                'taxonomy'   => 'product_cat',
+                'hide_empty' => false,
+                'orderby'    => 'name',
+                'order'      => 'ASC',
+            ]
+        );
+
+        if ( is_wp_error( $categories ) || empty( $categories ) ) {
+            echo '<p class="description">' . esc_html__( 'No product categories found.', 'luma-product-fields' ) . '</p>';
+        } else {
+            echo '<fieldset>';
+            echo '<legend class="screen-reader-text">' . esc_html__( 'Categories', 'luma-product-fields' ) . '</legend>';
+            echo '<div class="luma-product-fields-migration-cat-list">';
+
+            foreach ( $categories as $cat ) {
+                if ( ! $cat instanceof \WP_Term ) {
+                    continue;
+                }
+
+                $label = self::build_product_cat_path( $cat );
+                echo '<label style="display:block; margin-bottom:4px;">';
+                echo '<input type="checkbox" name="mapper_category_ids[]" value="' . esc_attr( (string) $cat->term_id ) . '" ' . checked( in_array( (int) $cat->term_id, $selected_categories, true ), true, false ) . '> ';
+                echo esc_html( $label );
+                echo '</label>';
+            }
+
+            echo '</div>';
+            echo '</fieldset>';
         }
 
-        echo '</div>';
+        echo '</td>';
+        echo '</tr>';
+
+        echo '</tbody>';
+        echo '</table>';
+
+        echo '<p><label>';
+        echo '<input type="checkbox" name="skip_existing" ' . checked( $skip_existing, true, false ) . '> ';
+        echo esc_html__( 'Skip if field already has a value', 'luma-product-fields' );
+        echo '</label></p>';
+
+        echo '<p><label>';
+        echo '<input type="checkbox" name="dry_run" checked> ';
+        echo esc_html__( 'Dry run (no changes will be saved)', 'luma-product-fields' );
+        echo '</label></p>';
+
+        echo '<p><button type="submit" class="button button-primary">' . esc_html__( 'Run Category Mapping', 'luma-product-fields' ) . '</button></p>';
+
+        echo '</form>';
+
+        if ( $is_dry_run && ! empty( $summary ) ) {
+            self::render_summary_table( $summary, $fields );
+        }
     }
 
+    /**
+     * Render placeholder for next tool.
+     */
+    protected static function render_name_extractor_coming_soon(): void {
+        self::render_tool_header(
+            __( 'Name Extractor', 'luma-product-fields' ),
+            __( 'Extract numeric values from product and variation names into number fields.', 'luma-product-fields' )
+        );
+
+        echo '<div class="notice notice-info"><p>' . esc_html__( 'This tool is under active development and will be available next.', 'luma-product-fields' ) . '</p></div>';
+    }
+
+    /**
+     * Find field in local list by slug.
+     *
+     * @param array<int,array<string,mixed>> $fields
+     * @param string $slug
+     * @return array<string,mixed>|null
+     */
+    protected static function find_field_by_slug( array $fields, string $slug ): ?array {
+        foreach ( $fields as $field ) {
+            if ( (string) ( $field['slug'] ?? '' ) === $slug ) {
+                return $field;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Build full category path label.
+     *
+     * @param \WP_Term $term
+     * @return string
+     */
+    protected static function build_product_cat_path( \WP_Term $term ): string {
+        $parts     = [];
+        $ancestors = array_reverse( get_ancestors( (int) $term->term_id, 'product_cat', 'taxonomy' ) );
+
+        foreach ( $ancestors as $ancestor_id ) {
+            $ancestor = get_term( (int) $ancestor_id, 'product_cat' );
+            if ( $ancestor instanceof \WP_Term ) {
+                $parts[] = $ancestor->name;
+            }
+        }
+
+        $parts[] = $term->name;
+
+        return implode( ' / ', array_filter( $parts ) );
+    }
 
     /**
      * Retrieve distinct meta keys from the postmeta table.
      *
-     * Excluding WooCommerce internal keys and known technical ones.
-     *
-     * @return array
+     * @return array<int,string>
      */
     protected static function get_distinct_meta_keys(): array {
         global $wpdb;
@@ -468,22 +645,14 @@ class MigrationPage {
         );
     }
 
-
     /**
-     * Render the main explanation block for the metadata migration tool.
-     *
-     * @return void
+     * Render introductory text for meta extractor.
      */
-    protected static function render_migration_intro(): void {
-
+    protected static function render_meta_extractor_intro(): void {
         echo '<div class="luma-migration-intro">';
-
-
-
         echo '<p>';
         echo esc_html__(
-            'This tool migrates existing product meta values into Luma Product Fields. During migration, existing
-             meta values are read and converted to match the structure required by each field type.',
+            'This tool migrates existing product meta values into Luma Product Fields. During migration, existing meta values are read and converted to match the structure required by each field type.',
             'luma-product-fields'
         );
         echo '</p>';
@@ -501,27 +670,15 @@ class MigrationPage {
             'luma-product-fields'
         );
         echo '</p>';
-
         echo '</div>';
     }
 
-
     /**
-     * Render important notes and warnings for the metadata migration tool.
-     *
-     * This section clarifies limitations, non-destructive behavior,
-     * and the fact that this is a one-time migration, not synchronization.
-     *
-     * Intended to be displayed at the bottom of the migration page.
-     *
-     * @return void
+     * Render notes for meta extractor.
      */
-    protected static function render_migration_notes(): void {
-
+    protected static function render_meta_extractor_notes(): void {
         echo '<div class="luma-migration-notes">';
-
         echo '<h3>' . esc_html__( 'Important notes', 'luma-product-fields' ) . '</h3>';
-
         echo '<ul>';
 
         echo '<li>';
@@ -533,31 +690,164 @@ class MigrationPage {
 
         echo '<li>';
         echo esc_html__(
-            'Original meta values are not deleted or modified. If other plugins or custom continue to write to the 
-             old/existing meta keys, those changes will not be reflected in Luma Product Fields.',
+            'Original meta values are not deleted or modified. If other plugins or custom code continue to write to old meta keys, those changes are not reflected automatically.',
             'luma-product-fields'
         );
         echo '</li>';
 
         echo '<li>';
         echo esc_html__(
-            'Conversion is best-effort. Values that do not match the expected format of a field type may be skipped or partially converted.',
+            'Conversion is best-effort. Values that do not match expected field formats may be skipped or partially converted.',
             'luma-product-fields'
         );
         echo '</li>';
 
         echo '<li>';
         echo esc_html__(
-            'It is recommended to review a subset of products after migration before relying on the migrated field data.',
+            'Review a subset of products after migration before relying on migrated values.',
             'luma-product-fields'
         );
         echo '</li>';
 
         echo '</ul>';
-
         echo '</div>';
     }
 
+    /**
+     * Render migration summary as a compact table.
+     *
+     * @param array<int,array<string,array<string,mixed>>> $summary
+     * @param array<int,array<string,mixed>> $fields
+     */
+    protected static function render_summary_table( array $summary, array $fields ): void {
+        $field_labels = [];
 
+        foreach ( $fields as $field ) {
+            $field_labels[ $field['slug'] ] = $field['label'] ?? $field['slug'];
+        }
 
+        $counts = [
+            'migrated'         => 0,
+            'dry_run'          => 0,
+            'skipped_existing' => 0,
+            'skipped_invalid'  => 0,
+            'external_save'    => 0,
+        ];
+
+        foreach ( $summary as $field_results ) {
+            foreach ( $field_results as $row ) {
+                $status = $row['status'] ?? '';
+
+                if ( 'migrated' === $status ) {
+                    $counts['migrated']++;
+                } elseif ( 'dry-run' === $status ) {
+                    $counts['dry_run']++;
+                } elseif ( 'skipped' === $status && ( $row['reason'] ?? '' ) === 'Existing value present' ) {
+                    $counts['skipped_existing']++;
+                } elseif ( 'skipped' === $status ) {
+                    $counts['skipped_invalid']++;
+                } elseif ( strpos( (string) $status, 'external save' ) !== false ) {
+                    $counts['external_save']++;
+                }
+            }
+        }
+
+        echo '<h2>' . esc_html__( 'Migration Result (dry run)', 'luma-product-fields' ) . '</h2>';
+
+        echo '<div class="luma-product-fields-migration-counters">';
+        echo '<p><strong>' . esc_html__( 'Migration Summary', 'luma-product-fields' ) . '</strong></p>';
+        echo '<ul class="lumaprfi-counters-list">';
+        echo '<li><span class="luma-product-fields-count lumaprfi-count-green">' . esc_html( (string) $counts['migrated'] ) . '</span> ' . esc_html__( 'migrated', 'luma-product-fields' ) . '</li>';
+        echo '<li><span class="luma-product-fields-count lumaprfi-count-blue">' . esc_html( (string) $counts['dry_run'] ) . '</span> ' . esc_html__( 'dry-run changes', 'luma-product-fields' ) . '</li>';
+        echo '<li><span class="luma-product-fields-count lumaprfi-count-orange">' . esc_html( (string) $counts['skipped_existing'] ) . '</span> ' . esc_html__( 'skipped (existing value)', 'luma-product-fields' ) . '</li>';
+        echo '<li><span class="luma-product-fields-count lumaprfi-count-gray">' . esc_html( (string) $counts['skipped_invalid'] ) . '</span> ' . esc_html__( 'skipped (no valid data)', 'luma-product-fields' ) . '</li>';
+        if ( $counts['external_save'] > 0 ) {
+            echo '<li><span class="luma-product-fields-count lumaprfi-count-purple">' . esc_html( (string) $counts['external_save'] ) . '</span> ' . esc_html__( 'handled by external save callback', 'luma-product-fields' ) . '</li>';
+        }
+        echo '</ul>';
+        echo '</div>';
+
+        echo '<div style="overflow:auto; max-height:600px; border:1px solid #ccc; padding:1em;">';
+        echo '<table class="widefat fixed striped luma-product-fields-summary-table">';
+        echo '<thead><tr>';
+        echo '<th>' . esc_html__( 'Product', 'luma-product-fields' ) . '</th>';
+        echo '<th>' . esc_html__( 'Field', 'luma-product-fields' ) . '</th>';
+        echo '<th>' . esc_html__( 'Status', 'luma-product-fields' ) . '</th>';
+        echo '<th>' . esc_html__( 'Original', 'luma-product-fields' ) . '</th>';
+        echo '<th>' . esc_html__( 'Existing', 'luma-product-fields' ) . '</th>';
+        echo '<th>' . esc_html__( 'New value', 'luma-product-fields' ) . '</th>';
+        echo '<th>' . esc_html__( 'Reason / Details', 'luma-product-fields' ) . '</th>';
+        echo '</tr></thead><tbody>';
+
+        $rows      = 0;
+        $max_rows  = 500;
+        $truncated = false;
+
+        foreach ( $summary as $product_id => $field_results ) {
+            foreach ( $field_results as $slug => $result ) {
+                $rows++;
+                if ( $rows > $max_rows ) {
+                    $truncated = true;
+                    break 2;
+                }
+
+                $product_link = get_edit_post_link( (int) $product_id );
+                $product_cell = $product_link
+                    ? '<a href="' . esc_url( $product_link ) . '">#' . (int) $product_id . '</a>'
+                    : '#' . (int) $product_id;
+
+                $field_label = $field_labels[ $slug ] ?? $slug;
+
+                $status = (string) ( $result['status'] ?? '' );
+                $orig   = $result['original'] ?? '';
+                $new    = $result['new'] ?? '';
+                $existing_val = $result['existing'] ?? '';
+                $reason = (string) ( $result['reason'] ?? '' );
+
+                if ( is_array( $orig ) ) {
+                    $orig = wp_json_encode( $orig );
+                }
+                if ( is_array( $new ) ) {
+                    $new = wp_json_encode( $new );
+                }
+                if ( is_array( $existing_val ) ) {
+                    $existing_val = wp_json_encode( $existing_val );
+                }
+
+                if ( 'migrated' === $status ) {
+                    $cls = 'lumaprfi-status-migrated';
+                } elseif ( 'dry-run' === $status ) {
+                    $cls = 'lumaprfi-status-dry-run';
+                } elseif ( 'skipped' === $status && 'Existing value present' === $reason ) {
+                    $cls = 'lumaprfi-status-skipped-exists';
+                } elseif ( strpos( $status, 'external save' ) !== false ) {
+                    $cls = 'lumaprfi-status-external';
+                } else {
+                    $cls = 'lumaprfi-status-skipped';
+                }
+
+                echo '<tr class="' . esc_attr( $cls ) . '">';
+                echo '<td>' . wp_kses_post( $product_cell ) . '</td>';
+                echo '<td><strong>' . esc_html( (string) $field_label ) . '</strong><br><code>' . esc_html( (string) $slug ) . '</code></td>';
+                echo '<td>' . esc_html( $status ) . '</td>';
+                echo '<td>' . esc_html( (string) $orig ) . '</td>';
+                echo '<td>' . esc_html( (string) $existing_val ) . '</td>';
+                echo '<td>' . esc_html( (string) $new ) . '</td>';
+                echo '<td>' . esc_html( $reason ) . '</td>';
+                echo '</tr>';
+            }
+        }
+
+        if ( ! $rows ) {
+            echo '<tr><td colspan="7">' . esc_html__( 'No changes were detected in this dry run.', 'luma-product-fields' ) . '</td></tr>';
+        }
+
+        echo '</tbody></table>';
+
+        if ( $truncated ) {
+            echo '<p><em>' . esc_html__( 'Showing only the first 500 rows.', 'luma-product-fields' ) . '</em></p>';
+        }
+
+        echo '</div>';
+    }
 }
