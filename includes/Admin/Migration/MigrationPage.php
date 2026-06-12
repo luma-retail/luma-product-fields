@@ -690,10 +690,23 @@ class MigrationPage {
                             }
                         }
 
+                        $rebuilt_parent_count = 0;
+                        if ( $include_variations ) {
+                            $rebuilt_parent_count = self::rebuild_variation_aggregates_for_touched_variation_parents( $summary );
+                        }
+
                         if ( $updated_count > 0 ) {
                             $notice = sprintf( esc_html__( '%d products updated successfully.', 'luma-product-fields' ), $updated_count );
                         } else {
                             $notice = esc_html__( 'No products were updated.', 'luma-product-fields' );
+                        }
+
+                        if ( $include_variations ) {
+                            $notice .= ' ' . sprintf(
+                                /* translators: %d: Number of variable parent products rebuilt. */
+                                esc_html__( 'Rebuilt variation numeric aggregates for %d parent products.', 'luma-product-fields' ),
+                                $rebuilt_parent_count
+                            );
                         }
                     }
                 }
