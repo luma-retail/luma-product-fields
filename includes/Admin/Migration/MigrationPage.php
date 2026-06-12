@@ -12,6 +12,7 @@ use Luma\ProductFields\Admin\Settings;
 use Luma\ProductFields\Migration\CategoryToTaxonomyMapper;
 use Luma\ProductFields\Migration\LegacyMetaMigrator;
 use Luma\ProductFields\Migration\NameExtractor;
+use Luma\ProductFields\Product\VariationNumericAggregates;
 use Luma\ProductFields\Utils\Helpers;
 
 defined( 'ABSPATH' ) || exit;
@@ -214,6 +215,7 @@ class MigrationPage {
             if ( 'meta-extractor' === $tool_action && check_admin_referer( 'luma_product_fields_fields_migration' ) ) {
                 $is_dry_run    = isset( $_POST['dry_run'] );
                 $skip_existing = filter_input( INPUT_POST, 'skip_existing', FILTER_VALIDATE_BOOLEAN ) ?? false;
+                $should_rebuild_variation_aggregates = false;
 
                 foreach ( $fields as $field ) {
                     $slug      = $field['slug'];
@@ -238,6 +240,10 @@ class MigrationPage {
                         'include_variations_' . $slug,
                         FILTER_VALIDATE_BOOLEAN
                     ) ?? false;
+
+                    if ( $include_variations ) {
+                        $should_rebuild_variation_aggregates = true;
+                    }
 
                     $mapping[ $slug ] = [
                         'skip_existing'      => $skip_existing,
@@ -277,6 +283,15 @@ class MigrationPage {
                             $notice = sprintf( esc_html__( '%d products updated successfully.', 'luma-product-fields' ), $updated_count );
                         } else {
                             $notice = esc_html__( 'No products were updated.', 'luma-product-fields' );
+                        }
+
+                        if ( $should_rebuild_variation_aggregates ) {
+                            $rebuilt_parent_count = self::rebuild_variation_aggregates_for_touched_variation_parents( $summary );
+                            $notice .= ' ' . sprintf(
+                                /* translators: %d: Number of variable parent products rebuilt. */
+                                esc_html__( 'Rebuilt variation numeric aggregates for %d parent products.', 'luma-product-fields' ),
+                                $rebuilt_parent_count
+                            );
                         }
                     }
                 }
@@ -457,10 +472,23 @@ class MigrationPage {
                             }
                         }
 
+                        $rebuilt_parent_count = 0;
+                        if ( $include_variations ) {
+                            $rebuilt_parent_count = self::rebuild_variation_aggregates_for_touched_variation_parents( $summary );
+                        }
+
                         if ( $updated_count > 0 ) {
                             $notice = sprintf( esc_html__( '%d products updated successfully.', 'luma-product-fields' ), $updated_count );
                         } else {
                             $notice = esc_html__( 'No products were updated.', 'luma-product-fields' );
+                        }
+
+                        if ( $include_variations ) {
+                            $notice .= ' ' . sprintf(
+                                /* translators: %d: Number of variable parent products rebuilt. */
+                                esc_html__( 'Rebuilt variation numeric aggregates for %d parent products.', 'luma-product-fields' ),
+                                $rebuilt_parent_count
+                            );
                         }
                     }
                 }
@@ -596,9 +624,15 @@ class MigrationPage {
             ? sanitize_key( wp_unslash( (string) $_POST['extractor_field_slug'] ) )
             : '';
 
-        $include_simple     = ! isset( $_POST['extractor_include_simple'] ) || ! empty( $_POST['extractor_include_simple'] );
+        $is_post_request    = isset( $_SERVER['REQUEST_METHOD'] )
+            && 'POST' === sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) );
+
+        $include_simple     = $is_post_request
+            ? ! empty( $_POST['extractor_include_simple'] )
+            : true;
         $include_variations = ! empty( $_POST['extractor_include_variations'] );
         $skip_existing      = ! empty( $_POST['skip_existing'] );
+        $skip_product_ids   = self::parse_positive_int_list( $_POST['extractor_skip_product_ids'] ?? [] );
         $is_dry_run         = true;
         $summary            = [];
         $notice             = '';
@@ -619,7 +653,7 @@ class MigrationPage {
                 if ( ! $selected_field ) {
                     echo '<div class="notice notice-error"><p>' . esc_html__( 'Please choose a numeric field.', 'luma-product-fields' ) . '</p></div>';
                 } elseif ( ! $include_simple && ! $include_variations ) {
-                    echo '<div class="notice notice-error"><p>' . esc_html__( 'Choose at least one source scope (simple products or variations).', 'luma-product-fields' ) . '</p></div>';
+                    echo '<div class="notice notice-error"><p>' . esc_html__( 'Choose at least one source scope (products or variations).', 'luma-product-fields' ) . '</p></div>';
                 } else {
                     $number_mode = isset( $_POST['extractor_number_mode'] )
                         ? sanitize_key( wp_unslash( (string) $_POST['extractor_number_mode'] ) )
@@ -640,6 +674,7 @@ class MigrationPage {
                             'number_index'       => $number_index,
                             'match_unit'         => $match_unit,
                             'skip_existing'      => $skip_existing,
+                            'exclude_product_ids' => $skip_product_ids,
                         ],
                         $is_dry_run
                     );
@@ -674,6 +709,11 @@ class MigrationPage {
             'luma-product-fields'
         ) . '</p>';
 
+        echo '<p class="description">' . esc_html__(
+            'After a dry run, tick "Skip this" for rows you want to exclude, then run again.',
+            'luma-product-fields'
+        ) . '</p>';
+
         $selected_number_mode = isset( $_POST['extractor_number_mode'] )
             ? sanitize_key( wp_unslash( (string) $_POST['extractor_number_mode'] ) )
             : 'unit';
@@ -705,7 +745,7 @@ class MigrationPage {
         echo '<tr>';
         echo '<th scope="row">' . esc_html__( 'Source scope', 'luma-product-fields' ) . '</th>';
         echo '<td>';
-        echo '<label><input type="checkbox" name="extractor_include_simple" ' . checked( $include_simple, true, false ) . '> ' . esc_html__( 'Simple products', 'luma-product-fields' ) . '</label><br>';
+        echo '<label><input type="checkbox" name="extractor_include_simple" ' . checked( $include_simple, true, false ) . '> ' . esc_html__( 'Products (simple/variable/grouped)', 'luma-product-fields' ) . '</label><br>';
         echo '<label><input type="checkbox" name="extractor_include_variations" ' . checked( $include_variations, true, false ) . '> ' . esc_html__( 'Variations', 'luma-product-fields' ) . '</label>';
         echo '</td>';
         echo '</tr>';
@@ -738,13 +778,20 @@ class MigrationPage {
         echo esc_html__( 'Dry run (no changes will be saved)', 'luma-product-fields' );
         echo '</label></p>';
 
+        if ( $is_dry_run && ! empty( $summary ) ) {
+            self::render_summary_table_with_options(
+                $summary,
+                $all_fields,
+                [
+                    'allow_skip_selection'      => true,
+                    'selected_skip_product_ids' => $skip_product_ids,
+                ]
+            );
+        }
+
         echo '<p><button type="submit" class="button button-primary">' . esc_html__( 'Run Name Extraction', 'luma-product-fields' ) . '</button></p>';
 
         echo '</form>';
-
-        if ( $is_dry_run && ! empty( $summary ) ) {
-            self::render_summary_table( $summary, $all_fields );
-        }
     }
 
     /**
@@ -897,7 +944,21 @@ class MigrationPage {
      * @param array<int,array<string,mixed>> $fields
      */
     protected static function render_summary_table( array $summary, array $fields ): void {
+        self::render_summary_table_with_options( $summary, $fields, [] );
+    }
+
+    /**
+     * Render migration summary as a compact table with optional controls.
+     *
+     * @param array<int,array<string,array<string,mixed>>> $summary
+     * @param array<int,array<string,mixed>>               $fields
+     * @param array<string,mixed>                          $options
+     */
+    protected static function render_summary_table_with_options( array $summary, array $fields, array $options ): void {
         $field_labels = [];
+        $allow_skip_selection = ! empty( $options['allow_skip_selection'] );
+        $selected_skip_ids    = self::parse_positive_int_list( $options['selected_skip_product_ids'] ?? [] );
+        $selected_skip_lookup = array_fill_keys( $selected_skip_ids, true );
 
         foreach ( $fields as $field ) {
             $field_labels[ $field['slug'] ] = $field['label'] ?? $field['slug'];
@@ -947,6 +1008,9 @@ class MigrationPage {
         echo '<div style="overflow:auto; max-height:600px; border:1px solid #ccc; padding:1em;">';
         echo '<table class="widefat fixed striped luma-product-fields-summary-table">';
         echo '<thead><tr>';
+        if ( $allow_skip_selection ) {
+            echo '<th>' . esc_html__( 'Skip this', 'luma-product-fields' ) . '</th>';
+        }
         echo '<th>' . esc_html__( 'Product', 'luma-product-fields' ) . '</th>';
         echo '<th>' . esc_html__( 'Field', 'luma-product-fields' ) . '</th>';
         echo '<th>' . esc_html__( 'Status', 'luma-product-fields' ) . '</th>';
@@ -1004,6 +1068,10 @@ class MigrationPage {
                 }
 
                 echo '<tr class="' . esc_attr( $cls ) . '">';
+                if ( $allow_skip_selection ) {
+                    $is_checked = isset( $selected_skip_lookup[ (int) $product_id ] );
+                    echo '<td><label><input type="checkbox" name="extractor_skip_product_ids[]" value="' . esc_attr( (string) (int) $product_id ) . '" ' . checked( $is_checked, true, false ) . '> ' . esc_html__( 'Skip', 'luma-product-fields' ) . '</label></td>';
+                }
                 echo '<td>' . wp_kses_post( $product_cell ) . '</td>';
                 echo '<td><strong>' . esc_html( (string) $field_label ) . '</strong><br><code>' . esc_html( (string) $slug ) . '</code></td>';
                 echo '<td>' . esc_html( $status ) . '</td>';
@@ -1016,7 +1084,8 @@ class MigrationPage {
         }
 
         if ( ! $rows ) {
-            echo '<tr><td colspan="7">' . esc_html__( 'No changes were detected in this dry run.', 'luma-product-fields' ) . '</td></tr>';
+            $colspan = $allow_skip_selection ? 8 : 7;
+            echo '<tr><td colspan="' . esc_attr( (string) $colspan ) . '">' . esc_html__( 'No changes were detected in this dry run.', 'luma-product-fields' ) . '</td></tr>';
         }
 
         echo '</tbody></table>';
@@ -1026,5 +1095,59 @@ class MigrationPage {
         }
 
         echo '</div>';
+    }
+
+    /**
+     * Parse a mixed value into unique positive integer IDs.
+     *
+     * @param mixed $raw
+     * @return array<int,int>
+     */
+    protected static function parse_positive_int_list( $raw ): array {
+        if ( ! is_array( $raw ) ) {
+            return [];
+        }
+
+        $ids = [];
+        foreach ( $raw as $raw_id ) {
+            $id = absint( $raw_id );
+            if ( $id > 0 ) {
+                $ids[ $id ] = $id;
+            }
+        }
+
+        return array_values( $ids );
+    }
+
+    /**
+     * Rebuild variation numeric aggregates for parent products touched by variation rows.
+     *
+     * @param array<int,array<string,array<string,mixed>>> $summary
+     * @return int Number of parent products rebuilt.
+     */
+    protected static function rebuild_variation_aggregates_for_touched_variation_parents( array $summary ): int {
+        $parent_ids = [];
+
+        foreach ( $summary as $product_id => $field_results ) {
+            $product_id = (int) $product_id;
+            if ( $product_id <= 0 || 'product_variation' !== get_post_type( $product_id ) ) {
+                continue;
+            }
+
+            if ( empty( $field_results ) ) {
+                continue;
+            }
+
+            $parent_id = (int) wp_get_post_parent_id( $product_id );
+            if ( $parent_id > 0 ) {
+                $parent_ids[ $parent_id ] = true;
+            }
+        }
+
+        foreach ( array_keys( $parent_ids ) as $parent_id ) {
+            VariationNumericAggregates::rebuild_for_parent( (int) $parent_id );
+        }
+
+        return count( $parent_ids );
     }
 }

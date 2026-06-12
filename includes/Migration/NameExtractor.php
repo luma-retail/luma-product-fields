@@ -26,7 +26,8 @@ class NameExtractor extends LegacyMetaMigrator {
      *     include_variations: bool,
      *     number_index?: int,
      *     match_unit?: bool,
-     *     skip_existing?: bool
+    *     skip_existing?: bool,
+    *     exclude_product_ids?: int[]
      * } $config
      * @param bool $dry_run
      * @return array<int, array<string, array<string, mixed>>>
@@ -49,10 +50,19 @@ class NameExtractor extends LegacyMetaMigrator {
         $number_index = isset( $config['number_index'] ) ? (int) $config['number_index'] : 0;
         $match_unit   = ! empty( $config['match_unit'] );
         $skip_existing = ! empty( $config['skip_existing'] );
+        $exclude_product_ids = $this->normalize_excluded_product_ids( $config['exclude_product_ids'] ?? [] );
 
         $summary = [];
 
         foreach ( $this->iterate_product_ids( $include_simple, $include_variations ) as $product_id ) {
+            if ( isset( $exclude_product_ids[ $product_id ] ) ) {
+                continue;
+            }
+
+            if ( ! $this->field_applies_to_product( $product_id, $field ) ) {
+                continue;
+            }
+
             $name_value = $this->get_source_name( $product_id );
 
             if ( '' === $name_value ) {
@@ -154,11 +164,31 @@ class NameExtractor extends LegacyMetaMigrator {
         if ( 'product_variation' === $post_type ) {
             $product = wc_get_product( $product_id );
             if ( $product ) {
-                return trim( wp_strip_all_tags( (string) $product->get_name() ) );
+                return $this->normalize_source_name( (string) $product->get_name() );
             }
         }
 
-        return trim( wp_strip_all_tags( (string) get_the_title( $product_id ) ) );
+        return $this->normalize_source_name( (string) get_the_title( $product_id ) );
+    }
+
+    /**
+     * Normalize a source title string before numeric extraction.
+     *
+     * Decodes HTML entities (e.g. &#8211; / &ndash;) so entity numbers are not
+     * parsed as candidate numeric values.
+     *
+     * @param string $raw_name Raw product/variation name.
+     * @return string
+     */
+    protected function normalize_source_name( string $raw_name ): string {
+        $clean = trim( wp_strip_all_tags( $raw_name ) );
+        if ( '' === $clean ) {
+            return '';
+        }
+
+        $decoded = html_entity_decode( $clean, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+
+        return trim( preg_replace( '/\s+/u', ' ', $decoded ) ?? $decoded );
     }
 
     /**
@@ -185,6 +215,12 @@ class NameExtractor extends LegacyMetaMigrator {
             $with_unit = $this->extract_number_with_unit( $name_value, (string) $field['unit'] );
             if ( null !== $with_unit ) {
                 return 'integer' === $type ? (int) $with_unit : $with_unit;
+            }
+
+            // Unit mode should not fall back to positional extraction when any
+            // non-matching unit token is present (e.g. target mm, source 60 cm).
+            if ( $this->contains_any_unit_alias( $name_value ) ) {
+                return null;
             }
         }
 
@@ -229,5 +265,97 @@ class NameExtractor extends LegacyMetaMigrator {
         }
 
         return '' === trim( (string) $value );
+    }
+
+    /**
+     * Check whether the selected field applies to the product's effective group.
+     *
+     * @param int                 $product_id Product or variation ID.
+     * @param array<string,mixed> $field      Field definition.
+     * @return bool
+     */
+    protected function field_applies_to_product( int $product_id, array $field ): bool {
+        $group_slug = Helpers::get_product_group_slug( $product_id );
+        $groups     = $field['groups'] ?? [];
+
+        if ( ! is_array( $groups ) ) {
+            $groups = [ (string) $groups ];
+        }
+
+        $groups = array_values(
+            array_filter(
+                array_map(
+                    static fn( $group ) => sanitize_key( (string) $group ),
+                    $groups
+                ),
+                static fn( string $group ) => '' !== $group
+            )
+        );
+
+        if ( empty( $groups ) ) {
+            return true;
+        }
+
+        return in_array( $group_slug, $groups, true );
+    }
+
+    /**
+     * Normalize excluded product IDs into a fast lookup map.
+     *
+     * @param mixed $raw_ids
+     * @return array<int,bool>
+     */
+    protected function normalize_excluded_product_ids( $raw_ids ): array {
+        if ( ! is_array( $raw_ids ) ) {
+            return [];
+        }
+
+        $ids = [];
+        foreach ( $raw_ids as $raw_id ) {
+            $id = absint( $raw_id );
+            if ( $id > 0 ) {
+                $ids[ $id ] = true;
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
+     * Check whether the source text includes any recognized unit alias token.
+     *
+     * @param string $value
+     * @return bool
+     */
+    protected function contains_any_unit_alias( string $value ): bool {
+        $decoded    = html_entity_decode( $value, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+        $normalized = function_exists( 'mb_strtolower' )
+            ? mb_strtolower( $decoded, 'UTF-8' )
+            : strtolower( $decoded );
+        $aliases_map = $this->get_unit_aliases();
+
+        foreach ( $aliases_map as $aliases ) {
+            if ( ! is_array( $aliases ) ) {
+                continue;
+            }
+
+            foreach ( $aliases as $alias ) {
+                $alias_value = rtrim( (string) $alias, '.' );
+                $alias = trim(
+                    function_exists( 'mb_strtolower' )
+                        ? mb_strtolower( $alias_value, 'UTF-8' )
+                        : strtolower( $alias_value )
+                );
+                if ( '' === $alias ) {
+                    continue;
+                }
+
+                if ( preg_match( '/\\b' . preg_quote( $alias, '/' ) . '\\b/u', $normalized ) ) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

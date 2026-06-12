@@ -623,6 +623,20 @@ textarea.scale-with-content {
     margin: 0;
 }
 
+.luma-migration-tool-card .postbox-header {
+    padding: 0 16px;
+}
+
+.luma-migration-tool-card .postbox-header .hndle {
+    margin: 0;
+    padding: 12px 0;
+}
+
+.luma-migration-tool-card .inside {
+    margin: 0;
+    padding: 16px;
+}
+
 .luma-product-fields-migration-cat-list {
     max-height: 320px;
     overflow: auto;
